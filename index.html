@@ -18,6 +18,19 @@
   .card .emoji { font-size:32px; margin-bottom:6px; }
   .card .title { font-size:16px; font-weight:800; }
   .card .desc { font-size:12px; color:#666; margin-top:4px; }
+  .card .lock { display:inline-block; background:#1a1a1a; color:#f5c842; font-size:9px; padding:2px 8px; border-radius:10px; margin-left:6px; letter-spacing:0.05em; vertical-align:middle; font-weight:700; }
+
+  .pin-overlay { position:fixed; inset:0; background:#1a1a1a; color:#fff; z-index:9999; display:none; flex-direction:column; align-items:center; justify-content:center; font-family:inherit; }
+  .pin-overlay.show { display:flex; }
+  .pin-eyebrow { font-size:11px; color:#888; letter-spacing:0.2em; margin-bottom:10px; }
+  .pin-title { font-size:24px; font-weight:800; margin-bottom:8px; }
+  .pin-subtitle { font-size:12px; color:#aaa; margin-bottom:24px; }
+  .pin-input { font-size:32px; letter-spacing:0.5em; text-align:center; padding:14px 20px; border:2px solid #333; border-radius:12px; background:#222; color:#f5c842; width:200px; font-family:monospace; outline:none; }
+  .pin-error { color:#ff6b6b; font-size:12px; margin-top:14px; min-height:18px; }
+  .pin-cancel { margin-top:30px; background:none; border:1px solid #444; color:#888; padding:10px 20px; border-radius:8px; cursor:pointer; font-family:inherit; font-size:12px; }
+  .pin-cancel:hover { border-color:#666; color:#ccc; }
+  .pin-note { font-size:10px; color:#555; margin-top:40px; }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)} }
 
   .frame-view { display:none; height:100vh; width:100%; flex-direction:column; background:#f4f4f0; }
   .frame-view.show { display:flex; }
@@ -34,22 +47,32 @@
 <div class="home" id="home">
   <div class="page">
     <h1>OKI <span>BOWL</span></h1>
-    <button class="card" onclick="openView('waste.html','🗑️ <span>廃棄記録シート</span>')">
+    <button class="card" onclick="openPublic('waste.html','🗑️ <span>廃棄記録シート</span>')">
       <div class="emoji">🗑️</div>
       <div class="title">廃棄記録シート</div>
       <div class="desc">廃棄が出たらすぐ入力（全スタッフOK）</div>
     </button>
-    <button class="card" onclick="openView('app.html','📱 <span>OKI BOWL Manager</span>')">
+    <button class="card" onclick="requestPin('app.html','📱 <span>OKI BOWL Manager</span>')">
       <div class="emoji">📱</div>
-      <div class="title">OKI BOWL Manager</div>
-      <div class="desc">店舗運営マネージャーアプリ</div>
+      <div class="title">OKI BOWL Manager<span class="lock">🔒 PIN</span></div>
+      <div class="desc">店舗運営マネージャーアプリ（店長・OWNERのみ）</div>
     </button>
-    <button class="card" onclick="openView('daily.html','📅 <span>2号店 日別工程表</span>')">
+    <button class="card" onclick="requestPin('daily.html','📅 <span>2号店 日別工程表</span>')">
       <div class="emoji">📅</div>
-      <div class="title">2号店 日別工程表</div>
-      <div class="desc">2号店オープン準備・日別タスク管理</div>
+      <div class="title">2号店 日別工程表<span class="lock">🔒 PIN</span></div>
+      <div class="desc">2号店オープン準備（店長・OWNERのみ）</div>
     </button>
   </div>
+</div>
+
+<div class="pin-overlay" id="pinOverlay">
+  <div class="pin-eyebrow">OKI BOWL — PROTECTED</div>
+  <div class="pin-title">🔒 PINコードを入力</div>
+  <div class="pin-subtitle">4桁のPINを入力してください</div>
+  <input class="pin-input" id="pinInput" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" placeholder="••••">
+  <div class="pin-error" id="pinError"></div>
+  <button class="pin-cancel" onclick="cancelPin()">キャンセル</button>
+  <div class="pin-note">クリックするたび毎回PINが必要</div>
 </div>
 
 <div class="frame-view" id="frameView">
@@ -61,28 +84,76 @@
 </div>
 
 <script>
+const PIN_CORRECT = '5821';
 const home = document.getElementById('home');
+const pinOverlay = document.getElementById('pinOverlay');
+const pinInput = document.getElementById('pinInput');
+const pinError = document.getElementById('pinError');
 const frameView = document.getElementById('frameView');
 const frameTitle = document.getElementById('frameTitle');
 const contentFrame = document.getElementById('contentFrame');
 
-// 旧PINフラグのクリーンアップ
-try {
-  localStorage.removeItem('okibowl_pl_unlocked');
-  localStorage.removeItem('okibowl_pl_unlocked_v2');
-} catch(e){}
+let pendingTarget = null; // {src, title}
 
-function openView(src, titleHtml) {
-  frameTitle.innerHTML = titleHtml;
-  contentFrame.src = src;
+function showHome() {
+  home.style.display = 'block';
+  pinOverlay.classList.remove('show');
+  frameView.classList.remove('show');
+}
+function showPin() {
   home.style.display = 'none';
+  pinOverlay.classList.add('show');
+  frameView.classList.remove('show');
+}
+function showFrame() {
+  home.style.display = 'none';
+  pinOverlay.classList.remove('show');
   frameView.classList.add('show');
 }
+
+function openPublic(src, titleHtml) {
+  frameTitle.innerHTML = titleHtml;
+  contentFrame.src = src;
+  showFrame();
+}
+
+function requestPin(src, titleHtml) {
+  pendingTarget = { src, title: titleHtml };
+  pinInput.value = '';
+  pinError.textContent = '';
+  showPin();
+  setTimeout(()=>pinInput.focus(), 100);
+}
+
+function cancelPin() {
+  pendingTarget = null;
+  pinInput.value = '';
+  pinError.textContent = '';
+  showHome();
+}
+
 function goHome() {
   contentFrame.src = 'about:blank';
-  frameView.classList.remove('show');
-  home.style.display = 'block';
+  showHome();
 }
+
+pinInput.addEventListener('input', () => {
+  if (pinInput.value === PIN_CORRECT && pendingTarget) {
+    frameTitle.innerHTML = pendingTarget.title;
+    contentFrame.src = pendingTarget.src;
+    pendingTarget = null;
+    showFrame();
+  } else if (pinInput.value.length === 4) {
+    pinError.textContent = '✗ PINが違います';
+    pinInput.style.animation = 'none';
+    pinInput.offsetHeight;
+    pinInput.style.animation = 'shake 0.3s';
+    setTimeout(()=>{ pinInput.value=''; pinError.textContent=''; }, 800);
+  }
+});
+pinInput.addEventListener('keydown', e => {
+  if (e.key === 'Escape') cancelPin();
+});
 </script>
 
 </body>
