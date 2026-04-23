@@ -1,0 +1,2042 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>OKI BOWL Manager</title>
+<style>
+:root {
+  --primary: #6F4E37;
+  --primary-light: #8B6F47;
+  --accent: #C8956C;
+  --success: #7A9A6D;
+  --danger: #B85C5C;
+  --sage: #5E8C7F;
+  --walnut: #8E7C68;
+  --bg: #FFFFFF;
+  --text: #333333;
+  --text-sub: #999999;
+  --border: #EEEEEE;
+  --nav-h: 60px;
+  --header-h: 58px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+body {
+  font-family: 'Hiragino Kaku Gothic ProN','Noto Sans JP',-apple-system,sans-serif;
+  background: var(--bg); color: var(--text);
+  min-height: 100vh; max-width: 480px; margin: 0 auto;
+}
+
+/* HEADER */
+.app-header {
+  position:fixed; top:0; left:50%; transform:translateX(-50%);
+  width:100%; max-width:480px; height:var(--header-h);
+  background:#FFF; border-bottom:2px solid #000;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 16px; z-index:100;
+}
+.logo-text{font-size:16px;font-weight:800;color:#000;letter-spacing:1px;}
+.logo-tagline{font-size:10px;color:#999;letter-spacing:.5px;font-weight:700;margin-left:8px;}
+.logo-tagline-jp{font-size:8px;color:#BBB;letter-spacing:.3px;font-weight:400;margin-left:4px;}
+.logo-group{display:flex;flex-direction:column;flex:1;}
+.logo-top{display:flex;align-items:baseline;}
+.logo-vision{font-size:9px;color:#AAA;letter-spacing:.3px;font-weight:700;margin-top:1px;text-align:center;overflow:hidden;white-space:nowrap;border-right:2px solid #AAA;width:0;animation:typeV 1s ease-out .3s forwards,blinkC .4s step-end .3s 3;}
+@keyframes typeV{0%{width:0}100%{width:100%}}
+@keyframes blinkC{0%,100%{border-color:#AAA}50%{border-color:transparent}}
+.date-badge{font-size:12px;color:#666;font-weight:600;}
+.admin-gear{font-size:11px;color:#BBB;font-weight:700;cursor:pointer;margin-left:8px;padding:4px;}
+
+/* MAIN */
+.main-content{padding-top:calc(var(--header-h)+12px);padding-bottom:calc(var(--nav-h)+16px);min-height:100vh;}
+.page{display:none;padding:0 14px;}
+.page.active{display:block;animation:fadeIn .2s ease;}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+/* NAV */
+.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;height:var(--nav-h);background:#FFF;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-around;z-index:100;}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 4px;cursor:pointer;border:none;background:transparent;position:relative;}
+.nav-btn .nav-label{font-size:11px;color:#BBB;font-weight:600;transition:color .2s;}
+.nav-btn.active .nav-label{color:var(--primary);font-weight:800;}
+.nav-badge{position:absolute;top:0;right:calc(50% - 20px);min-width:16px;height:16px;background:var(--danger);border-radius:8px;font-size:9px;font-weight:800;color:#fff;display:none;align-items:center;justify-content:center;padding:0 4px;}
+.nav-badge.show{display:flex;}
+
+/* COMMON */
+.section-label{font-size:11px;font-weight:700;color:var(--text-sub);letter-spacing:1px;padding:8px 2px 6px;}
+.card{background:#FFF;border:1px solid var(--border);border-radius:10px;margin-bottom:12px;overflow:hidden;}
+.card-head{padding:10px 14px;background:#FAFAFA;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;}
+.ch-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.ch-title{font-size:13px;font-weight:700;color:var(--text);flex:1;}
+.ch-badge{font-size:10px;font-weight:700;color:var(--text-sub);background:#F0F0F0;border-radius:10px;padding:2px 8px;}
+
+/* TASK */
+.task-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid #F5F5F5;cursor:pointer;user-select:none;transition:background .15s;}
+.task-item:last-child{border-bottom:none;}
+.task-item:active{background:#FAFAFA;}
+.task-item.done .task-text{text-decoration:line-through;color:#CCC;}
+.task-checkbox{width:20px;height:20px;border:2px solid #DDD;border-radius:5px;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s;font-size:12px;color:transparent;}
+.task-item.done .task-checkbox{background:var(--success);border-color:var(--success);color:#fff;}
+.task-text{font-size:13px;flex:1;line-height:1.4;}
+.task-freq{font-size:10px;font-weight:600;color:var(--text-sub);flex-shrink:0;}
+.task-alert{width:18px;height:18px;border-radius:50%;background:#FFF3F0;color:var(--danger);font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.task-item.done .task-alert{display:none;}
+
+/* TODAY */
+.today-box{background:#FAFAFA;border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:12px;}
+.today-box h2{font-size:15px;font-weight:800;margin-bottom:3px;}
+.today-box p{font-size:12px;color:var(--text-sub);}
+.today-chips{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap;}
+.today-chip{background:#F0F0F0;border-radius:16px;padding:4px 10px;font-size:11px;font-weight:600;color:var(--text);}
+
+/* KPI INPUT */
+.kpi-input-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:12px 14px;}
+.kpi-field label{font-size:10px;font-weight:700;color:var(--text-sub);display:block;margin-bottom:3px;}
+.kpi-field input{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:14px;font-weight:700;color:var(--text);background:#FAFAFA;outline:none;font-family:inherit;}
+.kpi-field input:focus{border-color:var(--accent);}
+.kpi-field input::placeholder{color:#CCC;font-weight:400;}
+.kpi-save-row{padding:0 14px 12px;display:flex;justify-content:space-between;align-items:center;}
+.kpi-save-btn{padding:8px 20px;background:var(--primary);color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;}
+.kpi-save-btn:active{opacity:.8;}
+.kpi-saved-date{font-size:10px;color:var(--success);font-weight:600;}
+
+/* SMAREGI */
+.smaregi-row{padding:0 14px 10px;display:flex;align-items:center;gap:8px;border-top:1px solid var(--border);padding-top:10px;margin-top:2px;}
+.smaregi-btn{padding:7px 14px;background:#1A6496;color:#fff;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;flex-shrink:0;}
+.smaregi-btn:active{opacity:.8;}
+.smaregi-status{font-size:10px;color:var(--text-sub);flex:1;line-height:1.4;}
+.smaregi-ok{color:var(--success);}
+.smaregi-err{color:var(--danger);}
+.smaregi-warn{color:#A07820;}
+
+/* CHECK TAB */
+.chk-month-wrap{border:1px solid var(--border);border-radius:10px;margin-bottom:14px;overflow:hidden;}
+.chk-section-head{color:#fff;padding:9px 14px;font-size:12px;font-weight:800;display:flex;justify-content:space-between;align-items:center;}
+.chk-m1{background:#4A6FA5;}.chk-m2{background:var(--sage);}.chk-m3{background:var(--accent);color:#333;}.chk-m4{background:var(--walnut);}
+.chk-ph1{background:#4A6FA5;}.chk-ph2{background:var(--sage);}
+.chk-week{border-bottom:1px solid #F0F0F0;}
+.chk-week:last-child{border-bottom:none;}
+.chk-week-title-row{padding:9px 14px 5px;background:#F8F5F2;display:flex;justify-content:space-between;align-items:center;}
+.chk-week-title{font-size:13px;font-weight:700;color:var(--primary);}
+.chk-wnum{font-size:10px;color:var(--text-sub);font-weight:600;}
+.chk-item{display:flex;align-items:center;padding:8px 14px;gap:8px;border-bottom:1px solid #F8F8F8;}
+.chk-item:last-of-type{border-bottom:none;}
+.chk-box{width:18px;height:18px;border:2px solid #CCC;border-radius:4px;cursor:pointer;flex-shrink:0;position:relative;background:#fff;}
+.chk-box.self-on{border-color:var(--sage);background:var(--sage);}
+.chk-box.self-on::after,.chk-box.adm-on::after{content:'';position:absolute;left:4px;top:1px;width:6px;height:10px;border:2px solid #fff;border-top:none;border-left:none;transform:rotate(45deg);}
+.chk-box.adm-on{border-color:var(--primary);background:var(--primary);}
+.chk-text{font-size:12px;flex:1;line-height:1.4;color:var(--text);}
+.chk-text.done{text-decoration:line-through;color:#BBB;}
+.chk-adm-lbl{font-size:9px;color:var(--text-sub);flex-shrink:0;width:12px;text-align:center;}
+.chk-score-row{padding:7px 14px;background:#F8F5F2;display:flex;align-items:center;gap:8px;}
+.chk-score-lbl{font-size:11px;color:var(--text-sub);font-weight:600;white-space:nowrap;}
+.chk-score-in{width:50px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;font-size:12px;text-align:center;font-family:inherit;}
+.chk-score-pct{font-size:11px;color:var(--text-sub);}
+.chk-prog-bar{flex:1;height:6px;background:#EEE;border-radius:3px;margin-left:6px;}
+.chk-prog-fill{height:100%;border-radius:3px;background:var(--sage);transition:width .3s;}
+.chk-hint{font-size:10px;color:var(--text-sub);padding:0 2px 8px;line-height:1.5;}
+.chk-adm-banner{background:#F5EDE4;border:1px solid var(--accent);border-radius:8px;padding:8px 14px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:700;color:var(--primary);}
+.chk-adm-lock-btn{padding:4px 10px;background:var(--primary);color:#fff;border:none;border-radius:5px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;}
+
+/* PROGRESS */
+.prog-label{display:flex;justify-content:space-between;font-size:11px;color:var(--text-sub);margin-bottom:6px;}
+.prog-track{height:6px;background:#F0F0F0;border-radius:3px;overflow:hidden;}
+.prog-fill{height:100%;background:var(--success);border-radius:3px;transition:width .5s ease;width:0%;}
+
+/* SHIFT */
+.shift-item{display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid #F5F5F5;}
+.shift-item:last-child{border-bottom:none;}
+.shift-item.current{background:#FFF9F0;}
+.shift-num{font-size:20px;font-weight:900;color:var(--primary);width:28px;text-align:center;}
+.shift-info{flex:1;}
+.shift-info .sm{font-size:13px;font-weight:700;}
+.shift-info .sn{font-size:11px;color:var(--text-sub);}
+.shift-tag{font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px;}
+.st-max{background:#FFEFEF;color:#C06060;}.st-busy{background:#FFF5E6;color:#B08040;}
+.st-normal{background:#F0F5EE;color:#608050;}.st-quiet{background:#F0F0F0;color:#888;}
+.st-min{background:#F5F5F5;color:#AAA;}
+
+/* SHIFT ALERT */
+.shift-week-head{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#FAFAFA;border-bottom:1px solid var(--border);}
+.shift-week-lbl{font-size:12px;font-weight:700;color:var(--text);}
+.shift-week-nav{display:flex;gap:6px;align-items:center;}
+.shift-week-nav button{background:none;border:1px solid #DDD;border-radius:5px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;color:var(--text);}
+.shift-week-nav .btn-cfg{background:var(--primary);color:#fff;border-color:var(--primary);}
+.shift-grid-wrap{padding:10px 12px 4px;overflow-x:auto;}
+.shift-grid{width:100%;border-collapse:collapse;}
+.shift-grid th{font-size:10px;font-weight:700;color:var(--text-sub);padding:4px 1px;text-align:center;}
+.shift-grid .rl{font-size:10px;font-weight:700;color:var(--text);padding:4px 4px 4px 0;width:44px;white-space:nowrap;}
+.shift-cell{padding:2px 1px;text-align:center;}
+.shift-ni{width:34px;height:28px;border:1.5px solid #DDD;border-radius:5px;text-align:center;font-size:13px;font-weight:700;background:#FFF;outline:none;font-family:inherit;display:block;margin:0 auto;}
+.shift-ni:focus{border-color:var(--accent);}
+.sst{font-size:9px;font-weight:700;padding:1px 3px;border-radius:3px;display:block;text-align:center;margin-top:2px;}
+.ss-ok{background:#EEF7EA;color:#5A8A4A;}
+.ss-low{background:#FFEEEE;color:#B85C5C;}
+.ss-high{background:#FFF8E0;color:#A07820;}
+.ss-empty{background:#F5F5F5;color:#CCC;}
+.shift-min-row{display:flex;gap:6px;padding:8px 12px 10px;flex-wrap:wrap;}
+.shift-min-tag{font-size:10px;color:var(--text-sub);background:#F5F5F5;border-radius:4px;padding:3px 8px;font-weight:600;}
+.shift-legend{display:flex;gap:8px;padding:0 12px 10px;border-top:1px solid var(--border);padding-top:8px;}
+.shift-legend span{font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;}
+
+/* MTG */
+.mtg-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid #F5F5F5;cursor:pointer;}
+.mtg-item:last-child{border-bottom:none;}
+.mtg-item:active{background:#FAFAFA;}
+.mtg-item.done .mtg-text{text-decoration:line-through;color:#CCC;}
+.mtg-num{width:24px;height:24px;border-radius:50%;background:var(--sage);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.mtg-item.done .mtg-num{background:#DDD;}
+.mtg-text{font-size:13px;font-weight:600;flex:1;}
+.mtg-alert{width:18px;height:18px;border-radius:50%;background:#FFF3F0;color:var(--danger);font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.mtg-item.done .mtg-alert{display:none;}
+
+/* REPORT */
+.rpt-block{padding:12px 14px;border-bottom:1px solid #F5F5F5;}
+.rpt-block:last-child{border-bottom:none;}
+.rpt-block-title{font-size:11px;font-weight:800;color:var(--primary);margin-bottom:8px;letter-spacing:.5px;}
+.rpt-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:12px;}
+.rpt-label{color:var(--text-sub);font-weight:600;}
+.rpt-value{font-weight:800;color:var(--text);}
+.rpt-value.good{color:var(--success);}.rpt-value.bad{color:var(--danger);}
+.rpt-textarea{width:100%;min-height:60px;border:1px solid var(--border);border-radius:6px;padding:10px;font-family:inherit;font-size:12px;color:var(--text);background:#FAFAFA;resize:vertical;outline:none;line-height:1.6;}
+.rpt-textarea:focus{border-color:var(--accent);}
+.rpt-textarea::placeholder{color:#CCC;}
+.rpt-auto-tag{display:inline-block;font-size:9px;font-weight:700;color:var(--sage);background:#F0F5F3;border-radius:4px;padding:1px 6px;margin-left:6px;}
+.rpt-staff-row{display:flex;align-items:center;gap:6px;padding:3px 0;font-size:12px;}
+.rpt-staff-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.rpt-staff-ok{background:var(--success);}.rpt-staff-ng{background:var(--danger);}
+
+/* BUTTONS */
+.action-btn{display:block;width:100%;padding:14px;border:none;border-radius:10px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;margin-bottom:8px;}
+.action-btn:active{opacity:.8;}
+.btn-send{background:var(--primary);color:#fff;}
+.btn-save-report{background:#FAFAFA;color:var(--text);border:1px solid var(--border)!important;}
+.reset-btn{display:block;width:calc(100% - 28px);margin:4px 14px 14px;padding:10px;background:#FAFAFA;border:1px dashed #DDD;border-radius:8px;font-size:13px;color:var(--text-sub);cursor:pointer;font-weight:600;}
+.reset-btn:active{background:#F0F0F0;}
+
+/* EVAL */
+.eval-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:12px 14px;}
+.eval-btn{background:#FAFAFA;border:1.5px solid var(--border);border-radius:8px;padding:10px 4px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;transition:all .2s;}
+.eval-btn .em{font-size:14px;font-weight:800;color:var(--text);}
+.eval-btn .es{font-size:9px;color:var(--text-sub);font-weight:600;}
+.eval-btn.done{background:#F0F5EE;border-color:var(--success);}
+.eval-btn.done .em{color:var(--success);}
+.eval-btn.done .es{color:var(--success);}
+
+/* CURRICULUM */
+.cur-step{display:flex;gap:12px;padding:12px 14px;border-bottom:1px solid #F5F5F5;align-items:center;}
+.cur-step:last-child{border-bottom:none;}
+.cur-num{width:28px;height:28px;border-radius:50%;background:var(--primary);color:#fff;font-size:13px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.cur-body .ct{font-size:13px;font-weight:700;}
+.cur-body .cp{font-size:11px;color:var(--text-sub);margin-top:1px;}
+.cur-body .cd{font-size:11px;color:var(--text-sub);margin-top:3px;line-height:1.5;}
+
+/* MEMO */
+.memo-card{background:#FFF;border:1px solid var(--border);border-radius:10px;margin-bottom:12px;overflow:hidden;}
+.memo-head{padding:10px 14px;background:#FAFAFA;border-bottom:1px solid var(--border);display:flex;align-items:center;}
+.memo-head .mh-title{font-size:13px;font-weight:700;flex:1;}
+.memo-head .mh-count{font-size:10px;color:var(--text-sub);}
+.memo-body{padding:12px 14px;}
+.memo-area{width:100%;min-height:80px;border:1px solid var(--border);border-radius:6px;padding:10px;font-family:inherit;font-size:13px;color:var(--text);background:#FAFAFA;resize:vertical;outline:none;line-height:1.6;}
+.memo-area:focus{border-color:var(--accent);}
+.memo-area::placeholder{color:#CCC;}
+
+/* ORG */
+.org-tree{padding:14px;font-size:12px;line-height:2.2;}
+.org-row{display:flex;align-items:center;gap:8px;}
+.org-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.org-role{font-weight:700;}
+.org-desc{font-size:11px;color:var(--text-sub);}
+.oi1{padding-left:18px;}.oi2{padding-left:36px;}.oi3{padding-left:52px;}
+
+/* HISTORY */
+.history-item{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid #F5F5F5;cursor:pointer;}
+.history-item:last-child{border-bottom:none;}
+.history-item:active{background:#FAFAFA;}
+.hi-date{font-size:13px;font-weight:700;}
+.hi-sub{font-size:10px;color:var(--text-sub);margin-top:1px;}
+.hi-arrow{font-size:12px;color:#CCC;font-weight:700;}
+
+/* OVERLAY */
+.overlay{position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;height:100vh;background:#FFF;z-index:300;display:none;flex-direction:column;}
+.overlay.show{display:flex;}
+.overlay-header{padding:14px 16px;border-bottom:2px solid #000;display:flex;align-items:center;justify-content:space-between;}
+.overlay-title{font-size:14px;font-weight:800;}
+.overlay-close{font-size:12px;font-weight:700;color:var(--text-sub);border:1px solid var(--border);background:#FFF;border-radius:6px;padding:4px 12px;cursor:pointer;}
+.overlay-body{flex:1;overflow-y:auto;padding:14px 16px;font-size:12px;line-height:1.8;white-space:pre-wrap;color:var(--text);}
+
+/* PIN */
+.pin-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:#FFF;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.pin-screen.hidden{display:none;}
+.pin-logo{font-size:22px;font-weight:900;color:#000;letter-spacing:2px;margin-bottom:4px;}
+.pin-sub{font-size:9px;color:#AAA;font-weight:700;margin-bottom:30px;}
+.pin-dots{display:flex;gap:14px;margin-bottom:28px;}
+.pin-dot{width:14px;height:14px;border-radius:50%;border:2px solid #DDD;background:transparent;transition:all .2s;}
+.pin-dot.filled{background:#000;border-color:#000;}
+.pin-dot.error{background:var(--danger);border-color:var(--danger);}
+.pin-pad{display:grid;grid-template-columns:repeat(3,72px);gap:12px;}
+.pin-key{width:72px;height:72px;border-radius:50%;border:1.5px solid #DDD;background:#FFF;font-size:24px;font-weight:700;color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;font-family:inherit;}
+.pin-key:active{background:#F0F0F0;}
+.pin-key.fn{font-size:11px;font-weight:600;color:var(--text-sub);border-color:transparent;}
+.pin-key.fn:active{background:#F5F5F5;}
+.pin-msg{margin-top:16px;font-size:11px;color:var(--danger);font-weight:600;height:16px;}
+.pin-shake{animation:pinShake .4s ease;}
+@keyframes pinShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-6px)}80%{transform:translateX(4px)}}
+
+/* TOAST */
+.toast{position:fixed;bottom:calc(var(--nav-h)+20px);left:50%;transform:translateX(-50%) translateY(16px);background:var(--text);color:#FFF;padding:8px 20px;border-radius:20px;font-size:13px;font-weight:600;opacity:0;transition:all .3s ease;z-index:200;white-space:nowrap;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* ===== ADMIN ===== */
+.adm-section{margin-bottom:20px;}
+.adm-section-title{font-size:13px;font-weight:800;color:var(--primary);padding:10px 0 6px;border-bottom:2px solid var(--primary);margin-bottom:8px;}
+.adm-item{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #F5F5F5;}
+.adm-item:last-child{border-bottom:none;}
+.adm-item-text{flex:1;font-size:12px;font-weight:600;color:var(--text);}
+.adm-item-sub{font-size:10px;color:var(--text-sub);font-weight:400;}
+.adm-btn{padding:4px 10px;border-radius:5px;font-size:10px;font-weight:700;cursor:pointer;border:none;font-family:inherit;}
+.adm-btn-edit{background:#F0F0F0;color:var(--text);}
+.adm-btn-edit:active{background:#E0E0E0;}
+.adm-btn-del{background:#FFF0F0;color:var(--danger);}
+.adm-btn-del:active{background:#FFE0E0;}
+.adm-add-row{display:flex;gap:6px;margin-top:8px;}
+.adm-add-input{flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-family:inherit;outline:none;color:var(--text);}
+.adm-add-input:focus{border-color:var(--accent);}
+.adm-add-input::placeholder{color:#CCC;}
+.adm-btn-add{padding:8px 14px;background:var(--primary);color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;}
+.adm-btn-add:active{opacity:.8;}
+.adm-edit-input{flex:1;padding:6px 8px;border:1px solid var(--accent);border-radius:5px;font-size:12px;font-family:inherit;outline:none;color:var(--text);}
+.adm-sub-input{width:80px;padding:6px 8px;border:1px solid var(--border);border-radius:5px;font-size:10px;font-family:inherit;outline:none;color:var(--text-sub);}
+.adm-btn-move{padding:4px 6px;border-radius:5px;font-size:12px;font-weight:900;cursor:pointer;border:none;background:#F0F0F0;color:var(--text-sub);font-family:inherit;line-height:1;}
+.adm-btn-move:active{background:#E0E0E0;}
+.adm-order-group{display:flex;gap:3px;}
+
+/* DATE SELECT */
+.date-select-row{display:flex;gap:6px;padding:8px 14px;align-items:center;border-bottom:1px solid var(--border);}
+.date-select-btn{padding:6px 12px;border-radius:16px;border:1px solid var(--border);background:#FFF;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;color:var(--text-sub);transition:all .15s;}
+.date-select-btn.active{background:var(--primary);color:#FFF;border-color:var(--primary);}
+.date-select-btn:active{opacity:.8;}
+
+/* QUICK INPUT */
+.quick-row{display:flex;gap:6px;padding:4px 14px 8px;flex-wrap:wrap;}
+.quick-btn{padding:5px 12px;border-radius:16px;border:1px solid var(--border);background:#FAFAFA;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;color:var(--text);}
+.quick-btn:active{background:#F0F0F0;}
+
+/* REFLECT */
+.reflect-card{background:#FFF9F0;border:1px solid #F0E0C8;border-radius:8px;padding:10px;margin:8px 14px 4px;}
+.reflect-label{font-size:10px;font-weight:700;color:var(--accent);margin-bottom:4px;}
+.reflect-input{width:100%;padding:8px;border:1px solid #F0E0C8;border-radius:6px;font-size:12px;font-family:inherit;outline:none;color:var(--text);background:#FFF;resize:vertical;min-height:40px;line-height:1.5;}
+.reflect-input:focus{border-color:var(--accent);}
+.reflect-input::placeholder{color:#D0C0A0;}
+
+/* WEEK BANNER */
+.week-banner{background:#F0F5F3;border:1px solid #D0E8D8;border-radius:8px;padding:10px 14px;margin-bottom:10px;font-size:11px;color:var(--sage);font-weight:700;text-align:center;}
+.week-banner.urgent{background:#FFF5E6;border-color:#F0D8A8;color:#B08040;}
+
+/* WEEK TRACKER */
+.week-tracker{display:flex;gap:4px;padding:10px 14px;justify-content:space-between;}
+.wt-day{flex:1;text-align:center;padding:6px 2px;border-radius:6px;font-size:10px;font-weight:700;border:1px solid var(--border);background:#FAFAFA;color:var(--text-sub);cursor:pointer;transition:all .15s;}
+.wt-day.has-data{background:#F0F5EE;border-color:var(--success);color:var(--success);}
+.wt-day.off{background:#F5F5F5;border-color:#DDD;color:#CCC;text-decoration:line-through;}
+.wt-day.today{border-color:var(--primary);font-weight:900;}
+.wt-day-label{font-size:8px;color:inherit;display:block;}
+.wt-day-num{font-size:12px;display:block;margin-top:1px;}
+
+/* SUBMIT REMINDER */
+.submit-reminder{background:var(--primary);color:#FFF;border-radius:10px;padding:14px;margin-bottom:10px;text-align:center;}
+.submit-reminder .sr-title{font-size:14px;font-weight:800;margin-bottom:4px;}
+.submit-reminder .sr-sub{font-size:11px;opacity:.8;}
+.submit-reminder .sr-btn{display:inline-block;margin-top:10px;padding:10px 28px;background:#FFF;color:var(--primary);border-radius:8px;font-size:13px;font-weight:800;cursor:pointer;border:none;font-family:inherit;}
+.submit-reminder .sr-btn:active{opacity:.8;}
+/* PAST DAYS BANNER (C) */
+.past-days-banner{background:#FFF5E6;border:1px solid #F0C890;border-radius:8px;padding:8px 12px;margin:2px 0 4px;font-size:11px;color:#A06000;display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.past-days-banner button{background:#D07000;color:#FFF;border:none;border-radius:6px;padding:5px 11px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;}
+.past-days-banner button:active{opacity:.8;}
+/* LAST WEEK WARNING (D) */
+.lastweek-warn{background:#FFF0F0;border:1px solid #EEC0C0;border-radius:8px;padding:10px 14px;margin-bottom:8px;font-size:11px;color:#A03030;}
+.lastweek-warn .lw-title{font-weight:800;font-size:12px;margin-bottom:4px;}
+.lastweek-warn .lw-btn{display:inline-block;margin-top:6px;background:#A03030;color:#FFF;border:none;border-radius:6px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;}
+
+/* HOME STATUS CARDS */
+.home-stat-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+.hsc{background:#FFF;border:1px solid var(--border);border-radius:10px;padding:11px 12px;transition:box-shadow .15s;}
+.hsc-label{font-size:9px;font-weight:700;color:var(--text-sub);letter-spacing:.8px;margin-bottom:4px;text-transform:uppercase;}
+.hsc-val{font-size:18px;font-weight:900;color:var(--text);line-height:1.1;}
+.hsc-sub{font-size:9px;color:var(--text-sub);margin-top:3px;line-height:1.4;}
+.hsc.ok{border-color:#C8E6C0;background:#FAFFF8;}.hsc.ok .hsc-val{color:var(--success);}
+.hsc.bad{border-color:#F5C0C0;background:#FFF8F8;}.hsc.bad .hsc-val{color:var(--danger);}
+.hsc.warn{border-color:#F0D890;background:#FFFCF0;}.hsc.warn .hsc-val{color:#A07820;}
+.hsc.neu{border-color:#D0D8E8;background:#F8FAFF;}.hsc.neu .hsc-val{color:var(--primary);}
+
+/* KPI WEEK SUM */
+.kws-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid #F5F5F5;}
+.kws-row:last-child{border-bottom:none;}
+.kws-lb{font-size:11px;color:var(--text-sub);}
+.kws-v{font-size:14px;font-weight:800;color:var(--text);}
+.kws-v.fl-ok{color:var(--success);}
+.kws-v.fl-warn{color:#A07820;}
+.kws-v.fl-bad{color:var(--danger);}
+
+/* SHIFT SUMMARY */
+.shift-sum-row{display:flex;gap:10px;flex-wrap:wrap;padding:8px 14px;background:#FAFAFA;border-top:1px solid var(--border);}
+
+/* TOOLS HUB */
+.tools-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:12px 14px;}
+.tool-card{background:#FAFAFA;border:1.5px solid var(--border);border-radius:8px;padding:10px 12px;text-decoration:none;display:block;transition:all .15s;cursor:pointer;}
+.tool-card:active{background:#F0F0F0;border-color:var(--accent);}
+.tool-card.wide{grid-column:1/-1;}
+.tool-card-label{font-size:9px;font-weight:700;color:var(--text-sub);letter-spacing:.8px;margin-bottom:3px;}
+.tool-card-name{font-size:12px;font-weight:800;color:var(--primary);}
+.tool-card-desc{font-size:10px;color:var(--text-sub);margin-top:2px;line-height:1.4;}
+.tool-card.staff-tool{border-color:#D0E8D8;background:#F8FFF8;}
+.tool-card.staff-tool .tool-card-name{color:var(--success);}
+.tool-card.plan-tool{border-color:#D0D8E8;background:#F8FAFF;}
+.tool-card.plan-tool .tool-card-name{color:#4A6FA5;}
+.tool-card.admin-tool{border-color:#F0E0C8;background:#FFFAF5;}
+.tool-card.admin-tool .tool-card-name{color:var(--accent);}
+.sst-label{font-size:10px;font-weight:700;padding:2px 8px;border-radius:12px;}
+.sst-bad-bg{background:#FFEEEE;color:var(--danger);}
+.sst-ok-bg{background:#EEF7EA;color:var(--success);}
+.sst-warn-bg{background:#FFF8E0;color:#A07820;}
+.sst-neutral-bg{background:#F5F5F5;color:#AAA;}
+</style>
+</head>
+<body>
+
+<!-- PIN -->
+<div class="pin-screen" id="pinScreen">
+  <div class="pin-logo">OKI BOWL</div>
+  <div class="pin-sub">one bowl at a time</div>
+  <div class="pin-dots" id="pinDots"><div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div></div>
+  <div class="pin-pad">
+    <button class="pin-key" onclick="pinInput('1')">1</button>
+    <button class="pin-key" onclick="pinInput('2')">2</button>
+    <button class="pin-key" onclick="pinInput('3')">3</button>
+    <button class="pin-key" onclick="pinInput('4')">4</button>
+    <button class="pin-key" onclick="pinInput('5')">5</button>
+    <button class="pin-key" onclick="pinInput('6')">6</button>
+    <button class="pin-key" onclick="pinInput('7')">7</button>
+    <button class="pin-key" onclick="pinInput('8')">8</button>
+    <button class="pin-key" onclick="pinInput('9')">9</button>
+    <button class="pin-key fn" onclick="pinSetup()">設定</button>
+    <button class="pin-key" onclick="pinInput('0')">0</button>
+    <button class="pin-key fn" onclick="pinDelete()">削除</button>
+  </div>
+  <div class="pin-msg" id="pinMsg"></div>
+</div>
+
+<!-- HEADER -->
+<div class="app-header">
+  <div class="logo-group">
+    <div class="logo-top">
+      <span class="logo-text">OKI BOWL</span>
+      <span class="logo-tagline">one bowl at a time</span>
+      <span class="logo-tagline-jp">― ひとつひとつのボウルから</span>
+    </div>
+    <div class="logo-vision">ブルーシールを超える観光地へ</div>
+  </div>
+  <span class="date-badge" id="dateBadge">---</span>
+  <span class="admin-gear" onclick="openAdmin()">管理</span>
+</div>
+
+<!-- MAIN -->
+<div class="main-content">
+
+  <!-- HOME -->
+  <div class="page active" id="page-home">
+    <div class="today-box">
+      <h2 id="todayGreeting">おはようございます</h2>
+      <p id="todaySubtitle">今日のタスクを確認しましょう</p>
+      <div class="today-chips" id="todayChips"></div>
+    </div>
+    <div id="homeStatCards"></div>
+    <div class="section-label">KPI 日次入力</div>
+    <div class="card">
+      <div class="card-head">
+        <div class="ch-dot" style="background:var(--primary);"></div>
+        <span class="ch-title">数字を記録</span>
+        <span class="ch-badge" id="kpiDateLabel">---</span>
+      </div>
+      <div class="date-select-row" id="dateSelectRow"></div>
+      <div class="kpi-input-grid" id="kpiInputGrid"></div>
+      <div class="quick-row" id="quickRow"></div>
+      <div class="kpi-save-row">
+        <span class="kpi-saved-date" id="kpiSavedMsg"></span>
+        <button class="kpi-save-btn" onclick="saveKpi()">保存</button>
+      </div>
+      <div class="smaregi-row">
+        <span class="smaregi-status" id="smaregiStatus"></span>
+      </div>
+    </div>
+    <div id="reflectArea"></div>
+    <div id="kpiWeekSumBlock"></div>
+    <div class="section-label">進捗</div>
+    <div class="card">
+      <div class="card-head">
+        <div class="ch-dot" style="background:var(--primary);"></div>
+        <span class="ch-title">タスク達成率</span>
+        <span class="ch-badge" id="progressBadge">0 / 0</span>
+      </div>
+      <div style="padding:12px 14px;">
+        <div class="prog-label"><span>今日のタスク</span><span id="progressPct">0%</span></div>
+        <div class="prog-track"><div class="prog-fill" id="progressFill"></div></div>
+      </div>
+    </div>
+    <div class="section-label">スタッフ管理</div>
+    <div class="card">
+      <div class="card-head">
+        <div class="ch-dot" style="background:var(--walnut);"></div>
+        <span class="ch-title">管理チェック</span>
+      </div>
+      <div id="staffList"></div>
+    </div>
+    <div class="section-label">ツールリンク</div>
+    <div class="card">
+      <div class="card-head">
+        <div class="ch-dot" style="background:var(--primary);"></div>
+        <span class="ch-title">OKI BOWL ツール一覧</span>
+      </div>
+      <div class="tools-grid">
+        <a class="tool-card admin-tool" href="https://okibowl-menu-dev.netlify.app" target="_blank">
+          <div class="tool-card-label">MANAGER / OWNER</div>
+          <div class="tool-card-name">管理者ツール</div>
+          <div class="tool-card-desc">メニュー開発 / 原価計算 / 原価分析 / 食材マスター</div>
+        </a>
+        <a class="tool-card staff-tool" href="https://okibowl-staff.netlify.app" target="_blank">
+          <div class="tool-card-label">GOLD / SILVER / BRONZE</div>
+          <div class="tool-card-name">スタッフ記録</div>
+          <div class="tool-card-desc">食材使用量を+/-で記録（原価非表示）</div>
+        </a>
+        <a class="tool-card plan-tool wide" href="https://okibowl-2gouten.netlify.app" target="_blank">
+          <div class="tool-card-label">OWNER / MANAGER</div>
+          <div class="tool-card-name">2号店 日別工程表</div>
+          <div class="tool-card-desc">グランドオープン 2026.7.1 ― 12週間のタスク管理・役割別フィルター</div>
+        </a>
+      </div>
+    </div>
+    <div class="section-label">メモ</div>
+    <div class="memo-card">
+      <div class="memo-head"><span class="mh-title">ノート</span><span class="mh-count" id="memoCount">0文字</span></div>
+      <div class="memo-body"><textarea class="memo-area" id="memoArea" placeholder="自由にメモ ― 自動保存されます" oninput="saveMemo()"></textarea></div>
+    </div>
+  </div>
+
+  <!-- TODO -->
+  <div class="page" id="page-todo">
+    <div class="section-label">日常業務</div>
+    <div class="card">
+      <div class="card-head">
+        <div class="ch-dot" style="background:var(--primary);"></div>
+        <span class="ch-title">TODO</span>
+        <span class="ch-badge" id="todoBadge">0</span>
+      </div>
+      <div id="todoList"></div>
+    </div>
+    <button class="reset-btn" onclick="resetTodo()">チェックリストをリセット</button>
+  </div>
+
+  <!-- MTG -->
+  <div class="page" id="page-mtg">
+    <div id="lastWeekWarn"></div>
+    <div id="submitReminder"></div>
+    <div id="mtgWeekBanner"></div>
+    <div class="section-label">今週の入力状況</div>
+    <div class="card">
+      <div class="card-head">
+        <div class="ch-dot" style="background:var(--primary);"></div>
+        <span class="ch-title">週間トラッカー</span>
+        <span class="ch-badge" id="weekProgress">0 / 7</span>
+      </div>
+      <div class="week-tracker" id="weekTracker"></div>
+      <div id="pastDaysBanner" style="display:none;padding:0 14px;"></div>
+      <div style="padding:4px 14px 10px;font-size:10px;color:var(--text-sub);">タップで休日マーク（データ不要日）</div>
+    </div>
+    <div class="section-label">進行チェック</div>
+    <div class="card">
+      <div class="card-head">
+        <div class="ch-dot" style="background:var(--sage);"></div>
+        <span class="ch-title">MTGアジェンダ</span>
+        <span class="ch-badge" id="mtgBadge">0</span>
+      </div>
+      <div id="mtgList"></div>
+    </div>
+    <div class="section-label">週次レポート作成</div>
+    <div class="card">
+      <div class="card-head">
+        <div class="ch-dot" style="background:var(--primary);"></div>
+        <span class="ch-title">OKI BOWL 週次MTGレポート</span>
+      </div>
+      <div class="rpt-block">
+        <div class="rpt-block-title">1. 数字（KPI週次報告）<span class="rpt-auto-tag">自動集計</span></div>
+        <div id="rptKpiBody"></div>
+      </div>
+      <div class="rpt-block">
+        <div class="rpt-block-title">2. 人（シフト・人材）<span class="rpt-auto-tag">自動反映</span></div>
+        <div id="rptStaffBody"></div>
+        <div style="margin-top:8px;"><textarea class="rpt-textarea" id="rptStaffMemo" placeholder="人材相談・採用メモ" oninput="saveRptField('rptStaffMemo')"></textarea></div>
+      </div>
+      <div class="rpt-block">
+        <div class="rpt-block-title">3. 期日（プロジェクト管理）</div>
+        <textarea class="rpt-textarea" id="rptProject" placeholder="案件名 / 期日 / 進捗" oninput="saveRptField('rptProject')"></textarea>
+      </div>
+      <div class="rpt-block">
+        <div class="rpt-block-title">4. 振り返り</div>
+        <div style="margin-bottom:6px;"><label style="font-size:10px;font-weight:700;color:var(--success);">GOOD</label><textarea class="rpt-textarea" id="rptGood" placeholder="今週良かったこと" oninput="saveRptField('rptGood')"></textarea></div>
+        <div><label style="font-size:10px;font-weight:700;color:var(--danger);">BAD</label><textarea class="rpt-textarea" id="rptBad" placeholder="今週の課題" oninput="saveRptField('rptBad')"></textarea></div>
+      </div>
+      <div class="rpt-block">
+        <div class="rpt-block-title">5. 来週のアクション</div>
+        <textarea class="rpt-textarea" id="rptAction" placeholder="改善案 → 担当 / 期日" oninput="saveRptField('rptAction')"></textarea>
+      </div>
+      <div class="rpt-block">
+        <div class="rpt-block-title">6. 改革提案 → 確定<span class="rpt-auto-tag">メモ連携</span></div>
+        <div id="rptMemoPreview" style="font-size:11px;color:var(--text-sub);padding:4px 0;margin-bottom:6px;"></div>
+        <textarea class="rpt-textarea" id="rptReform" placeholder="提案内容 / 判定" oninput="saveRptField('rptReform')"></textarea>
+      </div>
+      <div class="rpt-block" style="background:#FAFAFA;">
+        <div class="rpt-block-title" style="color:var(--accent);">Manager → OWNER 報告事項</div>
+        <textarea class="rpt-textarea" id="rptOwner" placeholder="オーナーへの報告・相談事項" oninput="saveRptField('rptOwner')"></textarea>
+      </div>
+    </div>
+    <div style="padding:4px 0 8px;">
+      <button class="action-btn btn-send" onclick="sendReport()">レポートをメール送信</button>
+      <button class="action-btn btn-save-report" onclick="saveReport()">レポートを保存</button>
+    </div>
+    <button class="reset-btn" onclick="resetMtg()">チェックリストをリセット</button>
+    <div class="section-label">過去のレポート</div>
+    <div class="card">
+      <div class="card-head"><div class="ch-dot" style="background:var(--walnut);"></div><span class="ch-title">レポート履歴</span><span class="ch-badge" id="historyCount">0件</span></div>
+      <div id="historyList"><div style="padding:14px;font-size:12px;color:var(--text-sub);">まだレポートがありません</div></div>
+    </div>
+  </div>
+
+  <!-- SHIFT -->
+  <div class="page" id="page-shift">
+    <div class="section-label">年間カレンダー</div>
+    <div class="card">
+      <div class="card-head"><div class="ch-dot" style="background:var(--accent);"></div><span class="ch-title">月別シフト計画</span><span class="ch-badge">目標: 3名体制</span></div>
+      <div id="shiftList"></div>
+    </div>
+    <div class="section-label">人員アラート</div>
+    <div class="card">
+      <div class="shift-week-head">
+        <span class="shift-week-lbl" id="shiftWeekLabel">読み込み中...</span>
+        <div class="shift-week-nav">
+          <button onclick="shiftWeekMove(-1)">前週</button>
+          <button onclick="shiftWeekMove(1)">次週</button>
+          <button class="btn-cfg" onclick="openShiftMinConfig()">設定</button>
+        </div>
+      </div>
+      <div id="shiftAlertGrid"></div>
+      <div id="shiftAlertSummary"></div>
+      <div class="shift-legend">
+        <span class="ss-ok">OK</span>
+        <span class="ss-low">不足</span>
+        <span class="ss-high">余剰</span>
+        <span class="ss-empty">未入力</span>
+      </div>
+    </div>
+    <div class="section-label">人事評価スケジュール</div>
+    <div class="card">
+      <div class="card-head"><div class="ch-dot" style="background:var(--primary);"></div><span class="ch-title">月別評価</span></div>
+      <div class="eval-grid">
+        <button class="eval-btn" data-id="eval-2" onclick="toggleEval(this)"><span class="em">2</span><span class="es">--</span></button>
+        <button class="eval-btn" data-id="eval-3" onclick="toggleEval(this)"><span class="em">3</span><span class="es">--</span></button>
+        <button class="eval-btn" data-id="eval-4" onclick="toggleEval(this)"><span class="em">4</span><span class="es">--</span></button>
+        <button class="eval-btn" data-id="eval-5" onclick="toggleEval(this)"><span class="em">5</span><span class="es">--</span></button>
+        <button class="eval-btn" data-id="eval-6" onclick="toggleEval(this)"><span class="em">6</span><span class="es">--</span></button>
+        <button class="eval-btn" data-id="eval-7" onclick="toggleEval(this)"><span class="em">7</span><span class="es">--</span></button>
+        <button class="eval-btn" data-id="eval-9" onclick="toggleEval(this)"><span class="em">9</span><span class="es">--</span></button>
+        <button class="eval-btn" data-id="eval-10" onclick="toggleEval(this)"><span class="em">10</span><span class="es">--</span></button>
+        <button class="eval-btn" data-id="eval-11" onclick="toggleEval(this)"><span class="em">11</span><span class="es">--</span></button>
+        <button class="eval-btn" data-id="eval-12" onclick="toggleEval(this)"><span class="em">12</span><span class="es">--</span></button>
+        <button class="eval-btn" data-id="eval-1" onclick="toggleEval(this)"><span class="em">1</span><span class="es">--</span></button>
+        <div style="display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--text-sub);">8月: 評価なし</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LEARN -->
+  <div class="page" id="page-edu">
+    <div class="section-label">今月の成長フォーカス</div>
+    <div class="card">
+      <div class="card-head"><div class="ch-dot" style="background:var(--accent);"></div><span class="ch-title">月間テーマ</span><span class="ch-badge" id="focusMonthBadge">---</span></div>
+      <div style="padding:12px 14px;">
+        <textarea class="rpt-textarea" id="growthFocus" placeholder="今月マネージャーとして最も成長させたいこと&#10;例: FLコストを55%以下に収める / スタッフOJTを週2回実施" oninput="saveGrowthFocus()" style="min-height:64px;"></textarea>
+      </div>
+    </div>
+    <div class="section-label">スキル自己評価</div>
+    <div class="card">
+      <div class="card-head"><div class="ch-dot" style="background:var(--sage);"></div><span class="ch-title">5段階自己評価</span><span class="ch-badge" id="skillScoreBadge">0 / 25</span></div>
+      <div id="skillAssessList"></div>
+      <div style="padding:8px 14px 12px;"><button class="kpi-save-btn" onclick="saveSkillAssess()">評価を保存</button><span class="kpi-saved-date" id="skillSavedMsg" style="margin-left:10px;"></span></div>
+    </div>
+    <div class="section-label">成長ロードマップ</div>
+    <div class="card">
+      <div class="card-head"><div class="ch-dot" style="background:var(--success);"></div><span class="ch-title">マネージャー育成カリキュラム</span></div>
+      <div id="curList"></div>
+    </div>
+    <div class="section-label">組織図</div>
+    <div class="card">
+      <div class="card-head"><div class="ch-dot" style="background:var(--primary);"></div><span class="ch-title">OKI BOWL ポジション</span></div>
+      <div class="org-tree">
+        <div class="org-row"><div class="org-dot" style="background:var(--accent);"></div><span class="org-role" style="color:var(--accent);">OWNER</span><span class="org-desc">方針・ビジョン決定</span></div>
+        <div class="org-row oi1"><div class="org-dot" style="background:var(--primary);"></div><span class="org-role" style="color:var(--primary);">Manager</span><span class="org-desc">運営統括</span></div>
+        <div class="org-row oi2"><div class="org-dot" style="background:var(--sage);"></div><span class="org-role" style="color:var(--sage);">GOLD リーダー</span><span class="org-desc">現場責任者</span></div>
+        <div class="org-row oi3"><div class="org-dot" style="background:var(--walnut);"></div><span class="org-role" style="color:var(--walnut);">Silver A</span><span class="org-desc">体験・接客品質（英語対応）</span></div>
+        <div class="org-row oi3"><div class="org-dot" style="background:var(--walnut);"></div><span class="org-role" style="color:var(--walnut);">Silver B</span><span class="org-desc">オペレーション・在庫管理</span></div>
+        <div class="org-row oi3"><div class="org-dot" style="background:#AAA;"></div><span class="org-role" style="color:#AAA;">Bronze</span><span class="org-desc">独立業務・SNS内製兼任</span></div>
+        <div style="margin-top:10px;padding-top:10px;border-top:1px solid #F0F0F0;"><div style="font-size:11px;font-weight:700;color:var(--text-sub);">外部リソース</div><div style="font-size:11px;color:var(--text-sub);margin-top:3px;">WEB / MEO / Instagram / TikTok / デザイナー / 協力業者 / 総務</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page" id="page-check">
+    <div class="chk-adm-banner" id="admChkBanner" style="display:none;">
+      <span>管理者モード中（5分で自動ロック）</span>
+      <button class="chk-adm-lock-btn" onclick="admChkLock()">ロック</button>
+    </div>
+    <div class="section-label">週次タスクチェックリスト</div>
+    <div class="chk-hint">左のチェック: 自己チェック（誰でも可）&nbsp;&nbsp;右の「管」: 管理者チェック（初回のみPIN）</div>
+    <div id="weeklyChkList"></div>
+    <div class="section-label" style="margin-top:4px;">人事・労務プロセス</div>
+    <div class="chk-hint">HR &amp; Labor Management Checklist</div>
+    <div id="hrChkList"></div>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav class="bottom-nav">
+  <button class="nav-btn active" onclick="switchPage('home',this)"><span class="nav-label">Home</span></button>
+  <button class="nav-btn" onclick="switchPage('todo',this)"><span class="nav-label">TODO</span><span class="nav-badge" id="badgeTodo"></span></button>
+  <button class="nav-btn" onclick="switchPage('mtg',this)"><span class="nav-label">MTG</span><span class="nav-badge" id="badgeMtg"></span></button>
+  <button class="nav-btn" onclick="switchPage('shift',this)"><span class="nav-label">Shift</span></button>
+  <button class="nav-btn" onclick="switchPage('edu',this)"><span class="nav-label">Learn</span></button>
+  <button class="nav-btn" onclick="switchPage('check',this)"><span class="nav-label">Check</span></button>
+</nav>
+<div class="toast" id="toast"></div>
+
+<!-- OVERLAY (history) -->
+<div class="overlay" id="historyOverlay">
+  <div class="overlay-header"><span class="overlay-title" id="overlayTitle">レポート詳細</span><button class="overlay-close" onclick="closeOverlay()">閉じる</button></div>
+  <div class="overlay-body" id="overlayBody"></div>
+</div>
+
+<!-- ADMIN OVERLAY -->
+<div class="overlay" id="adminOverlay">
+  <div class="overlay-header">
+    <span class="overlay-title">管理者画面</span>
+    <button class="overlay-close" onclick="closeAdmin()">閉じる</button>
+  </div>
+  <div class="overlay-body" style="white-space:normal;line-height:1.6;" id="adminBody"></div>
+</div>
+
+<script>
+// ========================================
+// DEFAULT DATA (editable via admin)
+// ========================================
+var DEFAULT_TODO = [
+  {id:'todo-1',text:'朝礼',freq:'毎日'},
+  {id:'todo-2',text:'売上・コスト管理',freq:'毎日'},
+  {id:'todo-3',text:'レシート整理',freq:'毎日'},
+  {id:'todo-4',text:'オペレーション管理',freq:'毎日'},
+  {id:'todo-5',text:'動画撮影（月・水 / 晴れ）',freq:'週2回'},
+  {id:'todo-6',text:'スタッフ面談',freq:'随時'},
+  {id:'todo-7',text:'休憩管理',freq:'隔週'},
+  {id:'todo-8',text:'シフト管理 ― 15日声かけ',freq:'月次'},
+  {id:'todo-9',text:'店舗管理 ― 月末締め',freq:'月次'},
+  {id:'todo-10',text:'食品衛生チェック',freq:''},
+  {id:'todo-11',text:'クオリティ管理',freq:''},
+  {id:'todo-12',text:'採用・教育・シフト',freq:''},
+  {id:'todo-13',text:'緊急買い出し',freq:'緊急'}
+];
+var DEFAULT_STAFF = [
+  {id:'mgmt-1',text:'遅刻・欠勤の確認'},
+  {id:'mgmt-2',text:'休憩管理'},
+  {id:'mgmt-3',text:'勤務態度・パフォーマンス確認'},
+  {id:'mgmt-4',text:'面接の有無'},
+  {id:'mgmt-5',text:'スタッフ人員確認'},
+  {id:'mgmt-6',text:'ポジション確認'}
+];
+var DEFAULT_MTG = [
+  {id:'mtg-1',text:'KPI報告'},
+  {id:'mtg-2',text:'シフト・人材相談'},
+  {id:'mtg-3',text:'プロジェクト期日'},
+  {id:'mtg-4',text:'振り返り GOOD / BAD'},
+  {id:'mtg-5',text:'来週のアクション'},
+  {id:'mtg-6',text:'改革提案 → 確定'}
+];
+var DEFAULT_KPI = [
+  {id:'kpi-sales',label:'売上金額',unit:'円'},
+  {id:'kpi-target',label:'目標達成度',unit:'%'},
+  {id:'kpi-repeat',label:'リピート顧客数',unit:'人'},
+  {id:'kpi-review',label:'口コミ数',unit:'件'},
+  {id:'kpi-fl',label:'FLコスト',unit:'%'}
+];
+var DEFAULT_CUR = [
+  {num:1,title:'ブランディング・研修',period:'初日',desc:'OKI BOWLのビジョンと価値観を理解する',color:'var(--primary)'},
+  {num:2,title:'Silverレベルを目指す',period:'0 ― 2ヶ月',desc:'現場オペレーションを習得する',color:'var(--accent)'},
+  {num:3,title:'セクション管理・後輩指導',period:'2 ― 6ヶ月',desc:'在庫管理、後輩育成、シフトサポート',color:'var(--sage)'},
+  {num:4,title:'マネージャーカリキュラム',period:'6 ― 12ヶ月',desc:'売上、FLコスト、採用、MTGリーダーシップ',color:'var(--danger)'}
+];
+var DEFAULT_SHIFT = [
+  {m:4,name:'4月',note:'通常',tag:'通常',cls:'st-normal'},
+  {m:5,name:'5月',note:'通常',tag:'通常',cls:'st-normal'},
+  {m:6,name:'6月',note:'通常',tag:'通常',cls:'st-normal'},
+  {m:7,name:'7月',note:'夏シーズン開始',tag:'繁忙',cls:'st-busy'},
+  {m:8,name:'8月',note:'ピーク ― 全員体制',tag:'MAX',cls:'st-max'},
+  {m:9,name:'9月',note:'秋シーズン',tag:'繁忙',cls:'st-busy'},
+  {m:10,name:'10月',note:'移行期',tag:'通常',cls:'st-normal'},
+  {m:11,name:'11月',note:'閑散期開始',tag:'閑散',cls:'st-min'},
+  {m:12,name:'12月',note:'静か ― 年末通常',tag:'静か',cls:'st-quiet'},
+  {m:1,name:'1月',note:'静かな時期',tag:'静か',cls:'st-quiet'},
+  {m:2,name:'2月',note:'通常',tag:'通常',cls:'st-normal'},
+  {m:3,name:'3月',note:'春シーズン開始',tag:'繁忙',cls:'st-busy'}
+];
+
+function save(k,v){try{localStorage.setItem('okibowl_'+k,JSON.stringify(v));}catch(e){}}
+function load(k){try{return JSON.parse(localStorage.getItem('okibowl_'+k));}catch(e){return null;}}
+function getData(key,def){var d=load('admin_'+key);return d||JSON.parse(JSON.stringify(def));}
+function setData(key,arr){save('admin_'+key,arr);}
+
+// ========================================
+// RENDER DYNAMIC LISTS
+// ========================================
+function renderTodo(){
+  var items=getData('todo',DEFAULT_TODO);
+  var el=document.getElementById('todoList');
+  el.innerHTML='';
+  items.forEach(function(t){
+    var d=document.createElement('div');
+    d.className='task-item';d.dataset.id=t.id;d.onclick=function(){toggleTask(d);};
+    d.innerHTML='<div class="task-checkbox">&#10003;</div><span class="task-text">'+t.text+'</span><span class="task-alert">!</span>'+(t.freq?'<span class="task-freq"'+(t.freq==='緊急'?' style="color:var(--danger);"':'')+'>'+t.freq+'</span>':'');
+    if(load(t.id)===true)d.classList.add('done');
+    el.appendChild(d);
+  });
+}
+function renderStaff(){
+  var items=getData('staff',DEFAULT_STAFF);
+  var el=document.getElementById('staffList');
+  el.innerHTML='';
+  items.forEach(function(t){
+    var d=document.createElement('div');
+    d.className='task-item';d.dataset.id=t.id;d.onclick=function(){toggleTask(d);};
+    d.innerHTML='<div class="task-checkbox">&#10003;</div><span class="task-text">'+t.text+'</span><span class="task-alert">!</span>';
+    if(load(t.id)===true)d.classList.add('done');
+    el.appendChild(d);
+  });
+}
+function renderMtg(){
+  var items=getData('mtg',DEFAULT_MTG);
+  var el=document.getElementById('mtgList');
+  el.innerHTML='';
+  items.forEach(function(t,i){
+    var d=document.createElement('div');
+    d.className='mtg-item';d.dataset.id=t.id;d.onclick=function(){toggleMtg(d);};
+    d.innerHTML='<div class="mtg-num">'+(i+1)+'</div><span class="mtg-text">'+t.text+'</span><span class="mtg-alert">!</span>';
+    if(load(t.id)===true)d.classList.add('done');
+    el.appendChild(d);
+  });
+}
+function renderKpiFields(){
+  var items=getData('kpi',DEFAULT_KPI);
+  var el=document.getElementById('kpiInputGrid');
+  el.innerHTML='';
+  items.forEach(function(k,i){
+    var cls=i===items.length-1&&items.length%2===1?'style="grid-column:1/-1;"':'';
+    el.innerHTML+='<div class="kpi-field" '+cls+'><label>'+k.label+(k.unit?' ('+k.unit+')':'')+'</label><input type="number" id="'+k.id+'" placeholder="0" inputmode="numeric"></div>';
+  });
+}
+function renderChips(){
+  var items=getData('todo',DEFAULT_TODO);
+  var el=document.getElementById('todayChips');
+  el.innerHTML='';
+  items.slice(0,4).forEach(function(t){
+    el.innerHTML+='<span class="today-chip">'+t.text.split('（')[0].split('―')[0].trim()+'</span>';
+  });
+}
+var CUR_STATUS_LABELS=['未着手','進行中','完了'];
+var CUR_STATUS_COLORS=['#CCC','var(--accent)','var(--success)'];
+function getCurStatus(idx){return parseInt(localStorage.getItem('okibowl_cur_st_'+idx)||'0');}
+function cycleCurStatus(idx){
+  var s=(getCurStatus(idx)+1)%3;
+  localStorage.setItem('okibowl_cur_st_'+idx,String(s));
+  renderCur();
+}
+function renderCur(){
+  var items=getData('cur',DEFAULT_CUR);
+  var el=document.getElementById('curList');
+  el.innerHTML='';
+  items.forEach(function(c,i){
+    var st=getCurStatus(i);
+    el.innerHTML+='<div class="cur-step"><div class="cur-num" style="background:'+(st===2?'var(--success)':st===1?'var(--accent)':c.color)+';">'+c.num+'</div>'
+      +'<div class="cur-body" style="flex:1;"><div class="ct">'+c.title+'</div><div class="cp">'+c.period+'</div><div class="cd">'+c.desc+'</div></div>'
+      +'<button onclick="cycleCurStatus('+i+')" style="flex-shrink:0;padding:4px 10px;border-radius:12px;border:1.5px solid '+CUR_STATUS_COLORS[st]+';background:#FFF;color:'+CUR_STATUS_COLORS[st]+';font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;">'+CUR_STATUS_LABELS[st]+'</button>'
+      +'</div>';
+  });
+}
+function renderShift(){
+  var items=getData('shift',DEFAULT_SHIFT);
+  var el=document.getElementById('shiftList');
+  var cm=new Date().getMonth()+1;
+  el.innerHTML='';
+  items.forEach(function(s){
+    el.innerHTML+='<div class="shift-item'+(s.m===cm?' current':'')+'" data-month="'+s.m+'"><span class="shift-num">'+s.m+'</span><div class="shift-info"><div class="sm">'+s.name+'</div><div class="sn">'+s.note+'</div></div><span class="shift-tag '+s.cls+'">'+s.tag+'</span></div>';
+  });
+}
+
+// ========================================
+// SHIFT ALERT
+// ========================================
+var SHIFT_DAYS=['月','火','水','木','金','土','日'];
+var SHIFT_SLOTS=[{label:'ランチ',key:'lunch'},{label:'ディナー',key:'dinner'}];
+var DEFAULT_SHIFT_MIN={lunch:2,dinner:3,weekend_extra:1};
+var shiftWeekOffset=0;
+
+function pad2(n){return n<10?'0'+n:String(n);}
+function getWeekMonday(offset){
+  var d=new Date();var day=d.getDay();
+  var mon=new Date(d);
+  mon.setDate(d.getDate()-(day===0?6:day-1)+offset*7);
+  mon.setHours(0,0,0,0);
+  return mon;
+}
+function getWeekKey(offset){
+  var m=getWeekMonday(offset);
+  return m.getFullYear()+'-'+pad2(m.getMonth()+1)+'-'+pad2(m.getDate());
+}
+function getShiftMin(){return load('shift_min')||JSON.parse(JSON.stringify(DEFAULT_SHIFT_MIN));}
+function getShiftWeekData(wk){return load('shift_week_'+wk)||{};}
+function calcStatus(num,minVal){
+  if(isNaN(num))return{cls:'ss-empty',text:'-'};
+  if(num<minVal)return{cls:'ss-low',text:'不足'};
+  if(num===minVal)return{cls:'ss-ok',text:'OK'};
+  return{cls:'ss-high',text:'余剰'};
+}
+
+function renderShiftAlert(){
+  var wk=getWeekKey(shiftWeekOffset);
+  var mon=getWeekMonday(shiftWeekOffset);
+  var sun=new Date(mon);sun.setDate(mon.getDate()+6);
+  document.getElementById('shiftWeekLabel').textContent=
+    (mon.getMonth()+1)+'/'+(mon.getDate())+'(月) - '+(sun.getMonth()+1)+'/'+(sun.getDate())+'(日)';
+  var min=getShiftMin();
+  var data=getShiftWeekData(wk);
+  var h='<div class="shift-grid-wrap"><table class="shift-grid"><thead><tr><th></th>';
+  SHIFT_DAYS.forEach(function(d){h+='<th>'+d+'</th>';});
+  h+='</tr></thead><tbody>';
+  SHIFT_SLOTS.forEach(function(slot){
+    h+='<tr><td class="rl">'+slot.label+'</td>';
+    SHIFT_DAYS.forEach(function(day,di){
+      var isWE=(di>=5);
+      var minVal=min[slot.key]+(isWE?min.weekend_extra:0);
+      var stored=(data[day]&&data[day][slot.key]!==undefined)?data[day][slot.key]:'';
+      var num=(stored==='')?NaN:parseInt(stored);
+      var st=calcStatus(num,minVal);
+      var niStyle=(st.cls==='ss-low')?'border-color:#B85C5C;':(st.cls==='ss-ok'?'border-color:#7A9A6D;':'');
+      h+='<td class="shift-cell">';
+      h+='<input class="shift-ni" type="number" min="0" max="9" value="'+stored+'" inputmode="numeric"';
+      h+=' style="'+niStyle+'"';
+      h+=' onchange="saveShiftCell(\''+wk+'\',\''+day+'\',\''+slot.key+'\',this.value)">';
+      h+='<span class="sst '+st.cls+'" id="sst-'+wk+'-'+day+'-'+slot.key+'">'+st.text+'</span>';
+      h+='</td>';
+    });
+    h+='</tr>';
+  });
+  h+='</tbody></table></div>';
+  h+='<div class="shift-min-row">';
+  h+='<span class="shift-min-tag">ランチ最低 '+min.lunch+'名</span>';
+  h+='<span class="shift-min-tag">ディナー最低 '+min.dinner+'名</span>';
+  h+='<span class="shift-min-tag">土日+'+min.weekend_extra+'名</span>';
+  h+='</div>';
+  document.getElementById('shiftAlertGrid').innerHTML=h;
+  renderShiftSummary();
+}
+
+function saveShiftCell(wk,day,slotKey,val){
+  var data=getShiftWeekData(wk);
+  if(!data[day])data[day]={};
+  var num=(val==='')?'':parseInt(val);
+  data[day][slotKey]=(isNaN(num))?'':num;
+  save('shift_week_'+wk,data);
+  // update status badge only
+  var min=getShiftMin();
+  var di=SHIFT_DAYS.indexOf(day);
+  var isWE=(di>=5);
+  var slot=SHIFT_SLOTS.find(function(s){return s.key===slotKey;});
+  var minVal=min[slotKey]+(isWE?min.weekend_extra:0);
+  var stored=data[day][slotKey];
+  var n=(stored==='')?NaN:parseInt(stored);
+  var st=calcStatus(n,minVal);
+  var el=document.getElementById('sst-'+wk+'-'+day+'-'+slotKey);
+  if(el){el.className='sst '+st.cls;el.textContent=st.text;}
+  var ni=el?el.previousElementSibling:null;
+  if(ni){ni.style.borderColor=st.cls==='ss-low'?'#B85C5C':st.cls==='ss-ok'?'#7A9A6D':'';}
+}
+
+function shiftWeekMove(dir){
+  shiftWeekOffset+=dir;
+  renderShiftAlert();
+}
+
+function openShiftMinConfig(){
+  var min=getShiftMin();
+  var l=prompt('ランチ 最低人数（現在: '+min.lunch+'名）',String(min.lunch));
+  if(l===null)return;
+  var d=prompt('ディナー 最低人数（現在: '+min.dinner+'名）',String(min.dinner));
+  if(d===null)return;
+  var e=prompt('土日 追加人数（現在: +'+min.weekend_extra+'名）',String(min.weekend_extra));
+  if(e===null)return;
+  save('shift_min',{lunch:Math.max(0,parseInt(l)||2),dinner:Math.max(0,parseInt(d)||3),weekend_extra:Math.max(0,parseInt(e)||0)});
+  renderShiftAlert();
+  showToast('設定を保存しました');
+}
+
+// ===== CHECKLIST DATA =====
+var WEEKLY_CHK=[
+  {month:1,label:'現場基礎',cls:'chk-m1',weeks:[
+    {n:1,title:'接客・調理の基礎',items:['笑顔と挨拶の徹底','基本メニューの調理習得','身だしなみ基準の遵守']},
+    {n:2,title:'顧客視点の体現',items:['お子様・高齢者への配慮','メニューの魅力説明','リピート促進の声掛け']},
+    {n:3,title:'日次ルーティン',items:['ToDoリストの消し込み','開店・閉店作業の自立','勤怠・売上報告の入力']},
+    {n:4,title:'規律と報連相',items:['清掃・環境整備の徹底','適切なタイミングの報告','悪い情報の早期共有']}
+  ]},
+  {month:2,label:'管理業務',cls:'chk-m2',weeks:[
+    {n:5,title:'在庫・発注管理',items:['適正発注量の計算','納品対応と検品','先入れ先出しの徹底']},
+    {n:6,title:'チームワーク強化',items:['他スタッフへのフォロー','ポジション間の連携','ピークタイムの指示出し']},
+    {n:7,title:'店舗改善の提案',items:['現場課題の発見','効率化アイデアの提案','ミーティングでの発言']},
+    {n:8,title:'自走力の確立',items:['指示待ちからの脱却','優先順位の自己判断','コスト意識（単価入力）']}
+  ]},
+  {month:3,label:'数値責任',cls:'chk-m3',weeks:[
+    {n:9,title:'FLコスト管理',items:['食材原価率の計算・管理','廃棄ロスの削減対策','人件費コントロール']},
+    {n:10,title:'利益意識の徹底',items:['損益計算書(PL)の理解','固定費と変動費の把握','営業利益目標の共有']},
+    {n:11,title:'スタッフ育成',items:['新人へのOJT実施','業務マニュアルの活用','教える技術の習得']},
+    {n:12,title:'評価とフィードバック',items:['評価面談の実施練習','長所伸長と課題指摘','チームの士気向上']}
+  ]},
+  {month:4,label:'問題解決',cls:'chk-m4',weeks:[
+    {n:13,title:'トラブル対応',items:['クレーム対応の完遂','緊急時の判断と指揮','お客様満足の回復']},
+    {n:14,title:'リスク管理',items:['再発防止策の策定','衛生・労務リスクの排除','マニュアル改訂']},
+    {n:15,title:'販促・企画立案',items:['季節イベントの企画','常連客育成プラン','売上向上施策の実行']},
+    {n:16,title:'仕組み化と権限委譲',items:['業務の標準化・仕組化','右腕スタッフへの委譲','オーナー視点での判断']}
+  ]}
+];
+var HR_CHK=[
+  {phase:1,label:'採用・選考',cls:'chk-ph1',steps:[
+    {n:1,title:'採用プロセス',items:['求人情報の作成','作成した求人内容を確認','掲載媒体の選定','「ポータル紙」などへの掲載手順確認']},
+    {n:2,title:'選考プロセス',items:['面接準備','面接の実施日程を確定','面接前チェックリストの使用確認','面接後の評価','評価シートの記入と保管']}
+  ]},
+  {phase:2,label:'契約・評価',cls:'chk-ph2',steps:[
+    {n:3,title:'契約・研修',items:['雇用契約書の作成','契約内容確認（遅刻・欠勤条項）','研修の実施','新入社員研修の日程・内容を準備']},
+    {n:4,title:'入退社手続き',items:['入社手続きの標準化','入社書類の準備と管理方法の確認','退職手続きの標準化','退職者書類確認と返却物の管理']},
+    {n:5,title:'評価システム',items:['評価シートの運用','業績評価の実施とフィードバックの記録','評価シート入力（定期実施）','評価項目の定期入力・更新・保管管理']}
+  ]}
+];
+
+function renderCheckTab(){
+  var banner=document.getElementById('admChkBanner');
+  if(banner)banner.style.display=ADM_CHK_UNLOCKED?'flex':'none';
+  renderWeeklyChk();renderHrChk();
+}
+
+function renderWeeklyChk(){
+  var h='';
+  WEEKLY_CHK.forEach(function(mo){
+    h+='<div class="chk-month-wrap">';
+    h+='<div class="chk-section-head '+mo.cls+'"><span>0'+mo.month+' MONTH</span><span style="font-size:10px;opacity:.8;">'+mo.label+'</span></div>';
+    mo.weeks.forEach(function(wk){
+      h+='<div class="chk-week">';
+      h+='<div class="chk-week-title-row"><span class="chk-week-title">'+wk.title+'</span><span class="chk-wnum">WEEK '+String(wk.n).padStart(2,'0')+'</span></div>';
+      wk.items.forEach(function(item,idx){
+        var sk='wchk_s_'+wk.n+'_'+idx,ak='wchk_a_'+wk.n+'_'+idx;
+        var so=localStorage.getItem('okibowl_'+sk)==='1',ao=localStorage.getItem('okibowl_'+ak)==='1';
+        h+='<div class="chk-item">';
+        h+='<div class="chk-box'+(so?' self-on':'')+'" onclick="toggleSelfChk(\''+sk+'\')"></div>';
+        h+='<span class="chk-text'+(so?' done':'')+'">'+item+'</span>';
+        h+='<div class="chk-box'+(ao?' adm-on':'')+'" onclick="toggleAdmChk(\''+ak+'\')"></div>';
+        h+='<span class="chk-adm-lbl">管</span>';
+        h+='</div>';
+      });
+      var sv=localStorage.getItem('okibowl_wscore_'+wk.n)||'';
+      h+='<div class="chk-score-row"><span class="chk-score-lbl">達成度:</span><input class="chk-score-in" type="number" min="0" max="100" value="'+sv+'" onchange="saveChkScore(\'wscore_'+wk.n+'\',this.value)" placeholder="0"><span class="chk-score-pct">%</span></div>';
+      h+='</div>';
+    });
+    h+='</div>';
+  });
+  document.getElementById('weeklyChkList').innerHTML=h;
+}
+
+function renderHrChk(){
+  var h='';
+  HR_CHK.forEach(function(ph){
+    h+='<div class="chk-month-wrap">';
+    h+='<div class="chk-section-head '+ph.cls+'"><span>0'+ph.phase+' PHASE</span><span style="font-size:10px;opacity:.8;">'+ph.label+'</span></div>';
+    ph.steps.forEach(function(st){
+      h+='<div class="chk-week">';
+      h+='<div class="chk-week-title-row"><span class="chk-week-title">'+st.title+'</span><span class="chk-wnum">STEP '+String(st.n).padStart(2,'0')+'</span></div>';
+      st.items.forEach(function(item,idx){
+        var sk='hrchk_s_'+st.n+'_'+idx,ak='hrchk_a_'+st.n+'_'+idx;
+        var so=localStorage.getItem('okibowl_'+sk)==='1',ao=localStorage.getItem('okibowl_'+ak)==='1';
+        h+='<div class="chk-item">';
+        h+='<div class="chk-box'+(so?' self-on':'')+'" onclick="toggleSelfChk(\''+sk+'\')"></div>';
+        h+='<span class="chk-text'+(so?' done':'')+'">'+item+'</span>';
+        h+='<div class="chk-box'+(ao?' adm-on':'')+'" onclick="toggleAdmChk(\''+ak+'\')"></div>';
+        h+='<span class="chk-adm-lbl">管</span>';
+        h+='</div>';
+      });
+      var done=0;
+      for(var i=0;i<st.items.length;i++){if(localStorage.getItem('okibowl_hrchk_s_'+st.n+'_'+i)==='1')done++;}
+      var pct=st.items.length?Math.round(done/st.items.length*100):0;
+      h+='<div class="chk-score-row"><span class="chk-score-lbl">達成度 '+pct+'%</span><div class="chk-prog-bar"><div class="chk-prog-fill" style="width:'+pct+'%"></div></div></div>';
+      h+='</div>';
+    });
+    h+='</div>';
+  });
+  document.getElementById('hrChkList').innerHTML=h;
+}
+
+var ADM_CHK_UNLOCKED=false;
+var ADM_CHK_TIMER=null;
+
+function admChkLock(){
+  ADM_CHK_UNLOCKED=false;
+  if(ADM_CHK_TIMER){clearTimeout(ADM_CHK_TIMER);ADM_CHK_TIMER=null;}
+  renderCheckTab();
+  showToast('管理者モードをロックしました');
+}
+function admChkUnlock(callback){
+  if(ADM_CHK_UNLOCKED){callback();return;}
+  var pin=prompt('管理者PIN（一度入力すれば続けて使えます）:');
+  if(pin===null)return;
+  if(pin!=='839274'){showToast('PINが違います');return;}
+  ADM_CHK_UNLOCKED=true;
+  // 5分で自動ロック
+  if(ADM_CHK_TIMER)clearTimeout(ADM_CHK_TIMER);
+  ADM_CHK_TIMER=setTimeout(function(){admChkLock();},5*60*1000);
+  renderCheckTab();
+  showToast('管理者モード: 5分間有効');
+  callback();
+}
+function toggleSelfChk(key){
+  var cur=localStorage.getItem('okibowl_'+key)==='1';
+  localStorage.setItem('okibowl_'+key,cur?'0':'1');
+  renderCheckTab();
+}
+function toggleAdmChk(key){
+  admChkUnlock(function(){
+    var cur=localStorage.getItem('okibowl_'+key)==='1';
+    localStorage.setItem('okibowl_'+key,cur?'0':'1');
+    renderCheckTab();
+  });
+}
+function saveChkScore(key,val){localStorage.setItem('okibowl_'+key,val);}
+
+// ========================================
+// HOME STATUS CARDS
+// ========================================
+function renderHomeStatCards(){
+  var el=document.getElementById('homeStatCards');
+  if(!el)return;
+  var todayData=load('kpi_'+TODAY_KEY);
+  var hasToday=!!(todayData&&Object.keys(todayData).some(function(k){return k!=='_reflect'&&todayData[k]&&todayData[k]!=='';}));
+  var todoItems=getData('todo',DEFAULT_TODO);
+  var todoDone=0;todoItems.forEach(function(t){if(load(t.id)===true)todoDone++;});
+  var todoPct=todoItems.length?Math.round(todoDone/todoItems.length*100):0;
+  var wd=load('kpi_week')||{};var wdKeys=Object.keys(wd);var weekCnt=wdKeys.length;
+  var offDays=load('off_days')||{};var weekDays=getWeekDays();var requiredCnt=0;
+  weekDays.forEach(function(d){var key=getDateKey(d);if(key<=TODAY_KEY&&!offDays[key])requiredCnt++;});
+  var kpiItems=getData('kpi',DEFAULT_KPI);var flKey=null;
+  kpiItems.forEach(function(k){if(k.label.match(/FL|fl/i)||k.id==='kpi-fl')flKey=k.id;});
+  var flVal=null;
+  if(flKey&&weekCnt>0){var flTotal=0;wdKeys.forEach(function(dk){var d=wd[dk];flTotal+=parseFloat(d[flKey])||0;});flVal=Math.round(flTotal/weekCnt);}
+  var flCls=flVal!==null?(flVal>55?'bad':flVal>53?'warn':'ok'):'';
+  var flText=flVal!==null?flVal+'%':'--';
+  var flSub=flVal!==null?(flVal>55?'超過 目標55%以下':flVal>53?'注意 目標55%':'OK 目標55%以下'):'目標 55%以下';
+  var todoCls=todoPct===100?'ok':todoPct>=50?'neu':'warn';
+  var weekCls=(weekCnt>=requiredCnt&&requiredCnt>0)?'ok':weekCnt>0?'neu':(requiredCnt>1?'warn':'');
+  var h='<div class="home-stat-row">';
+  h+='<div class="hsc '+(hasToday?'ok':'bad')+'">';
+  h+='<div class="hsc-label">今日のKPI</div>';
+  h+='<div class="hsc-val">'+(hasToday?'入力済':'未入力')+'</div>';
+  h+='<div class="hsc-sub">'+TODAY_KEY.split('-').slice(1).join('/')+'</div></div>';
+  h+='<div class="hsc '+todoCls+'">';
+  h+='<div class="hsc-label">TODO</div>';
+  h+='<div class="hsc-val">'+todoPct+'%</div>';
+  h+='<div class="hsc-sub">'+todoDone+'/'+todoItems.length+'件完了</div></div>';
+  h+='<div class="hsc '+weekCls+'">';
+  h+='<div class="hsc-label">今週入力</div>';
+  h+='<div class="hsc-val">'+weekCnt+'<span style="font-size:11px;font-weight:600;color:var(--text-sub);">/'+requiredCnt+'日</span></div>';
+  h+='<div class="hsc-sub">週間KPIデータ</div></div>';
+  h+='<div class="hsc '+flCls+'">';
+  h+='<div class="hsc-label">FLコスト</div>';
+  h+='<div class="hsc-val">'+flText+'</div>';
+  h+='<div class="hsc-sub">'+flSub+'</div></div>';
+  h+='</div>';
+  el.innerHTML=h;
+}
+
+function renderKpiWeekSum(){
+  var el=document.getElementById('kpiWeekSumBlock');
+  if(!el)return;
+  var kpiItems=getData('kpi',DEFAULT_KPI);
+  var wd=load('kpi_week')||{};var keys=Object.keys(wd).sort();var cnt=keys.length;
+  if(cnt===0){el.innerHTML='';return;}
+  var totals={};kpiItems.forEach(function(k){totals[k.id]=0;});
+  keys.forEach(function(dk){var d=wd[dk];kpiItems.forEach(function(k){totals[k.id]+=parseFloat(d[k.id])||0;});});
+  var h='<div class="section-label">今週の集計</div>';
+  h+='<div class="card"><div class="card-head"><div class="ch-dot" style="background:var(--sage);"></div>';
+  h+='<span class="ch-title">KPIサマリー</span><span class="ch-badge">'+cnt+'日分</span></div>';
+  h+='<div style="padding:10px 14px;">';
+  kpiItems.forEach(function(k){
+    var v=totals[k.id];var isAvg=k.unit==='%';var display=isAvg?Math.round(v/cnt):v;
+    var cls='';if(k.label.match(/FL|fl/i)||k.id==='kpi-fl'){cls=display>55?'fl-bad':display>53?'fl-warn':'fl-ok';}
+    h+='<div class="kws-row"><span class="kws-lb">'+k.label+(isAvg?'（平均）':'（合計）')+'</span>';
+    h+='<span class="kws-v '+cls+'">'+(display?display.toLocaleString():'--')+(k.unit||'')+'</span></div>';
+  });
+  h+='</div></div>';
+  el.innerHTML=h;
+}
+
+function renderShiftSummary(){
+  var el=document.getElementById('shiftAlertSummary');
+  if(!el)return;
+  var wk=getWeekKey(shiftWeekOffset);var min=getShiftMin();var data=getShiftWeekData(wk);
+  var lowCount=0,okCount=0,highCount=0,emptyCount=0;
+  SHIFT_SLOTS.forEach(function(slot){
+    SHIFT_DAYS.forEach(function(day,di){
+      var isWE=(di>=5);var minVal=min[slot.key]+(isWE?min.weekend_extra:0);
+      var stored=(data[day]&&data[day][slot.key]!==undefined)?data[day][slot.key]:'';
+      var num=(stored==='')?NaN:parseInt(stored);var st=calcStatus(num,minVal);
+      if(st.cls==='ss-low')lowCount++;
+      else if(st.cls==='ss-ok')okCount++;
+      else if(st.cls==='ss-high')highCount++;
+      else emptyCount++;
+    });
+  });
+  var h='<div class="shift-sum-row">';
+  if(lowCount>0)h+='<span class="sst-label sst-bad-bg">不足 '+lowCount+'コマ</span>';
+  h+='<span class="sst-label sst-ok-bg">OK '+okCount+'コマ</span>';
+  if(highCount>0)h+='<span class="sst-label sst-warn-bg">余剰 '+highCount+'コマ</span>';
+  if(emptyCount>0)h+='<span class="sst-label sst-neutral-bg">未入力 '+emptyCount+'コマ</span>';
+  h+='</div>';
+  el.innerHTML=h;
+}
+
+// ========================================
+// GROWTH ASSESSMENT
+// ========================================
+var SKILL_ITEMS=[
+  {id:'sk-numbers',label:'数字管理',desc:'売上・FLコスト・PL把握'},
+  {id:'sk-staff',label:'スタッフ育成',desc:'OJT・評価・面談'},
+  {id:'sk-ops',label:'オペレーション',desc:'品質・スピード・衛生'},
+  {id:'sk-recruit',label:'採用・HR',desc:'面接・雇用契約・シフト'},
+  {id:'sk-brand',label:'ブランド・SNS',desc:'接客体験・発信・口コミ'}
+];
+function renderSkillAssess(){
+  var el=document.getElementById('skillAssessList');
+  if(!el)return;
+  var saved=load('skill_assess')||{};
+  var total=0;
+  var h='';
+  SKILL_ITEMS.forEach(function(sk){
+    var v=parseInt(saved[sk.id]||0);
+    total+=v;
+    h+='<div style="padding:10px 14px;border-bottom:1px solid #F5F5F5;">';
+    h+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">';
+    h+='<div><div style="font-size:13px;font-weight:700;">'+sk.label+'</div><div style="font-size:10px;color:var(--text-sub);">'+sk.desc+'</div></div>';
+    h+='<div style="display:flex;gap:4px;">';
+    for(var i=1;i<=5;i++){
+      var on=i<=v;
+      h+='<button onclick="setSkill(\''+sk.id+'\','+i+')" style="width:28px;height:28px;border-radius:50%;border:1.5px solid '+(on?'var(--accent)':'#DDD')+';background:'+(on?'var(--accent)':'#FFF')+';color:'+(on?'#FFF':'#CCC')+';font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;">'+i+'</button>';
+    }
+    h+='</div></div></div>';
+  });
+  el.innerHTML=h;
+  var badge=document.getElementById('skillScoreBadge');
+  if(badge)badge.textContent=total+' / 25';
+}
+function setSkill(id,val){
+  var saved=load('skill_assess')||{};
+  saved[id]=val;
+  save('skill_assess',saved);
+  renderSkillAssess();
+}
+function saveSkillAssess(){
+  var msg=document.getElementById('skillSavedMsg');
+  if(msg){var d=new Date();msg.textContent='保存済 '+pad2(d.getMonth()+1)+'/'+pad2(d.getDate());}
+  showToast('スキル評価を保存しました');
+}
+function saveGrowthFocus(){
+  var v=document.getElementById('growthFocus').value;
+  save('growth_focus',v);
+}
+function loadGrowthFocus(){
+  var el=document.getElementById('growthFocus');
+  if(el)el.value=load('growth_focus')||'';
+  var badge=document.getElementById('focusMonthBadge');
+  if(badge){var d=new Date();badge.textContent=(d.getMonth()+1)+'月';}
+}
+
+function renderAll(){
+  renderTodo();renderStaff();renderMtg();renderKpiFields();renderChips();renderCur();renderShift();renderShiftAlert();
+  loadKpi();updateAll();renderKpiWeekSum();renderSkillAssess();loadGrowthFocus();
+}
+
+// ========================================
+// ADMIN PANEL
+// ========================================
+function openAdmin(){
+  var pin=localStorage.getItem('okibowl_pin');
+  if(pin){
+    var input=prompt('管理者PINを入力してください');
+    if(input!==pin){showToast('PINが違います');return;}
+  }
+  buildAdmin();
+  document.getElementById('adminOverlay').classList.add('show');
+}
+function closeAdmin(){
+  document.getElementById('adminOverlay').classList.remove('show');
+  renderAll();
+}
+
+function buildAdmin(){
+  var h='';
+  // TODO
+  h+=admSection('TODO リスト','todo',getData('todo',DEFAULT_TODO),true);
+  // Staff
+  h+=admSection('スタッフ管理','staff',getData('staff',DEFAULT_STAFF),false);
+  // MTG
+  h+=admSection('MTGアジェンダ','mtg',getData('mtg',DEFAULT_MTG),false);
+  // KPI
+  h+=admSectionKpi('KPI 入力項目',getData('kpi',DEFAULT_KPI));
+  // Curriculum
+  h+=admSectionCur('育成カリキュラム',getData('cur',DEFAULT_CUR));
+  // Shift
+  h+=admSectionShift('シフト計画',getData('shift',DEFAULT_SHIFT));
+  // Smaregi
+  h+=admSectionSmaregi();
+  // Reset
+  h+='<div style="margin-top:24px;padding-top:16px;border-top:2px solid #EEE;">';
+  h+='<button class="action-btn" style="background:var(--danger);color:#fff;" onclick="if(confirm(\'全ての管理データをリセットしますか？\')){[\'admin_todo\',\'admin_staff\',\'admin_mtg\',\'admin_kpi\',\'admin_cur\',\'admin_shift\'].forEach(function(k){localStorage.removeItem(\'okibowl_\'+k);});buildAdmin();showToast(\'リセット完了\');}">全項目を初期状態に戻す</button>';
+  h+='</div>';
+  document.getElementById('adminBody').innerHTML=h;
+}
+
+function admSection(title,key,items,hasFreq){
+  var h='<div class="adm-section"><div class="adm-section-title">'+title+'</div>';
+  items.forEach(function(item,i){
+    h+='<div class="adm-item" id="adm-'+key+'-'+i+'">';
+    h+='<div class="adm-order-group">';
+    if(i>0) h+='<button class="adm-btn-move" onclick="admMove(\''+key+'\','+i+',-1,'+hasFreq+')">&#9650;</button>';
+    if(i<items.length-1) h+='<button class="adm-btn-move" onclick="admMove(\''+key+'\','+i+',1,'+hasFreq+')">&#9660;</button>';
+    h+='</div>';
+    h+='<span class="adm-item-text">'+item.text+(hasFreq&&item.freq?' <span class="adm-item-sub">'+item.freq+'</span>':'')+'</span>';
+    h+='<button class="adm-btn adm-btn-edit" onclick="admEdit(\''+key+'\','+i+','+hasFreq+')">編集</button>';
+    h+='<button class="adm-btn adm-btn-del" onclick="admDel(\''+key+'\','+i+')">削除</button>';
+    h+='</div>';
+  });
+  h+='<div class="adm-add-row"><input class="adm-add-input" id="adm-add-'+key+'" placeholder="新しい項目を追加">';
+  if(hasFreq) h+='<input class="adm-sub-input" id="adm-freq-'+key+'" placeholder="頻度">';
+  h+='<button class="adm-btn-add" onclick="admAdd(\''+key+'\','+hasFreq+')">追加</button></div>';
+  h+='</div>';
+  return h;
+}
+
+function admSectionKpi(title,items){
+  var h='<div class="adm-section"><div class="adm-section-title">'+title+'</div>';
+  items.forEach(function(item,i){
+    h+='<div class="adm-item" id="adm-kpi-'+i+'">';
+    h+='<span class="adm-item-text">'+item.label+' <span class="adm-item-sub">'+item.unit+'</span></span>';
+    h+='<button class="adm-btn adm-btn-edit" onclick="admEditKpi('+i+')">編集</button>';
+    h+='<button class="adm-btn adm-btn-del" onclick="admDelKpi('+i+')">削除</button>';
+    h+='</div>';
+  });
+  h+='<div class="adm-add-row"><input class="adm-add-input" id="adm-add-kpi" placeholder="項目名"><input class="adm-sub-input" id="adm-unit-kpi" placeholder="単位"><button class="adm-btn-add" onclick="admAddKpi()">追加</button></div>';
+  h+='</div>';
+  return h;
+}
+
+function admSectionCur(title,items){
+  var h='<div class="adm-section"><div class="adm-section-title">'+title+'</div>';
+  items.forEach(function(item,i){
+    h+='<div class="adm-item" id="adm-cur-'+i+'">';
+    h+='<span class="adm-item-text">'+item.num+'. '+item.title+' <span class="adm-item-sub">'+item.period+'</span></span>';
+    h+='<button class="adm-btn adm-btn-edit" onclick="admEditCur('+i+')">編集</button>';
+    h+='<button class="adm-btn adm-btn-del" onclick="admDelCur('+i+')">削除</button>';
+    h+='</div>';
+  });
+  h+='<div class="adm-add-row"><input class="adm-add-input" id="adm-add-cur" placeholder="タイトル"><input class="adm-sub-input" id="adm-period-cur" placeholder="期間"><button class="adm-btn-add" onclick="admAddCur()">追加</button></div>';
+  h+='</div>';
+  return h;
+}
+
+function admSectionShift(title,items){
+  var h='<div class="adm-section"><div class="adm-section-title">'+title+'</div>';
+  items.forEach(function(item,i){
+    h+='<div class="adm-item" id="adm-shift-'+i+'">';
+    h+='<span class="adm-item-text">'+item.name+' <span class="adm-item-sub">'+item.note+' ['+item.tag+']</span></span>';
+    h+='<button class="adm-btn adm-btn-edit" onclick="admEditShift('+i+')">編集</button>';
+    h+='</div>';
+  });
+  h+='</div>';
+  return h;
+}
+
+// ========================================
+// SMAREGI 連携
+// ========================================
+function admSectionSmaregi(){
+  var cfg=load('smaregi_cfg')||{contractId:'',token:''};
+  var connected=cfg.contractId&&cfg.token;
+  var h='<div class="adm-section"><div class="adm-section-title">スマレジ連携設定</div>';
+  h+='<div style="font-size:11px;color:var(--text-sub);padding:6px 0 10px;">スマレジ管理画面 → 外部連携 → API → アクセストークンを入力</div>';
+  h+='<div style="display:flex;flex-direction:column;gap:8px;padding-bottom:10px;">';
+  h+='<div><div style="font-size:10px;font-weight:700;color:var(--text-sub);margin-bottom:3px;">契約ID</div>';
+  h+='<input class="adm-edit-input" id="smaregi-cid" placeholder="例: ABC0000001" value="'+cfg.contractId+'" style="width:100%;"></div>';
+  h+='<div><div style="font-size:10px;font-weight:700;color:var(--text-sub);margin-bottom:3px;">アクセストークン</div>';
+  h+='<input class="adm-edit-input" id="smaregi-tok" placeholder="アクセストークンを貼り付け" value="'+cfg.token+'" style="width:100%;font-size:10px;" type="password"></div>';
+  h+='<button class="adm-btn-add" onclick="saveSmaregiCfg()">保存</button>';
+  h+='</div>';
+  if(connected){
+    h+='<div style="font-size:11px;color:var(--success);font-weight:700;padding-bottom:8px;">連携設定済み — ホーム画面のKPI欄から自動取得できます</div>';
+    h+='<button class="adm-btn adm-btn-del" onclick="clearSmaregiCfg()">設定を削除</button>';
+  }
+  h+='</div>';
+  return h;
+}
+function saveSmaregiCfg(){
+  var cid=document.getElementById('smaregi-cid').value.trim();
+  var tok=document.getElementById('smaregi-tok').value.trim();
+  if(!cid||!tok){showToast('契約IDとトークンを入力してください');return;}
+  save('smaregi_cfg',{contractId:cid,token:tok});
+  buildAdmin();showToast('スマレジ設定を保存しました');
+}
+function clearSmaregiCfg(){
+  if(!confirm('スマレジ連携設定を削除しますか？'))return;
+  localStorage.removeItem('okibowl_smaregi_cfg');
+  buildAdmin();showToast('設定を削除しました');
+}
+
+function fetchSmaregiKpi(){
+  var cfg=load('smaregi_cfg')||{};
+  var contractId=cfg.contractId||'set953a3';
+  var token=cfg.token||'';
+  var activeDate=document.querySelector('.date-btn.active');
+  var dateStr=activeDate?activeDate.dataset.date:new Date().toISOString().split('T')[0];
+  var st=document.getElementById('smaregiStatus');
+
+  var msg='[スマレジKPI依頼]\n'
+    +'契約ID: '+contractId+'\n'
+    +(token?'トークン: '+token+'\n':'')
+    +'日付: '+dateStr+'\n'
+    +'→ 売上・客数・客単価をスマレジAPIから取得して数値を教えてください。\n'
+    +'　取得後: 売上=数値 客数=数値 客単価=数値 の形式で返してください。';
+
+  navigator.clipboard.writeText(msg).then(function(){
+    st.textContent='Claudeへの依頼文をコピーしました。このチャットに貼り付けてください。';
+    st.className='smaregi-status smaregi-ok';
+  }).catch(function(){
+    // クリップボード失敗時はテキストで表示
+    st.textContent=msg;
+    st.className='smaregi-status smaregi-warn';
+  });
+}
+
+// KPI自動入力（Claudeから返答が来たときに呼び出す）
+function applySmaregiKpi(total,count,avg){
+  getData('kpi',DEFAULT_KPI).forEach(function(k){
+    var el=document.getElementById(k.id);if(!el)return;
+    if(k.label.match(/売上/))el.value=total;
+    else if(k.label.match(/客単価/))el.value=avg;
+    else if(k.label.match(/客数/))el.value=count;
+  });
+  var st=document.getElementById('smaregiStatus');
+  st.textContent='入力完了: 売上 ¥'+parseInt(total).toLocaleString()+' / '+count+'名 / 客単価 ¥'+parseInt(avg).toLocaleString();
+  st.className='smaregi-status smaregi-ok';
+  showToast('KPIを更新しました');
+}
+
+// ===== ADMIN MOVE =====
+function admMove(key,idx,dir,hasFreq){
+  var def=key==='todo'?DEFAULT_TODO:key==='staff'?DEFAULT_STAFF:DEFAULT_MTG;
+  var items=getData(key,def);
+  var newIdx=idx+dir;
+  if(newIdx<0||newIdx>=items.length)return;
+  var tmp=items[idx];items[idx]=items[newIdx];items[newIdx]=tmp;
+  setData(key,items);buildAdmin();
+}
+
+// ===== ADMIN CRUD =====
+function admAdd(key,hasFreq){
+  var input=document.getElementById('adm-add-'+key);
+  var text=input.value.trim();if(!text)return;
+  var items=getData(key,key==='todo'?DEFAULT_TODO:key==='staff'?DEFAULT_STAFF:DEFAULT_MTG);
+  var newId=key.replace('staff','mgmt')+'-'+(items.length+1)+'-'+Date.now();
+  var obj={id:newId,text:text};
+  if(hasFreq){var f=document.getElementById('adm-freq-'+key);obj.freq=f.value.trim();f.value='';}
+  items.push(obj);setData(key,items);input.value='';buildAdmin();showToast('追加しました');
+}
+function admDel(key,idx){
+  if(!confirm('削除しますか？'))return;
+  var def=key==='todo'?DEFAULT_TODO:key==='staff'?DEFAULT_STAFF:DEFAULT_MTG;
+  var items=getData(key,def);items.splice(idx,1);setData(key,items);buildAdmin();showToast('削除しました');
+}
+function admEdit(key,idx,hasFreq){
+  var def=key==='todo'?DEFAULT_TODO:key==='staff'?DEFAULT_STAFF:DEFAULT_MTG;
+  var items=getData(key,def);
+  var item=items[idx];
+  var el=document.getElementById('adm-'+key+'-'+idx);
+  el.innerHTML='<input class="adm-edit-input" id="adm-ei-'+key+'-'+idx+'" value="'+item.text+'">'
+    +(hasFreq?'<input class="adm-sub-input" id="adm-ef-'+key+'-'+idx+'" value="'+(item.freq||'')+'">':'')
+    +'<button class="adm-btn-add" onclick="admSaveEdit(\''+key+'\','+idx+','+hasFreq+')">保存</button>';
+  document.getElementById('adm-ei-'+key+'-'+idx).focus();
+}
+function admSaveEdit(key,idx,hasFreq){
+  var def=key==='todo'?DEFAULT_TODO:key==='staff'?DEFAULT_STAFF:DEFAULT_MTG;
+  var items=getData(key,def);
+  items[idx].text=document.getElementById('adm-ei-'+key+'-'+idx).value.trim();
+  if(hasFreq)items[idx].freq=document.getElementById('adm-ef-'+key+'-'+idx).value.trim();
+  setData(key,items);buildAdmin();showToast('保存しました');
+}
+
+// KPI
+function admAddKpi(){
+  var label=document.getElementById('adm-add-kpi').value.trim();if(!label)return;
+  var unit=document.getElementById('adm-unit-kpi').value.trim();
+  var items=getData('kpi',DEFAULT_KPI);
+  items.push({id:'kpi-c-'+Date.now(),label:label,unit:unit});
+  setData('kpi',items);buildAdmin();showToast('追加しました');
+}
+function admDelKpi(idx){
+  if(!confirm('削除しますか？'))return;
+  var items=getData('kpi',DEFAULT_KPI);items.splice(idx,1);setData('kpi',items);buildAdmin();showToast('削除しました');
+}
+function admEditKpi(idx){
+  var items=getData('kpi',DEFAULT_KPI);var item=items[idx];
+  var el=document.getElementById('adm-kpi-'+idx);
+  el.innerHTML='<input class="adm-edit-input" id="adm-eki-'+idx+'" value="'+item.label+'"><input class="adm-sub-input" id="adm-eku-'+idx+'" value="'+item.unit+'"><button class="adm-btn-add" onclick="admSaveKpi('+idx+')">保存</button>';
+}
+function admSaveKpi(idx){
+  var items=getData('kpi',DEFAULT_KPI);
+  items[idx].label=document.getElementById('adm-eki-'+idx).value.trim();
+  items[idx].unit=document.getElementById('adm-eku-'+idx).value.trim();
+  setData('kpi',items);buildAdmin();showToast('保存しました');
+}
+
+// Curriculum
+function admAddCur(){
+  var title=document.getElementById('adm-add-cur').value.trim();if(!title)return;
+  var period=document.getElementById('adm-period-cur').value.trim();
+  var items=getData('cur',DEFAULT_CUR);
+  var desc=prompt('説明文を入力してください')||'';
+  items.push({num:items.length+1,title:title,period:period,desc:desc,color:'var(--primary)'});
+  setData('cur',items);buildAdmin();showToast('追加しました');
+}
+function admDelCur(idx){
+  if(!confirm('削除しますか？'))return;
+  var items=getData('cur',DEFAULT_CUR);items.splice(idx,1);
+  items.forEach(function(c,i){c.num=i+1;});
+  setData('cur',items);buildAdmin();showToast('削除しました');
+}
+function admEditCur(idx){
+  var items=getData('cur',DEFAULT_CUR);var c=items[idx];
+  var el=document.getElementById('adm-cur-'+idx);
+  el.innerHTML='<input class="adm-edit-input" id="adm-eci-'+idx+'" value="'+c.title+'"><input class="adm-sub-input" id="adm-ecp-'+idx+'" value="'+c.period+'"><button class="adm-btn-add" onclick="admSaveCur('+idx+')">保存</button>';
+}
+function admSaveCur(idx){
+  var items=getData('cur',DEFAULT_CUR);
+  items[idx].title=document.getElementById('adm-eci-'+idx).value.trim();
+  items[idx].period=document.getElementById('adm-ecp-'+idx).value.trim();
+  var desc=prompt('説明文（現在: '+items[idx].desc+'）',items[idx].desc);
+  if(desc!==null)items[idx].desc=desc;
+  setData('cur',items);buildAdmin();showToast('保存しました');
+}
+
+// Shift
+function admEditShift(idx){
+  var items=getData('shift',DEFAULT_SHIFT);var s=items[idx];
+  var el=document.getElementById('adm-shift-'+idx);
+  el.innerHTML='<input class="adm-edit-input" id="adm-esn-'+idx+'" value="'+s.note+'" placeholder="メモ"><input class="adm-sub-input" id="adm-est-'+idx+'" value="'+s.tag+'" placeholder="タグ"><button class="adm-btn-add" onclick="admSaveShift('+idx+')">保存</button>';
+}
+function admSaveShift(idx){
+  var items=getData('shift',DEFAULT_SHIFT);
+  items[idx].note=document.getElementById('adm-esn-'+idx).value.trim();
+  var tag=document.getElementById('adm-est-'+idx).value.trim();
+  items[idx].tag=tag;
+  if(tag==='MAX')items[idx].cls='st-max';
+  else if(tag==='繁忙')items[idx].cls='st-busy';
+  else if(tag==='閑散')items[idx].cls='st-min';
+  else if(tag==='静か')items[idx].cls='st-quiet';
+  else items[idx].cls='st-normal';
+  setData('shift',items);buildAdmin();showToast('保存しました');
+}
+
+// ========================================
+// PIN
+// ========================================
+var PIN_CODE='',PIN_MODE='unlock',PIN_TEMP='';
+(function pinInit(){if(!localStorage.getItem('okibowl_pin')){PIN_MODE='setup';document.getElementById('pinMsg').textContent='新しいPINを4桁で設定してください';document.getElementById('pinMsg').style.color='#999';}})();
+function pinInput(n){if(PIN_CODE.length>=4)return;PIN_CODE+=n;updatePinDots();if(PIN_CODE.length===4)setTimeout(pinCheck,200);}
+function pinDelete(){PIN_CODE=PIN_CODE.slice(0,-1);updatePinDots();document.getElementById('pinMsg').textContent='';}
+function updatePinDots(){document.querySelectorAll('#pinDots .pin-dot').forEach(function(d,i){d.classList.remove('filled','error');if(i<PIN_CODE.length)d.classList.add('filled');});}
+function pinCheck(){
+  var stored=localStorage.getItem('okibowl_pin');
+  if(PIN_MODE==='setup'){PIN_TEMP=PIN_CODE;PIN_MODE='confirm';PIN_CODE='';updatePinDots();document.getElementById('pinMsg').textContent='確認のためもう一度入力';document.getElementById('pinMsg').style.color='#999';return;}
+  if(PIN_MODE==='confirm'){if(PIN_CODE===PIN_TEMP){localStorage.setItem('okibowl_pin',PIN_CODE);pinUnlock();}else{pinError('PINが一致しません');PIN_MODE='setup';document.getElementById('pinMsg').textContent='新しいPINを設定してください';document.getElementById('pinMsg').style.color='#999';}return;}
+  if(PIN_CODE===stored)pinUnlock();else pinError('PINが違います');
+}
+function pinError(msg){PIN_CODE='';var dots=document.querySelectorAll('#pinDots .pin-dot');dots.forEach(function(d){d.classList.remove('filled');d.classList.add('error');});var w=document.getElementById('pinDots');w.classList.add('pin-shake');setTimeout(function(){w.classList.remove('pin-shake');dots.forEach(function(d){d.classList.remove('error');});},500);document.getElementById('pinMsg').textContent=msg;document.getElementById('pinMsg').style.color='';}
+function pinUnlock(){document.getElementById('pinScreen').classList.add('hidden');}
+function pinSetup(){var s=localStorage.getItem('okibowl_pin');if(s){var c=prompt('現在のPINを入力');if(c!==s){document.getElementById('pinMsg').textContent='PINが違います';return;}}PIN_MODE='setup';PIN_CODE='';updatePinDots();document.getElementById('pinMsg').textContent='新しいPINを設定してください';document.getElementById('pinMsg').style.color='#999';}
+
+// ========================================
+// CORE APP LOGIC
+// ========================================
+var TODAY_KEY='';
+(function initDate(){var now=new Date();var days=['日','月','火','水','木','金','土'];var ds=(now.getMonth()+1)+'/'+now.getDate()+' ('+days[now.getDay()]+')';document.getElementById('dateBadge').textContent=ds;TODAY_KEY=now.getFullYear()+'-'+(now.getMonth()+1)+'-'+now.getDate();document.getElementById('kpiDateLabel').textContent=ds;var h=now.getHours();document.getElementById('todayGreeting').textContent=h<11?'おはようございます':h<17?'お疲れ様です':'お疲れ様でした';if(now.getDay()===2)document.getElementById('todaySubtitle').textContent='今日はMTGの日です';if(now.getDay()===0&&now.getHours()>=18)document.getElementById('todaySubtitle').textContent='週次レポート提出日です';})();
+
+function switchPage(name,btn){document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});document.querySelectorAll('.nav-btn').forEach(function(b){b.classList.remove('active');});document.getElementById('page-'+name).classList.add('active');btn.classList.add('active');if(name==='mtg')buildReport();if(name==='shift')renderShiftAlert();if(name==='check')renderCheckTab();}
+function toggleTask(el){el.classList.toggle('done');save(el.dataset.id,el.classList.contains('done'));updateAll();if(el.classList.contains('done'))showToast('完了');}
+function toggleMtg(el){el.classList.toggle('done');save(el.dataset.id,el.classList.contains('done'));updateAll();if(el.classList.contains('done'))showToast('チェック済み');}
+function toggleEval(btn){btn.classList.toggle('done');save(btn.dataset.id,btn.classList.contains('done'));btn.querySelector('.es').textContent=btn.classList.contains('done')?'済':'--';if(btn.classList.contains('done'))showToast('評価完了');}
+
+function updateAll(){
+  var todoItems=document.querySelectorAll('#todoList .task-item');
+  var todoDone=document.querySelectorAll('#todoList .task-item.done').length;
+  var todoTotal=todoItems.length;
+  var pct=todoTotal?Math.round(todoDone/todoTotal*100):0;
+  document.getElementById('progressFill').style.width=pct+'%';
+  document.getElementById('progressPct').textContent=pct+'%';
+  document.getElementById('progressBadge').textContent=todoDone+' / '+todoTotal;
+  document.getElementById('todoBadge').textContent=todoDone+' / '+todoTotal;
+  var mtgItems=document.querySelectorAll('.mtg-item');
+  var mtgDone=document.querySelectorAll('.mtg-item.done').length;
+  var mtgTotal=mtgItems.length;
+  document.getElementById('mtgBadge').textContent=mtgDone+' / '+mtgTotal;
+  var todoR=todoTotal-todoDone;var bT=document.getElementById('badgeTodo');bT.textContent=todoR;bT.classList.toggle('show',todoR>0);
+  var mtgR=mtgTotal-mtgDone;var bM=document.getElementById('badgeMtg');bM.textContent=mtgR;bM.classList.toggle('show',mtgR>0);
+  renderHomeStatCards();
+}
+
+function resetTodo(){if(!confirm('リセットしますか？'))return;document.querySelectorAll('#todoList .task-item').forEach(function(el){el.classList.remove('done');save(el.dataset.id,false);});updateAll();showToast('リセット完了');}
+function resetMtg(){if(!confirm('リセットしますか？'))return;document.querySelectorAll('.mtg-item').forEach(function(el){el.classList.remove('done');save(el.dataset.id,false);});updateAll();showToast('リセット完了');}
+function saveMemo(){var a=document.getElementById('memoArea');save('memo',a.value);document.getElementById('memoCount').textContent=a.value.length+'文字';}
+
+// ===== KPI with DATE SELECT =====
+var SELECTED_DATE_KEY='';
+var DAYS_LABEL=['日','月','火','水','木','金','土'];
+
+function getDateKey(d){return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
+function getDateLabel(d){return (d.getMonth()+1)+'/'+d.getDate()+' ('+DAYS_LABEL[d.getDay()]+')';}
+
+function buildDateSelect(){
+  var el=document.getElementById('dateSelectRow');
+  var now=new Date();
+  // 月曜を起点に今日まで表示
+  var day=now.getDay();
+  var mon=new Date(now);mon.setDate(now.getDate()-(day===0?6:day-1));
+  var dates=[];
+  var d=new Date(mon);
+  while(getDateKey(d)<=TODAY_KEY){dates.push(new Date(d));d.setDate(d.getDate()+1);}
+  el.innerHTML='';
+  dates.forEach(function(d){
+    var key=getDateKey(d);
+    var isToday=key===TODAY_KEY;
+    el.innerHTML+='<button class="date-select-btn'+(key===SELECTED_DATE_KEY?' active':'')+'" style="'+(isToday?'border-color:var(--primary);font-weight:900;':'')+'" onclick="selectDate(\''+key+'\',\''+getDateLabel(d)+'\')">'+getDateLabel(d)+(isToday?' 今日':'')+'</button>';
+  });
+}
+
+function selectDate(key,label){
+  SELECTED_DATE_KEY=key;
+  document.getElementById('kpiDateLabel').textContent=label;
+  document.querySelectorAll('.date-select-btn').forEach(function(b){b.classList.remove('active');});
+  event.target.classList.add('active');
+  loadKpiForDate(key);
+  updateReflect(key);
+}
+
+function buildQuickRow(){
+  var el=document.getElementById('quickRow');
+  el.innerHTML='<span style="font-size:10px;color:var(--text-sub);font-weight:600;">売上:</span>';
+  var presets=[5000,10000,15000,20000,30000,50000];
+  presets.forEach(function(v){
+    el.innerHTML+='<button class="quick-btn" onclick="quickSales('+v+')">'+v.toLocaleString()+'</button>';
+  });
+}
+
+function quickSales(val){
+  var salesEl=document.getElementById('kpi-sales');
+  if(!salesEl){
+    var items=getData('kpi',DEFAULT_KPI);
+    if(items.length>0) salesEl=document.getElementById(items[0].id);
+  }
+  if(salesEl){salesEl.value=val;salesEl.focus();}
+}
+
+function saveKpi(){
+  var key=SELECTED_DATE_KEY||TODAY_KEY;
+  var items=getData('kpi',DEFAULT_KPI);var data={};
+  items.forEach(function(k){data[k.id]=document.getElementById(k.id)?document.getElementById(k.id).value||'':'';});
+  // 振り返りメモも保存
+  var reflectEl=document.getElementById('reflectInput');
+  if(reflectEl)data._reflect=reflectEl.value||'';
+  save('kpi_'+key,data);
+  // 週次データ（月曜起点の7日分）
+  var wd=load('kpi_week')||{};wd[key]=data;save('kpi_week',wd);
+  document.getElementById('kpiSavedMsg').textContent='保存済み ('+key+')';
+  showToast('KPI保存完了');
+  updateReflect(key);
+  renderHomeStatCards();
+  renderKpiWeekSum();
+}
+
+function loadKpiForDate(key){
+  var data=load('kpi_'+key);
+  var items=getData('kpi',DEFAULT_KPI);
+  items.forEach(function(k){
+    var el=document.getElementById(k.id);
+    if(el) el.value=(data&&data[k.id])||'';
+  });
+  document.getElementById('kpiSavedMsg').textContent=data?'保存済み':'未入力';
+  // 振り返り
+  var reflectEl=document.getElementById('reflectInput');
+  if(reflectEl) reflectEl.value=(data&&data._reflect)||'';
+}
+
+function loadKpi(){
+  SELECTED_DATE_KEY=TODAY_KEY;
+  buildDateSelect();
+  buildQuickRow();
+  loadKpiForDate(TODAY_KEY);
+  updateReflect(TODAY_KEY);
+}
+
+function updateReflect(key){
+  var data=load('kpi_'+key);
+  var el=document.getElementById('reflectArea');
+  // 目標達成度が入力されていて100未満の場合に振り返り欄を表示
+  var targetVal=0;
+  if(data){
+    var items=getData('kpi',DEFAULT_KPI);
+    items.forEach(function(k){if(k.label.indexOf('目標')>=0||k.id==='kpi-target'){targetVal=parseFloat(data[k.id])||0;}});
+  }
+  if(targetVal>0&&targetVal<100){
+    el.innerHTML='<div class="reflect-card"><div class="reflect-label">目標未達の振り返り（達成度: '+targetVal+'%）</div><textarea class="reflect-input" id="reflectInput" placeholder="なぜ目標に達成できなかったか？改善点は？" oninput="saveReflect()">'+((data&&data._reflect)||'')+'</textarea></div>';
+  } else {
+    var existingReflect=(data&&data._reflect)||'';
+    if(existingReflect){
+      el.innerHTML='<div class="reflect-card"><div class="reflect-label">振り返りメモ</div><textarea class="reflect-input" id="reflectInput" placeholder="振り返り" oninput="saveReflect()">'+existingReflect+'</textarea></div>';
+    } else {
+      el.innerHTML='';
+    }
+  }
+}
+
+function saveReflect(){
+  var key=SELECTED_DATE_KEY||TODAY_KEY;
+  var data=load('kpi_'+key)||{};
+  var reflectEl=document.getElementById('reflectInput');
+  if(reflectEl) data._reflect=reflectEl.value;
+  save('kpi_'+key,data);
+}
+
+function saveRptField(id){save('rpt_'+id,document.getElementById(id).value);}
+function loadRptFields(){['rptStaffMemo','rptProject','rptGood','rptBad','rptAction','rptReform','rptOwner'].forEach(function(id){var v=load('rpt_'+id);if(v)document.getElementById(id).value=v;});}
+
+// REPORT BUILD
+function getWeekDays(){
+  // 月曜起点の今週7日を取得
+  var now=new Date();var day=now.getDay();
+  var mon=new Date(now);mon.setDate(now.getDate()-(day===0?6:day-1));
+  var days=[];
+  for(var i=0;i<7;i++){
+    var d=new Date(mon);d.setDate(mon.getDate()+i);
+    days.push(d);
+  }
+  return days;
+}
+
+function buildWeekTracker(){
+  var el=document.getElementById('weekTracker');
+  var weekDays=getWeekDays();
+  var wd=load('kpi_week')||{};
+  var offDays=load('off_days')||{};
+  var labels=['月','火','水','木','金','土','日'];
+  var dataCount=0,requiredCount=0;
+  el.innerHTML='';
+  weekDays.forEach(function(d,i){
+    var key=getDateKey(d);
+    var hasData=!!wd[key];
+    var isOff=!!offDays[key];
+    var isToday=key===TODAY_KEY;
+    if(!isOff)requiredCount++;
+    if(hasData)dataCount++;
+    var cls='wt-day';
+    if(hasData)cls+=' has-data';
+    if(isOff)cls+=' off';
+    if(isToday)cls+=' today';
+    el.innerHTML+='<div class="'+cls+'" onclick="toggleOffDay(\''+key+'\')">'
+      +'<span class="wt-day-label">'+labels[i]+'</span>'
+      +'<span class="wt-day-num">'+d.getDate()+'</span>'
+      +'</div>';
+  });
+  document.getElementById('weekProgress').textContent=dataCount+' / '+requiredCount;
+  buildPastDaysBanner(weekDays,wd,offDays);
+  return {dataCount:dataCount,requiredCount:requiredCount,total:7};
+}
+
+// C: 未入力日バナー
+function buildPastDaysBanner(weekDays,wd,offDays){
+  var el=document.getElementById('pastDaysBanner');
+  if(!el)return;
+  var missing=[];
+  weekDays.forEach(function(d){
+    var key=getDateKey(d);
+    if(key>=TODAY_KEY)return;        // 今日・未来はスキップ
+    if(offDays[key])return;          // 休日はスキップ
+    if(!wd[key])missing.push({key:key,label:getDateLabel(d)});
+  });
+  if(missing.length===0){el.style.display='none';el.innerHTML='';return;}
+  el.style.display='block';
+  var first=missing[0];
+  el.innerHTML='<div class="past-days-banner">'
+    +'<span>'+missing.length+'日分が未入力です</span>'
+    +'<button onclick="jumpToPastInput(\''+first.key+'\')">'+first.label+' を入力</button>'
+    +'</div>';
+}
+
+// C: Homeに飛んで日付を選択
+function jumpToPastInput(key){
+  SELECTED_DATE_KEY=key;
+  var homeBtn=document.querySelector('.nav-btn');
+  switchPage('home',homeBtn);
+  buildDateSelect();
+  loadKpiForDate(key);
+  var label=key.split('-').slice(1).join('/');
+  document.getElementById('kpiDateLabel').textContent=label;
+  // ボタンのアクティブ状態を更新
+  document.querySelectorAll('.date-select-btn').forEach(function(b){
+    b.classList.toggle('active',b.getAttribute('onclick').indexOf(key)>=0);
+  });
+  showToast(label+' の入力欄に移動しました');
+}
+
+// D: ユーティリティ
+function getPrevWeekId(){
+  var now=new Date();var day=now.getDay();
+  var mon=new Date(now);mon.setDate(now.getDate()-(day===0?6:day-1));
+  var prevMon=new Date(mon);prevMon.setDate(mon.getDate()-7);
+  return prevMon.getFullYear()+'-W'+String(Math.ceil(((prevMon-new Date(prevMon.getFullYear(),0,1))/86400000+1)/7)).padStart(2,'0');
+}
+function getLastWeekDateRange(){
+  var now=new Date();var day=now.getDay();
+  var mon=new Date(now);mon.setDate(now.getDate()-(day===0?6:day-1));
+  var prevMon=new Date(mon);prevMon.setDate(mon.getDate()-7);
+  var prevSun=new Date(prevMon);prevSun.setDate(prevMon.getDate()+6);
+  return {start:getDateKey(prevMon),end:getDateKey(prevSun)};
+}
+
+// D: 先週未送信警告
+function buildLastWeekWarning(){
+  var el=document.getElementById('lastWeekWarn');
+  if(!el)return;
+  // 月曜以降でなければスキップ
+  var now=new Date();var day=now.getDay();
+  if(day===0)return; // 日曜はスキップ（まだ今週）
+  var lastSentWeek=load('last_sent_week')||'';
+  var prevWeekId=getPrevWeekId();
+  if(lastSentWeek===prevWeekId){el.innerHTML='';return;} // 先週送信済み
+  var range=getLastWeekDateRange();
+  var h=load('report_history')||[];
+  var hadData=false;for(var i=0;i<h.length;i++){if(h[i].date>=range.start&&h[i].date<=range.end){hadData=true;break;}}
+  if(!hadData){el.innerHTML='';return;}
+  el.innerHTML='<div class="lastweek-warn">'
+    +'<div class="lw-title">先週のレポートが未送信です</div>'
+    +'<div>'+range.start+' 〜 '+range.end+' のレポートがメール送信されていません</div>'
+    +'<button class="lw-btn" onclick="reviewLastWeek()">先週のレポートを確認</button>'
+    +'</div>';
+}
+
+function reviewLastWeek(){
+  var range=getLastWeekDateRange();
+  var h=load('report_history')||[];
+  var idx=-1;for(var i=0;i<h.length;i++){if(h[i].date>=range.start&&h[i].date<=range.end){idx=i;break;}}
+  if(idx>=0)showHistory(idx);
+  else showToast('先週のレポートが見つかりません');
+}
+
+function toggleOffDay(key){
+  var offDays=load('off_days')||{};
+  if(offDays[key])delete offDays[key];
+  else offDays[key]=true;
+  save('off_days',offDays);
+  buildWeekTracker();
+  buildSubmitReminder();
+}
+
+function buildSubmitReminder(){
+  var el=document.getElementById('submitReminder');
+  var now=new Date();
+  var isSunday=now.getDay()===0;
+  var hour=now.getHours();
+  var tracker=buildWeekTracker();
+  var isComplete=tracker.dataCount>=tracker.requiredCount&&tracker.requiredCount>0;
+
+  if(isSunday&&hour>=18){
+    // 日曜夜 → 提出リマインダー
+    el.innerHTML='<div class="submit-reminder">'
+      +'<div class="sr-title">週次レポート提出日</div>'
+      +'<div class="sr-sub">'+(isComplete?'全データ揃っています ― 提出できます':'入力済み: '+tracker.dataCount+'/'+tracker.requiredCount+'日')+'</div>'
+      +'<button class="sr-btn" onclick="sendReport()">オーナーへメール送信</button>'
+      +'</div>';
+  } else if(isComplete){
+    el.innerHTML='<div class="week-banner">今週のデータが揃いました（'+tracker.dataCount+'/'+tracker.requiredCount+'日）'
+      +(isSunday?'':'<br>日曜21時までにレポートを提出してください')+'</div>';
+  } else {
+    var daysUntilSun=isSunday?0:(7-now.getDay());
+    el.innerHTML='<div style="font-size:10px;color:var(--text-sub);text-align:center;padding:6px 0;">'
+      +'提出日（日曜21時）まであと'+daysUntilSun+'日 ― 入力済み: '+tracker.dataCount+'/'+tracker.requiredCount+'日'
+      +'</div>';
+  }
+}
+
+function buildReport(){
+  var kpiItems=getData('kpi',DEFAULT_KPI);
+  var wd=load('kpi_week')||{};var keys=Object.keys(wd).sort();
+  var now=new Date();
+
+  buildLastWeekWarning();
+  buildSubmitReminder();
+
+  var bannerEl=document.getElementById('mtgWeekBanner');
+  bannerEl.innerHTML='';
+
+  var kh='';
+
+  if(keys.length>0){
+    var totals={};kpiItems.forEach(function(k){totals[k.id]=0;});var cnt=keys.length;
+    keys.forEach(function(dk){var d=wd[dk];kpiItems.forEach(function(k){totals[k.id]+=parseFloat(d[k.id])||0;});});
+    kh+='<div class="rpt-row"><span class="rpt-label">集計期間</span><span class="rpt-value">'+cnt+'日分 ('+keys[0]+' ~ '+keys[keys.length-1]+')</span></div>';
+    kpiItems.forEach(function(k){
+      var v=totals[k.id];var isAvg=k.unit==='%';var display=isAvg?Math.round(v/cnt):v;
+      var label=k.label+(isAvg?'（平均）':'（合計）');
+      kh+='<div class="rpt-row"><span class="rpt-label">'+label+'</span><span class="rpt-value">'+(display?display.toLocaleString():'--')+(k.unit||'')+'</span></div>';
+    });
+    // 日別ミニテーブル
+    kh+='<div style="margin-top:8px;padding-top:8px;border-top:1px solid #F0F0F0;font-size:10px;color:var(--text-sub);">';
+    kh+='<div style="font-weight:700;margin-bottom:4px;">日別データ</div>';
+    keys.forEach(function(dk){
+      var d=wd[dk];var parts=[];
+      kpiItems.forEach(function(k){if(d[k.id])parts.push(k.label.substring(0,3)+':'+d[k.id]);});
+      var reflect=d._reflect?'  *'+d._reflect:'';
+      kh+='<div>'+dk+' | '+parts.join(' / ')+reflect+'</div>';
+    });
+    kh+='</div>';
+  }else{
+    kh='<div style="font-size:11px;color:var(--text-sub);padding:4px 0;">HomeでKPIを入力すると自動集計されます</div>';
+  }
+  document.getElementById('rptKpiBody').innerHTML=kh;
+
+  var staffItems=getData('staff',DEFAULT_STAFF);var sh='';
+  staffItems.forEach(function(s){var done=load(s.id)===true;sh+='<div class="rpt-staff-row"><div class="rpt-staff-dot '+(done?'rpt-staff-ok':'rpt-staff-ng')+'"></div><span style="flex:1;">'+s.text+'</span><span style="font-size:11px;font-weight:700;color:'+(done?'var(--success)':'var(--danger)')+';">'+(done?'確認済':'未確認')+'</span></div>';});
+  document.getElementById('rptStaffBody').innerHTML=sh;
+  var memo=load('memo')||'';var mp=document.getElementById('rptMemoPreview');
+  mp.textContent=memo?'メモ: '+memo.substring(0,80)+(memo.length>80?'...':''):'メモに改革提案を書くと自動反映';
+}
+
+// REPORT TEXT
+function generateReportText(){
+  var now=new Date();var days=['日','月','火','水','木','金','土'];
+  var ds=now.getFullYear()+'/'+(now.getMonth()+1)+'/'+now.getDate()+' ('+days[now.getDay()]+')';
+  var t='';t+='━━━━━━━━━━━━━━━━━━━━━━━\n  OKI BOWL 週次MTGレポート\n  作成日: '+ds+'\n━━━━━━━━━━━━━━━━━━━━━━━\n\n';
+  t+='■ 1. 数字（KPI週次報告）\n';
+  var kpiItems=getData('kpi',DEFAULT_KPI);var wd=load('kpi_week')||{};var keys=Object.keys(wd).sort();
+  if(keys.length>0){var totals={};kpiItems.forEach(function(k){totals[k.id]=0;});var cnt=keys.length;
+    keys.forEach(function(dk){var d=wd[dk];kpiItems.forEach(function(k){totals[k.id]+=parseFloat(d[k.id])||0;});});
+    t+='  集計: '+cnt+'日分\n';
+    kpiItems.forEach(function(k){var v=totals[k.id];var isAvg=k.unit==='%';var dv=isAvg?Math.round(v/cnt):v;t+='  '+k.label+(isAvg?'（平均）':'（合計）')+': '+dv.toLocaleString()+(k.unit||'')+'\n';});
+    t+='\n  【日別データ】\n';
+    keys.forEach(function(dk){var d=wd[dk];var parts=[];kpiItems.forEach(function(k){if(d[k.id])parts.push(k.label.substring(0,3)+':'+d[k.id]);});t+='  '+dk+' | '+parts.join(' / ')+'\n';if(d._reflect)t+='    → 振り返り: '+d._reflect+'\n';});
+  }else{t+='  データなし\n';}
+  t+='\n■ 2. 人（シフト・人材）\n';
+  getData('staff',DEFAULT_STAFF).forEach(function(s){t+='  '+(load(s.id)===true?'[済]':'[!]')+' '+s.text+'\n';});
+  var sm=document.getElementById('rptStaffMemo').value;if(sm)t+='  メモ: '+sm+'\n';
+  t+='\n■ 3. 期日\n  '+(document.getElementById('rptProject').value||'記載なし')+'\n';
+  t+='\n■ 4. 振り返り\n  GOOD: '+(document.getElementById('rptGood').value||'記載なし')+'\n  BAD: '+(document.getElementById('rptBad').value||'記載なし')+'\n';
+  t+='\n■ 5. 来週のアクション\n  '+(document.getElementById('rptAction').value||'記載なし')+'\n';
+  t+='\n■ 6. 改革提案\n';var mm=load('memo')||'';if(mm)t+='  [メモ] '+mm.substring(0,100)+'\n';
+  t+='  '+(document.getElementById('rptReform').value||'記載なし')+'\n';
+  t+='\n■ Manager → OWNER\n  '+(document.getElementById('rptOwner').value||'記載なし')+'\n';
+  t+='\n━━━━━━━━━━━━━━━━━━━━━━━\n  OKI BOWL / one bowl at a time\n━━━━━━━━━━━━━━━━━━━━━━━\n';
+  return t;
+}
+
+function sendReport(){var t=generateReportText();var now=new Date();var s='OKI BOWL 週次MTGレポート '+(now.getMonth()+1)+'/'+now.getDate();window.open('https://mail.google.com/mail/?view=cm&to='+encodeURIComponent('m6074016@gmail.com')+'&su='+encodeURIComponent(s)+'&body='+encodeURIComponent(t),'_blank');save('last_sent_week',getCurrentWeekId());showToast('Gmailを開いています');}
+function saveReport(){var t=generateReportText();var now=new Date();var k=now.getFullYear()+'-'+(now.getMonth()+1)+'-'+now.getDate();var h=load('report_history')||[];var ex=false;for(var i=0;i<h.length;i++){if(h[i].date===k){h[i].text=t;h[i].ts=now.getTime();ex=true;break;}}if(!ex)h.unshift({date:k,text:t,ts:now.getTime()});save('report_history',h);renderHistory();showToast('レポート保存完了');if(confirm('週次データをリセットして来週分を始めますか？')){resetWeekData();}}
+function resetWeekData(){
+  save('kpi_week',{});save('off_days',{});
+  ['rptStaffMemo','rptProject','rptGood','rptBad','rptAction','rptReform','rptOwner'].forEach(function(id){save('rpt_'+id,'');var el=document.getElementById(id);if(el)el.value='';});
+  save('last_reset_week',getCurrentWeekId());
+  if(document.querySelector('.page#page-mtg.active'))buildReport();
+  showToast('来週のデータを開始しました');
+}
+function getCurrentWeekId(){
+  var now=new Date();var day=now.getDay();
+  var mon=new Date(now);mon.setDate(now.getDate()-(day===0?6:day-1));
+  return mon.getFullYear()+'-W'+String(Math.ceil(((mon-new Date(mon.getFullYear(),0,1))/86400000+1)/7)).padStart(2,'0');
+}
+function autoWeekReset(){
+  var lastReset=load('last_reset_week')||'';
+  var currentWeek=getCurrentWeekId();
+  if(lastReset&&lastReset!==currentWeek){
+    var wd=load('kpi_week')||{};
+    if(Object.keys(wd).length>0){
+      var t=generateReportText();
+      var now=new Date();
+      var mon=new Date(now);var day=now.getDay();mon.setDate(now.getDate()-(day===0?6:day-1));
+      mon.setDate(mon.getDate()-1);
+      var k=mon.getFullYear()+'-'+(mon.getMonth()+1)+'-'+mon.getDate();
+      var h=load('report_history')||[];
+      var ex=false;for(var i=0;i<h.length;i++){if(h[i].date===k){h[i].text=t;h[i].ts=now.getTime();ex=true;break;}}
+      if(!ex)h.unshift({date:k,text:t,ts:now.getTime()});
+      save('report_history',h);
+    }
+    resetWeekData();
+    showToast('先週のレポートを自動保存しました');
+  }
+  if(!lastReset)save('last_reset_week',currentWeek);
+}
+function scheduleSundayReset(){
+  var now=new Date();
+  if(now.getDay()===0){
+    var target=new Date(now.getFullYear(),now.getMonth(),now.getDate(),23,59,0);
+    var ms=target.getTime()-now.getTime();
+    if(ms>0&&ms<86400000){
+      setTimeout(function(){
+        var wd=load('kpi_week')||{};
+        if(Object.keys(wd).length>0){
+          var t=generateReportText();var k=now.getFullYear()+'-'+(now.getMonth()+1)+'-'+now.getDate();
+          var h=load('report_history')||[];var ex=false;
+          for(var i=0;i<h.length;i++){if(h[i].date===k){h[i].text=t;h[i].ts=Date.now();ex=true;break;}}
+          if(!ex)h.unshift({date:k,text:t,ts:Date.now()});
+          save('report_history',h);
+        }
+        resetWeekData();
+        showToast('23:59 ― 自動保存&リセット完了');
+      },ms);
+    }
+  }
+}
+function renderHistory(){var h=load('report_history')||[];var el=document.getElementById('historyList');document.getElementById('historyCount').textContent=h.length+'件';if(!h.length){el.innerHTML='<div style="padding:14px;font-size:12px;color:var(--text-sub);">まだレポートがありません</div>';return;}var html='';h.forEach(function(r,i){var d=new Date(r.ts);var days=['日','月','火','水','木','金','土'];html+='<div class="history-item" onclick="showHistory('+i+')"><div><div class="hi-date">'+(d.getMonth()+1)+'/'+d.getDate()+' ('+days[d.getDay()]+')</div><div class="hi-sub">'+r.text.split('\n').filter(function(l){return l.trim();}).length+'行</div></div><span class="hi-arrow">&gt;</span></div>';});el.innerHTML=html;}
+function showHistory(idx){var h=load('report_history')||[];if(!h[idx])return;document.getElementById('overlayTitle').textContent=h[idx].date+' レポート';document.getElementById('overlayBody').textContent=h[idx].text;document.getElementById('historyOverlay').classList.add('show');}
+function closeOverlay(){document.getElementById('historyOverlay').classList.remove('show');}
+function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},1400);}
+
+// INIT
+(function init(){
+  renderAll();
+  document.querySelectorAll('.eval-btn[data-id]').forEach(function(el){if(load(el.dataset.id)===true){el.classList.add('done');el.querySelector('.es').textContent='済';}});
+  var memo=load('memo');if(memo){document.getElementById('memoArea').value=memo;document.getElementById('memoCount').textContent=memo.length+'文字';}
+  loadRptFields();renderHistory();
+  autoWeekReset();
+  scheduleSundayReset();
+})();
+</script>
+</body>
+</html>
