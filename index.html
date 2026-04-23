@@ -61,6 +61,16 @@
       <div class="title">廃棄記録シート</div>
       <div class="desc">廃棄が出たらすぐ入力（全スタッフOK）</div>
     </button>
+    <button class="card" onclick="openApp()">
+      <div class="emoji">📱</div>
+      <div class="title">OKI BOWL Manager</div>
+      <div class="desc">店舗運営マネージャーアプリ</div>
+    </button>
+    <button class="card" onclick="openDaily()">
+      <div class="emoji">📅</div>
+      <div class="title">2号店 日別工程表</div>
+      <div class="desc">2号店オープン準備・日別タスク管理</div>
+    </button>
   </div>
 </div>
 
@@ -109,6 +119,16 @@ function showOnly(el) {
 function openWaste() {
   frameTitle.innerHTML = '🗑️ <span>廃棄記録シート</span>';
   contentFrame.src = 'waste.html';
+  showOnly(frameView);
+}
+function openApp() {
+  frameTitle.innerHTML = '📱 <span>OKI BOWL Manager</span>';
+  contentFrame.src = 'app.html';
+  showOnly(frameView);
+}
+function openDaily() {
+  frameTitle.innerHTML = '📅 <span>2号店 日別工程表</span>';
+  contentFrame.src = 'daily.html';
   showOnly(frameView);
 }
 
