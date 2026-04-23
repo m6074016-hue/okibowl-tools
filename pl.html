@@ -182,55 +182,6 @@
 </style>
 </head>
 <body>
-
-<!-- PIN GATE -->
-<div id="pinGate" style="position:fixed;inset:0;background:#1a1a1a;color:#fff;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:inherit;">
-  <div style="font-size:11px;color:#888;letter-spacing:0.2em;margin-bottom:10px;">OKI BOWL — WEEKLY P/L SHEET</div>
-  <div style="font-size:24px;font-weight:800;margin-bottom:8px;">🔒 PINコードを入力</div>
-  <div style="font-size:12px;color:#aaa;margin-bottom:24px;">4桁のPINを入力してください</div>
-  <input id="pinInput" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off"
-    style="font-size:32px;letter-spacing:0.5em;text-align:center;padding:14px 20px;border:2px solid #333;border-radius:12px;background:#222;color:#f5c842;width:200px;font-family:monospace;outline:none;"
-    placeholder="••••">
-  <div id="pinError" style="color:#ff6b6b;font-size:12px;margin-top:14px;min-height:18px;"></div>
-  <div style="font-size:10px;color:#555;margin-top:40px;">端末内で認証・保存されます</div>
-</div>
-
-<script>
-(function(){
-  const PIN_CORRECT = '5821';
-  const PIN_KEY = 'okibowl_pl_unlocked_v2';
-  const gate = document.getElementById('pinGate');
-  const input = document.getElementById('pinInput');
-  const err = document.getElementById('pinError');
-
-  if (localStorage.getItem(PIN_KEY) === '1') {
-    gate.style.display = 'none';
-    return;
-  }
-  document.body.style.overflow = 'hidden';
-  setTimeout(()=>input.focus(), 100);
-
-  function check() {
-    if (input.value === PIN_CORRECT) {
-      localStorage.setItem(PIN_KEY, '1');
-      gate.style.transition = 'opacity 0.3s';
-      gate.style.opacity = '0';
-      setTimeout(()=>{ gate.style.display='none'; document.body.style.overflow=''; }, 300);
-    } else if (input.value.length === 4) {
-      err.textContent = '✗ PINが違います';
-      input.style.animation = 'none';
-      input.offsetHeight;
-      input.style.animation = 'shake 0.3s';
-      setTimeout(()=>{ input.value=''; err.textContent=''; }, 800);
-    }
-  }
-  input.addEventListener('input', check);
-  input.addEventListener('keydown', e => { if (e.key === 'Enter') check(); });
-})();
-</script>
-<style>@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}</style>
-<!-- /PIN GATE -->
-
 <div class="page">
 
   <header>
