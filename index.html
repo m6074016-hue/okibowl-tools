@@ -1,20 +1,232 @@
 <!DOCTYPE html>
-<html lang="ja"><head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>OKI BOWL</title>
 <style>
-body{font-family:'Hiragino Sans','Yu Gothic',sans-serif;background:#f4f4f0;margin:0;padding:24px;color:#1a1a1a;}
-.page{max-width:500px;margin:0 auto;}
-h1{font-size:24px;font-weight:800;margin:16px 0 24px;letter-spacing:0.02em;}
-h1 span{color:#f5c842}
-.card{background:#fff;border-radius:12px;padding:20px;margin-bottom:12px;text-decoration:none;color:#1a1a1a;display:block;box-shadow:0 1px 6px rgba(0,0,0,.06);}
-.card .emoji{font-size:32px;margin-bottom:6px;}
-.card .title{font-size:16px;font-weight:800;}
-.card .desc{font-size:12px;color:#666;margin-top:4px;}
-.card .lock{display:inline-block;background:#1a1a1a;color:#f5c842;font-size:9px;padding:2px 8px;border-radius:10px;margin-left:6px;letter-spacing:0.05em;vertical-align:middle;}
-.card:active{background:#fafafa;}
-</style></head><body><div class="page">
-<h1>OKI <span>BOWL</span></h1>
-<a class="card" href="pl.html"><div class="emoji">📊</div><div class="title">週次P/Lシート<span class="lock">🔒 PIN</span></div><div class="desc">毎日閉店後に売上・原価・人件費を入力</div></a>
-<a class="card" href="waste.html"><div class="emoji">🗑️</div><div class="title">廃棄記録シート</div><div class="desc">廃棄が出たらすぐ入力</div></a>
-</div></body></html>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: 'Hiragino Sans', 'Yu Gothic', sans-serif;
+    background: #f4f4f0;
+    color: #1a1a1a;
+    padding: 24px 16px 60px;
+  }
+  .page { max-width: 720px; margin: 0 auto; }
+
+  /* ヘッダー */
+  .doc-header {
+    background: #1a1a1a;
+    color: #fff;
+    border-radius: 14px;
+    padding: 28px 28px;
+    margin-bottom: 20px;
+  }
+  .doc-header .eyebrow { font-size: 10px; color: #888; letter-spacing: 0.22em; margin-bottom: 10px; }
+  .doc-header h1 { font-size: 30px; font-weight: 800; letter-spacing: 0.02em; margin-bottom: 8px; }
+  .doc-header h1 span { color: #f5c842; }
+  .doc-header p { font-size: 12px; color: #aaa; line-height: 1.7; }
+  .doc-header .meta { display: flex; gap: 18px; margin-top: 16px; flex-wrap: wrap; }
+  .doc-header .meta-item { font-size: 11px; color: #888; }
+  .doc-header .meta-item span { color: #f5c842; font-weight: 700; }
+
+  /* セクション */
+  .section {
+    background: #fff;
+    border-radius: 12px;
+    padding: 22px 24px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #f0f0f0;
+  }
+  .phase-badge {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.1em;
+    white-space: nowrap;
+  }
+  .phase-badge.p1 { background: #f5c842; color: #1a1a1a; }
+  .phase-badge.p2 { background: #4a7c59; color: #fff; }
+  .phase-badge.p3 { background: #3d5a99; color: #fff; }
+  .section-header h2 { font-size: 15px; font-weight: 800; }
+
+  /* ツールカード（リンク） */
+  .tool {
+    display: block;
+    text-decoration: none;
+    color: #1a1a1a;
+    padding: 16px 16px;
+    border-radius: 10px;
+    border: 1px solid #eee;
+    margin-bottom: 10px;
+    transition: background 0.15s;
+  }
+  .tool:hover { background: #fafafa; }
+  .tool:active { background: #f0f0f0; }
+  .tool:last-child { margin-bottom: 0; }
+  .tool-row { display: flex; align-items: center; gap: 14px; }
+  .tool-icon {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    background: #f5c842;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+  .tool-icon.green { background: #4a7c59; color: #fff; }
+  .tool-icon.blue  { background: #3d5a99; color: #fff; }
+  .tool-icon.gray  { background: #666;    color: #fff; }
+  .tool-body { flex: 1; min-width: 0; }
+  .tool-title {
+    font-size: 14px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 3px;
+  }
+  .tool-lock {
+    font-size: 9px;
+    background: #1a1a1a;
+    color: #f5c842;
+    padding: 2px 8px;
+    border-radius: 10px;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+  }
+  .tool-desc { font-size: 11px; color: #666; line-height: 1.6; }
+  .tool-arrow { color: #ccc; font-size: 18px; flex-shrink: 0; }
+
+  /* 情報カード */
+  .info-card {
+    background: #fafafa;
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 11px;
+    color: #555;
+    line-height: 1.7;
+  }
+  .info-card strong { color: #1a1a1a; }
+
+  .alert {
+    background: #fff8e1;
+    border-left: 4px solid #f5c842;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 11px;
+    color: #555;
+    line-height: 1.7;
+    margin-top: 10px;
+  }
+  .alert strong { color: #1a1a1a; }
+
+  footer {
+    text-align: center;
+    font-size: 10px;
+    color: #aaa;
+    margin-top: 30px;
+    letter-spacing: 0.1em;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ヘッダー -->
+  <div class="doc-header">
+    <div class="eyebrow">OKI BOWL — OPERATIONS PORTAL</div>
+    <h1>OKI <span>BOWL</span></h1>
+    <p>店舗運営ツールと評価制度資料の統合エントリー</p>
+    <div class="meta">
+      <div class="meta-item">店舗：<span>沖縄・那覇</span></div>
+      <div class="meta-item">運営：<span>OWNER / マネージャー</span></div>
+      <div class="meta-item">評価サイクル：<span>半期1回</span></div>
+    </div>
+  </div>
+
+  <!-- 日次運用ツール -->
+  <div class="section">
+    <div class="section-header">
+      <span class="phase-badge p1">DAILY</span>
+      <h2>日次運用ツール</h2>
+    </div>
+
+    <a class="tool" href="pl.html">
+      <div class="tool-row">
+        <div class="tool-icon">📊</div>
+        <div class="tool-body">
+          <div class="tool-title">週次P/Lシート <span class="tool-lock">🔒 PIN</span></div>
+          <div class="tool-desc">毎日閉店後に売上・原価・人件費を入力。FL比率を自動計算。</div>
+        </div>
+        <div class="tool-arrow">›</div>
+      </div>
+    </a>
+
+    <a class="tool" href="waste.html">
+      <div class="tool-row">
+        <div class="tool-icon green">🗑️</div>
+        <div class="tool-body">
+          <div class="tool-title">廃棄記録シート</div>
+          <div class="tool-desc">廃棄が出たら即入力。月次ロス率を自動集計。</div>
+        </div>
+        <div class="tool-arrow">›</div>
+      </div>
+    </a>
+  </div>
+
+  <!-- 評価制度資料 -->
+  <div class="section">
+    <div class="section-header">
+      <span class="phase-badge p2">DOCS</span>
+      <h2>評価制度資料</h2>
+    </div>
+
+    <div class="info-card">
+      <strong>保管先：</strong>社内ローカル
+      <code style="display:block;margin-top:6px;padding:6px 8px;background:#fff;border-radius:4px;font-size:10px;color:#333;overflow-x:auto;white-space:nowrap;">
+        OKIBOWL経営２/Manager（統括）/output/
+      </code>
+      <div style="margin-top:10px;">
+        ・店長評価シート_KPI連動（.html / .xlsx）<br>
+        ・店長評価_配点基準スライド.html<br>
+        ・評価制度_実践指示書.html<br>
+        ・OWNER決定事項_評価制度.md
+      </div>
+    </div>
+
+    <div class="alert">
+      <strong>初回評価：</strong>2026-10-05（月）14:00 〜（上半期・4〜9月データ対象）
+    </div>
+  </div>
+
+  <!-- 運用メモ -->
+  <div class="section">
+    <div class="section-header">
+      <span class="phase-badge p3">NOTE</span>
+      <h2>運用メモ</h2>
+    </div>
+
+    <div class="info-card">
+      <strong>データの保存先：</strong><br>
+      入力データは端末内（ブラウザのlocalStorage）に自動保存。端末を変えると別データになります。共有する時は各ツール内の「CSV出力」を使用してください。
+    </div>
+    <div class="info-card" style="margin-top:8px;">
+      <strong>PINロック：</strong><br>
+      週次P/Lシートは4桁PINで保護。PINは管理責任者から個別に共有されます。一度入力すれば同じ端末で再入力不要。
+    </div>
+  </div>
+
+  <footer>OKI BOWL — Operations Portal</footer>
+
+</div>
+</body>
+</html>
