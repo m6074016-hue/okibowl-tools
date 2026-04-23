@@ -86,7 +86,6 @@
 
 <script>
 const PIN_CORRECT = '5821';
-const PIN_KEY = 'okibowl_pl_unlocked_v2';
 const home = document.getElementById('home');
 const pinOverlay = document.getElementById('pinOverlay');
 const pinInput = document.getElementById('pinInput');
@@ -94,6 +93,12 @@ const pinError = document.getElementById('pinError');
 const frameView = document.getElementById('frameView');
 const frameTitle = document.getElementById('frameTitle');
 const contentFrame = document.getElementById('contentFrame');
+
+// 過去の解除フラグを強制削除（毎回PIN必須にするため）
+try {
+  localStorage.removeItem('okibowl_pl_unlocked');
+  localStorage.removeItem('okibowl_pl_unlocked_v2');
+} catch(e){}
 
 function showOnly(el) {
   home.style.display = (el === home) ? 'block' : 'none';
@@ -108,14 +113,11 @@ function openWaste() {
 }
 
 function openPL() {
-  if (localStorage.getItem(PIN_KEY) === '1') {
-    loadPL();
-  } else {
-    showOnly(pinOverlay);
-    pinInput.value = '';
-    pinError.textContent = '';
-    setTimeout(()=>pinInput.focus(), 100);
-  }
+  // 毎回必ずPIN入力を要求（記憶しない）
+  showOnly(pinOverlay);
+  pinInput.value = '';
+  pinError.textContent = '';
+  setTimeout(()=>pinInput.focus(), 100);
 }
 function loadPL() {
   frameTitle.innerHTML = '📊 <span>週次P/Lシート</span>';
@@ -134,7 +136,6 @@ function goHome() {
 
 pinInput.addEventListener('input', () => {
   if (pinInput.value === PIN_CORRECT) {
-    localStorage.setItem(PIN_KEY, '1');
     loadPL();
   } else if (pinInput.value.length === 4) {
     pinError.textContent = '✗ PINが違います';
