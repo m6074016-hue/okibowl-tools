@@ -53,7 +53,7 @@
     <h1>OKI <span>BOWL</span></h1>
     <button class="card" onclick="openPL()">
       <div class="emoji">📊</div>
-      <div class="title">週次P/Lシート<span class="lock">🔒 PIN</span></div>
+      <div class="title">FLシート<span class="lock">🔒 PIN</span></div>
       <div class="desc">毎日閉店後に売上・原価・人件費を入力（店長のみ・パスワード必要）</div>
     </button>
     <button class="card" onclick="openWaste()">
@@ -140,7 +140,7 @@ function openPL() {
   setTimeout(()=>pinInput.focus(), 100);
 }
 function loadPL() {
-  frameTitle.innerHTML = '📊 <span>週次P/Lシート</span>';
+  frameTitle.innerHTML = '📊 <span>FLシート</span>';
   contentFrame.src = 'pl.html';
   showOnly(frameView);
 }
