@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OKI BOWL 週次P/Lシート</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: 'Hiragino Sans', 'Yu Gothic', sans-serif;
+    background: #f4f4f0;
+    color: #1a1a1a;
+    padding: 16px;
+    padding-bottom: 80px;
+  }
+  .page { max-width: 900px; margin: 0 auto; }
+  header {
+    background: #1a1a1a;
+    color: #fff;
+    border-radius: 14px;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+  }
+  header .eyebrow { font-size: 10px; color: #888; letter-spacing: 0.2em; margin-bottom: 6px; }
+  header h1 { font-size: 20px; font-weight: 800; margin-bottom: 4px; }
+  header h1 span { color: #f5c842; }
+  header p { font-size: 12px; color: #aaa; }
+
+  .card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 18px 20px;
+    margin-bottom: 14px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+  }
+  .card h2 {
+    font-size: 14px;
+    font-weight: 800;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #f0f0f0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card h2 .badge {
+    background: #f5c842;
+    color: #1a1a1a;
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 10px;
+  }
+
+  .row { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; flex-wrap: wrap; }
+  .row label { font-size: 12px; color: #555; min-width: 84px; }
+  .row input, .row select {
+    flex: 1;
+    min-width: 140px;
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    background: #fafafa;
+  }
+  .row input:focus { border-color: #f5c842; background: #fff; outline: none; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    margin-top: 6px;
+  }
+  thead th {
+    background: #f8f8f5;
+    padding: 8px 4px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #666;
+    border-bottom: 2px solid #e8e8e5;
+    text-align: center;
+  }
+  tbody td {
+    padding: 6px 4px;
+    border-bottom: 1px solid #f0f0f0;
+    text-align: center;
+  }
+  tbody td.label {
+    text-align: left;
+    font-weight: 700;
+    background: #fafafa;
+    min-width: 80px;
+    padding-left: 10px;
+  }
+  tbody td input {
+    width: 100%;
+    padding: 6px 4px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    font-size: 13px;
+    text-align: right;
+    font-family: inherit;
+    background: transparent;
+  }
+  tbody td input:focus { border-color: #f5c842; background: #fffdf5; outline: none; }
+  tbody tr.calc td { background: #fffdf0; font-weight: 700; color: #1a1a1a; }
+  tbody tr.total td { background: #1a1a1a; color: #f5c842; font-weight: 800; }
+  tbody tr.total td.label { background: #1a1a1a; color: #fff; }
+
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(140px,1fr)); gap: 10px; margin-top: 12px; }
+  .kpi {
+    background: #fafafa;
+    border: 1px solid #eee;
+    border-radius: 10px;
+    padding: 12px;
+    text-align: center;
+  }
+  .kpi .lbl { font-size: 10px; color: #888; margin-bottom: 4px; letter-spacing: 0.05em; }
+  .kpi .val { font-size: 22px; font-weight: 800; color: #1a1a1a; }
+  .kpi .val.ok { color: #4a7c59; }
+  .kpi .val.ng { color: #cc3333; }
+  .kpi .tgt { font-size: 10px; color: #999; margin-top: 2px; }
+
+  textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 13px;
+    font-family: inherit;
+    background: #fafafa;
+    resize: vertical;
+    min-height: 80px;
+  }
+  textarea:focus { border-color: #f5c842; background: #fff; outline: none; }
+
+  .btns { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+  .btn {
+    flex: 1;
+    min-width: 120px;
+    padding: 14px;
+    border: none;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .btn.primary { background: #1a1a1a; color: #fff; }
+  .btn.primary:hover { background: #333; }
+  .btn.sub { background: #f5c842; color: #1a1a1a; }
+  .btn.sub:hover { background: #e8bc35; }
+  .btn.ghost { background: #fff; color: #1a1a1a; border: 1px solid #ddd; }
+
+  .status {
+    position: fixed;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1a1a;
+    color: #f5c842;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    opacity: 0;
+    transition: opacity 0.3s;
+    z-index: 100;
+  }
+  .status.show { opacity: 1; }
+
+  .help {
+    font-size: 11px;
+    color: #888;
+    margin-top: 6px;
+    line-height: 1.6;
+  }
+  @media (max-width: 600px) {
+    tbody td input { font-size: 12px; }
+    thead th, tbody td { padding: 5px 2px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <div class="eyebrow">OKI BOWL — WEEKLY P/L SHEET</div>
+    <h1>週次 <span>P/Lシート</span></h1>
+    <p>店長用｜毎日閉店後に売上・原価・人件費を入力／毎週月曜にOWNERへ報告</p>
+  </header>
+
+  <div class="card">
+    <h2><span class="badge">基本</span>週の情報</h2>
+    <div class="row">
+      <label>週の開始日</label>
+      <input type="date" id="weekStart">
+    </div>
+    <div class="row">
+      <label>店長名</label>
+      <input type="text" id="managerName" placeholder="例：山田 太郎">
+    </div>
+    <div class="row">
+      <label>売上目標</label>
+      <input type="number" id="salesTarget" placeholder="週間売上目標（円）" inputmode="numeric">
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><span class="badge">入力</span>日次P/L</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>項目</th>
+          <th>月</th><th>火</th><th>水</th><th>木</th><th>金</th><th>土</th><th>日</th>
+          <th>週計</th>
+        </tr>
+      </thead>
+      <tbody id="plBody">
+        <tr>
+          <td class="label">売上</td>
+          <td><input type="number" class="cell" data-row="sales" data-day="0" inputmode="numeric"></td>
+          <td><input type="number" class="cell" data-row="sales" data-day="1" inputmode="numeric"></td>
+          <td><input type="number" class="cell" data-row="sales" data-day="2" inputmode="numeric"></td>
+          <td><input type="number" class="cell" data-row="sales" data-day="3" inputmode="numeric"></td>
+          <td><input type="number" class="cell" data-row="sales" data-day="4" inputmode="numeric"></td>
+          <td><input type="number" class="cell" data-row="sales" data-day="5" inputmode="numeric"></td>
+          <td><input type="number" class="cell" data-row="sales" data-day="6" inputmode="numeric"></td>
+          <td id="sum_sales">-</td>
+        </tr>
+        <tr>
+          <td class="label">Food原価</td>
+          <td><input type="number" class="cell" data-row="food" data-day="0" inputmode="numeric"></td>
+          <td><input type="number" class="cell" data-row="food" data-day="1" inputmode="numeric"></td>
+          <td><input type="number" class="cell" data-row="food" data-day="2" inputmode="numeric"></td>
+          <td><input type="number" class="cell" data-row="food" data-day="3" inputmode="numeric"></td>
+          <td><input type="number" class="cell" data-row="food" data-day="4" inputmode="numeric"></td>
+          <td><input type="number" class="cell" data-row="food" data-day="5" inputmode="numeric"></td>
+          <td><input type="number" class="cell" data-row="food" data-day="6" inputmode="numeric"></td>
+          <td id="sum_food">-</td>
+        </tr>
+        <tr>
+          <td class="label">Labor費</td>
+          <td><input type="number" class="cell" data-row="labor" data-day="0" inputmode="numeric"></td>
+          <td><input type="number" class="cell" data-row="labor" data-day="1" inputmode="numeric"></td>
+          <td><input type="number" class="cell" data-row="labor" data-day="2" inputmode="numeric"></td>
+          <td><input type="number" class="cell" data-row="labor" data-day="3" inputmode="numeric"></td>
+          <td><input type="number" class="cell" data-row="labor" data-day="4" inputmode="numeric"></td>
+          <td><input type="number" class="cell" data-row="labor" data-day="5" inputmode="numeric"></td>
+          <td><input type="number" class="cell" data-row="labor" data-day="6" inputmode="numeric"></td>
+          <td id="sum_labor">-</td>
+        </tr>
+        <tr class="calc">
+          <td class="label">FL合計</td>
+          <td id="fl_0">-</td><td id="fl_1">-</td><td id="fl_2">-</td>
+          <td id="fl_3">-</td><td id="fl_4">-</td><td id="fl_5">-</td><td id="fl_6">-</td>
+          <td id="sum_fl">-</td>
+        </tr>
+        <tr class="total">
+          <td class="label">FL比率</td>
+          <td id="flr_0">-</td><td id="flr_1">-</td><td id="flr_2">-</td>
+          <td id="flr_3">-</td><td id="flr_4">-</td><td id="flr_5">-</td><td id="flr_6">-</td>
+          <td id="sum_flr">-</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="help">Food原価＝当日使用食材（仕入額ではない） / Labor費＝その日の人件費（時給×時間） / FL比率＝（Food＋Labor）÷ 売上</p>
+  </div>
+
+  <div class="card">
+    <h2><span class="badge">KPI</span>今週のスコア</h2>
+    <div class="kpi-grid">
+      <div class="kpi">
+        <div class="lbl">売上達成率</div>
+        <div class="val" id="kpi_achieve">-</div>
+        <div class="tgt">目標：100%以上</div>
+      </div>
+      <div class="kpi">
+        <div class="lbl">F比率</div>
+        <div class="val" id="kpi_f">-</div>
+        <div class="tgt">目標：30%以下</div>
+      </div>
+      <div class="kpi">
+        <div class="lbl">L比率</div>
+        <div class="val" id="kpi_l">-</div>
+        <div class="tgt">目標：30%以下</div>
+      </div>
+      <div class="kpi">
+        <div class="lbl">FL合計</div>
+        <div class="val" id="kpi_fl">-</div>
+        <div class="tgt">目標：60%以下</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><span class="badge">Google</span>レビュー（月末に記入）</h2>
+    <div class="row">
+      <label>今週の新着数</label>
+      <input type="number" id="revCount" placeholder="件数" inputmode="numeric">
+    </div>
+    <div class="row">
+      <label>現時点の平均点</label>
+      <input type="number" step="0.1" id="revAvg" placeholder="例：4.6" inputmode="decimal">
+    </div>
+    <p class="help">目標平均4.5以上。ネガティブレビューは必ずOWNERへ報告すること。</p>
+  </div>
+
+  <div class="card">
+    <h2><span class="badge">コメント</span>振り返り</h2>
+    <div style="margin-bottom:12px;">
+      <label style="font-size:12px;color:#555;display:block;margin-bottom:6px;">今週の良かった点</label>
+      <textarea id="goodNote" placeholder="例：金曜のピーク時間帯のオペレーションが改善した"></textarea>
+    </div>
+    <div style="margin-bottom:12px;">
+      <label style="font-size:12px;color:#555;display:block;margin-bottom:6px;">今週の課題</label>
+      <textarea id="issueNote" placeholder="例：水曜の売上が目標を20%下回った。雨天影響と判断"></textarea>
+    </div>
+    <div>
+      <label style="font-size:12px;color:#555;display:block;margin-bottom:6px;">来週の対策（1行）</label>
+      <textarea id="actionNote" placeholder="例：平日昼ピークにドリンクセット訴求を強化"></textarea>
+    </div>
+  </div>
+
+  <div class="btns">
+    <button class="btn primary" onclick="saveData()">💾 保存</button>
+    <button class="btn sub" onclick="exportCSV()">📤 CSV出力</button>
+    <button class="btn ghost" onclick="clearData()">🗑 新しい週</button>
+  </div>
+
+  <div class="status" id="status"></div>
+</div>
+
+<script>
+const STORAGE_KEY = 'okibowl_weekly_pl';
+
+function num(v) { const n = parseFloat(v); return isNaN(n) ? 0 : n; }
+function fmt(n) { return n.toLocaleString('ja-JP'); }
+function pct(n) { return n.toFixed(1) + '%'; }
+
+function recalc() {
+  const sales = [], food = [], labor = [];
+  for (let i=0;i<7;i++) {
+    sales.push(num(document.querySelector(`[data-row="sales"][data-day="${i}"]`).value));
+    food.push(num(document.querySelector(`[data-row="food"][data-day="${i}"]`).value));
+    labor.push(num(document.querySelector(`[data-row="labor"][data-day="${i}"]`).value));
+  }
+  const sumS = sales.reduce((a,b)=>a+b,0);
+  const sumF = food.reduce((a,b)=>a+b,0);
+  const sumL = labor.reduce((a,b)=>a+b,0);
+
+  document.getElementById('sum_sales').textContent = sumS ? fmt(sumS) : '-';
+  document.getElementById('sum_food').textContent  = sumF ? fmt(sumF) : '-';
+  document.getElementById('sum_labor').textContent = sumL ? fmt(sumL) : '-';
+
+  for (let i=0;i<7;i++) {
+    const fl = food[i]+labor[i];
+    document.getElementById(`fl_${i}`).textContent = fl ? fmt(fl) : '-';
+    document.getElementById(`flr_${i}`).textContent = sales[i] ? pct(fl/sales[i]*100) : '-';
+  }
+  const sumFL = sumF+sumL;
+  document.getElementById('sum_fl').textContent = sumFL ? fmt(sumFL) : '-';
+  document.getElementById('sum_flr').textContent = sumS ? pct(sumFL/sumS*100) : '-';
+
+  const target = num(document.getElementById('salesTarget').value);
+  const ach = document.getElementById('kpi_achieve');
+  if (target && sumS) {
+    const r = sumS/target*100;
+    ach.textContent = pct(r);
+    ach.className = 'val ' + (r>=100 ? 'ok' : 'ng');
+  } else { ach.textContent='-'; ach.className='val'; }
+
+  const fRate = sumS ? sumF/sumS*100 : 0;
+  const lRate = sumS ? sumL/sumS*100 : 0;
+  const flRate = sumS ? sumFL/sumS*100 : 0;
+  const kpiF = document.getElementById('kpi_f');
+  const kpiL = document.getElementById('kpi_l');
+  const kpiFL = document.getElementById('kpi_fl');
+  kpiF.textContent = sumS ? pct(fRate) : '-'; kpiF.className = 'val ' + (sumS ? (fRate<=30?'ok':'ng') : '');
+  kpiL.textContent = sumS ? pct(lRate) : '-'; kpiL.className = 'val ' + (sumS ? (lRate<=30?'ok':'ng') : '');
+  kpiFL.textContent = sumS ? pct(flRate) : '-'; kpiFL.className = 'val ' + (sumS ? (flRate<=60?'ok':'ng') : '');
+}
+
+function getData() {
+  const data = { meta:{}, cells:{}, review:{}, notes:{} };
+  data.meta.weekStart = document.getElementById('weekStart').value;
+  data.meta.managerName = document.getElementById('managerName').value;
+  data.meta.salesTarget = document.getElementById('salesTarget').value;
+  document.querySelectorAll('.cell').forEach(el => {
+    data.cells[`${el.dataset.row}_${el.dataset.day}`] = el.value;
+  });
+  data.review.count = document.getElementById('revCount').value;
+  data.review.avg = document.getElementById('revAvg').value;
+  data.notes.good = document.getElementById('goodNote').value;
+  data.notes.issue = document.getElementById('issueNote').value;
+  data.notes.action = document.getElementById('actionNote').value;
+  return data;
+}
+function setData(d) {
+  if (!d) return;
+  document.getElementById('weekStart').value = d.meta?.weekStart || '';
+  document.getElementById('managerName').value = d.meta?.managerName || '';
+  document.getElementById('salesTarget').value = d.meta?.salesTarget || '';
+  Object.entries(d.cells||{}).forEach(([k,v]) => {
+    const [row,day] = k.split('_');
+    const el = document.querySelector(`[data-row="${row}"][data-day="${day}"]`);
+    if (el) el.value = v;
+  });
+  document.getElementById('revCount').value = d.review?.count || '';
+  document.getElementById('revAvg').value = d.review?.avg || '';
+  document.getElementById('goodNote').value = d.notes?.good || '';
+  document.getElementById('issueNote').value = d.notes?.issue || '';
+  document.getElementById('actionNote').value = d.notes?.action || '';
+  recalc();
+}
+
+function showStatus(msg) {
+  const s = document.getElementById('status');
+  s.textContent = msg; s.classList.add('show');
+  setTimeout(()=>s.classList.remove('show'), 2000);
+}
+
+function saveData() {
+  const data = getData();
+  const key = data.meta.weekStart || 'current';
+  const all = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+  all[key] = data;
+  all._last = key;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
+  showStatus('✓ 保存しました');
+}
+function loadLast() {
+  const all = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+  if (all._last && all[all._last]) setData(all[all._last]);
+}
+function clearData() {
+  if (!confirm('新しい週の入力を始めます。現在の内容は保存済みであれば残ります。続けますか？')) return;
+  document.querySelectorAll('input, textarea').forEach(el => el.value = '');
+  recalc();
+  showStatus('✓ クリアしました');
+}
+function exportCSV() {
+  const d = getData();
+  const days = ['月','火','水','木','金','土','日'];
+  let csv = `OKI BOWL 週次P/L\n週の開始日,${d.meta.weekStart}\n店長,${d.meta.managerName}\n売上目標,${d.meta.salesTarget}\n\n`;
+  csv += `項目,${days.join(',')},週計\n`;
+  ['sales','food','labor'].forEach(row => {
+    const label = {sales:'売上',food:'Food原価',labor:'Labor費'}[row];
+    const vals = []; let sum = 0;
+    for (let i=0;i<7;i++) { const v = num(d.cells[`${row}_${i}`]||0); vals.push(v); sum+=v; }
+    csv += `${label},${vals.join(',')},${sum}\n`;
+  });
+  csv += `\nGoogleレビュー新着,${d.review.count}\n平均点,${d.review.avg}\n\n良かった点,"${d.notes.good||''}"\n課題,"${d.notes.issue||''}"\n来週の対策,"${d.notes.action||''}"\n`;
+  const blob = new Blob([`﻿${csv}`], {type:'text/csv;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `okibowl_pl_${d.meta.weekStart||'week'}.csv`;
+  a.click(); URL.revokeObjectURL(url);
+  showStatus('✓ CSV出力しました');
+}
+
+document.addEventListener('input', recalc);
+window.addEventListener('load', loadLast);
+</script>
+</body>
+</html>
