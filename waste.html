@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OKI BOWL 廃棄記録シート</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: 'Hiragino Sans', 'Yu Gothic', sans-serif;
+    background: #f4f4f0;
+    color: #1a1a1a;
+    padding: 16px;
+    padding-bottom: 80px;
+  }
+  .page { max-width: 900px; margin: 0 auto; }
+  header {
+    background: #1a1a1a;
+    color: #fff;
+    border-radius: 14px;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+  }
+  header .eyebrow { font-size: 10px; color: #888; letter-spacing: 0.2em; margin-bottom: 6px; }
+  header h1 { font-size: 20px; font-weight: 800; margin-bottom: 4px; }
+  header h1 span { color: #ff6b6b; }
+  header p { font-size: 12px; color: #aaa; }
+
+  .card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 18px 20px;
+    margin-bottom: 14px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+  }
+  .card h2 {
+    font-size: 14px;
+    font-weight: 800;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #f0f0f0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card h2 .badge {
+    background: #ff6b6b;
+    color: #fff;
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 10px;
+  }
+  .card h2 .badge.yellow { background: #f5c842; color: #1a1a1a; }
+  .card h2 .badge.dark { background: #1a1a1a; color: #fff; }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .form-grid.wide { grid-template-columns: 1fr; }
+  .field label {
+    display: block;
+    font-size: 11px;
+    color: #666;
+    margin-bottom: 4px;
+    font-weight: 600;
+  }
+  .field input, .field select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    background: #fafafa;
+  }
+  .field input:focus, .field select:focus { border-color: #ff6b6b; background: #fff; outline: none; }
+
+  .btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn {
+    padding: 12px 18px;
+    border: none;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .btn.primary { background: #1a1a1a; color: #fff; flex: 1; min-width: 120px; }
+  .btn.primary:hover { background: #333; }
+  .btn.sub { background: #f5c842; color: #1a1a1a; }
+  .btn.ghost { background: #fff; color: #1a1a1a; border: 1px solid #ddd; }
+  .btn.danger { background: #fff; color: #cc3333; border: 1px solid #f5c6c6; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  thead th {
+    background: #f8f8f5;
+    padding: 10px 6px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #666;
+    border-bottom: 2px solid #e8e8e5;
+    text-align: left;
+  }
+  tbody td {
+    padding: 10px 6px;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 12px;
+  }
+  tbody td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  tbody tr:hover { background: #fafafa; }
+  .del-btn {
+    background: none;
+    border: none;
+    color: #cc3333;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 4px 8px;
+  }
+
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(140px,1fr)); gap: 10px; }
+  .kpi {
+    background: #fafafa;
+    border: 1px solid #eee;
+    border-radius: 10px;
+    padding: 14px;
+    text-align: center;
+  }
+  .kpi .lbl { font-size: 10px; color: #888; margin-bottom: 4px; letter-spacing: 0.05em; }
+  .kpi .val { font-size: 22px; font-weight: 800; color: #1a1a1a; }
+  .kpi .val.ok { color: #4a7c59; }
+  .kpi .val.ng { color: #cc3333; }
+  .kpi .tgt { font-size: 10px; color: #999; margin-top: 2px; }
+
+  .empty { text-align: center; color: #aaa; padding: 30px 10px; font-size: 13px; }
+
+  .status {
+    position: fixed;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1a1a;
+    color: #f5c842;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    opacity: 0;
+    transition: opacity 0.3s;
+    z-index: 100;
+  }
+  .status.show { opacity: 1; }
+
+  .filter-row { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; align-items: center; }
+  .filter-row label { font-size: 11px; color: #666; }
+  .filter-row input { padding: 6px 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 12px; font-family: inherit; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <div class="eyebrow">OKI BOWL — WASTE LOG</div>
+    <h1>廃棄記録 <span>シート</span></h1>
+    <p>ロス削減の第一歩｜発生したら即入力・月次集計でロス率を可視化する</p>
+  </header>
+
+  <div class="card">
+    <h2><span class="badge">入力</span>廃棄を追加</h2>
+    <div class="form-grid">
+      <div class="field">
+        <label>日付</label>
+        <input type="date" id="wDate">
+      </div>
+      <div class="field">
+        <label>品名</label>
+        <input type="text" id="wItem" placeholder="例：アボカド">
+      </div>
+      <div class="field">
+        <label>数量</label>
+        <input type="number" id="wQty" placeholder="個 / g" inputmode="decimal" step="0.01">
+      </div>
+      <div class="field">
+        <label>原価（円）</label>
+        <input type="number" id="wCost" placeholder="合計原価" inputmode="numeric">
+      </div>
+      <div class="field">
+        <label>理由</label>
+        <select id="wReason">
+          <option value="">選択</option>
+          <option>仕込み過多</option>
+          <option>発注過多</option>
+          <option>賞味期限切れ</option>
+          <option>調理ミス</option>
+          <option>提供ミス</option>
+          <option>その他</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>記録者</label>
+        <input type="text" id="wBy" placeholder="スタッフ名">
+      </div>
+    </div>
+    <div class="btns">
+      <button class="btn primary" onclick="addEntry()">＋ 記録を追加</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><span class="badge yellow">KPI</span>今月のロス率</h2>
+    <div class="filter-row">
+      <label>月を選択</label>
+      <input type="month" id="monthPick">
+      <label style="margin-left:8px;">月間仕入額（円）</label>
+      <input type="number" id="monthPurchase" placeholder="Food原価月計" inputmode="numeric">
+    </div>
+    <div class="kpi-grid">
+      <div class="kpi">
+        <div class="lbl">件数</div>
+        <div class="val" id="k_count">-</div>
+        <div class="tgt">今月の廃棄件数</div>
+      </div>
+      <div class="kpi">
+        <div class="lbl">廃棄原価合計</div>
+        <div class="val" id="k_sum">-</div>
+        <div class="tgt">円</div>
+      </div>
+      <div class="kpi">
+        <div class="lbl">ロス率</div>
+        <div class="val" id="k_rate">-</div>
+        <div class="tgt">目標：3%以下</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><span class="badge dark">履歴</span>記録一覧</h2>
+    <div id="tableWrap"></div>
+    <div class="btns" style="margin-top:12px;">
+      <button class="btn sub" onclick="exportCSV()">📤 CSV出力</button>
+      <button class="btn ghost" onclick="exportMonth()">📊 今月のみCSV</button>
+      <button class="btn danger" onclick="clearAll()">全削除</button>
+    </div>
+  </div>
+
+  <div class="status" id="status"></div>
+</div>
+
+<script>
+const KEY = 'okibowl_waste_log';
+const PUR_KEY = 'okibowl_waste_purchase';
+
+function getEntries() { return JSON.parse(localStorage.getItem(KEY) || '[]'); }
+function save(arr) { localStorage.setItem(KEY, JSON.stringify(arr)); }
+function num(v){const n=parseFloat(v);return isNaN(n)?0:n;}
+function fmt(n){return Math.round(n).toLocaleString('ja-JP');}
+function showStatus(msg){const s=document.getElementById('status');s.textContent=msg;s.classList.add('show');setTimeout(()=>s.classList.remove('show'),2000);}
+
+function addEntry() {
+  const e = {
+    id: Date.now(),
+    date: document.getElementById('wDate').value,
+    item: document.getElementById('wItem').value.trim(),
+    qty:  document.getElementById('wQty').value,
+    cost: num(document.getElementById('wCost').value),
+    reason: document.getElementById('wReason').value,
+    by: document.getElementById('wBy').value.trim()
+  };
+  if (!e.date || !e.item) { alert('日付と品名は必須です'); return; }
+  const arr = getEntries();
+  arr.push(e); save(arr);
+  ['wItem','wQty','wCost','wReason','wBy'].forEach(id => document.getElementById(id).value = '');
+  render(); showStatus('✓ 記録しました');
+}
+
+function delEntry(id) {
+  if (!confirm('この記録を削除しますか？')) return;
+  save(getEntries().filter(e => e.id !== id));
+  render(); showStatus('✓ 削除しました');
+}
+
+function render() {
+  const arr = getEntries().sort((a,b) => (b.date||'').localeCompare(a.date||''));
+  const wrap = document.getElementById('tableWrap');
+  if (arr.length === 0) { wrap.innerHTML = '<div class="empty">まだ記録がありません</div>'; updateKPI(); return; }
+  let html = '<table><thead><tr><th>日付</th><th>品名</th><th>数量</th><th style="text-align:right;">原価</th><th>理由</th><th>記録者</th><th></th></tr></thead><tbody>';
+  arr.forEach(e => {
+    html += `<tr>
+      <td>${e.date}</td>
+      <td>${escapeHtml(e.item)}</td>
+      <td>${escapeHtml(e.qty||'')}</td>
+      <td class="num">${e.cost?fmt(e.cost):'-'}</td>
+      <td>${escapeHtml(e.reason||'')}</td>
+      <td>${escapeHtml(e.by||'')}</td>
+      <td><button class="del-btn" onclick="delEntry(${e.id})">🗑</button></td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  wrap.innerHTML = html;
+  updateKPI();
+}
+
+function escapeHtml(s){return (s||'').toString().replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+function getMonth() {
+  const m = document.getElementById('monthPick').value;
+  if (m) return m;
+  const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+}
+
+function updateKPI() {
+  const m = getMonth();
+  const arr = getEntries().filter(e => (e.date||'').startsWith(m));
+  const sum = arr.reduce((a,b) => a + num(b.cost), 0);
+  document.getElementById('k_count').textContent = arr.length;
+  document.getElementById('k_sum').textContent = sum ? fmt(sum) : '-';
+  const pur = num(document.getElementById('monthPurchase').value);
+  localStorage.setItem(PUR_KEY + '_' + m, pur);
+  const rate = document.getElementById('k_rate');
+  if (pur > 0) {
+    const r = sum / pur * 100;
+    rate.textContent = r.toFixed(1) + '%';
+    rate.className = 'val ' + (r <= 3 ? 'ok' : 'ng');
+  } else { rate.textContent = '-'; rate.className = 'val'; }
+}
+
+function clearAll() {
+  if (!confirm('全ての記録を削除します。CSV出力してからにしますか？')) return;
+  save([]); render(); showStatus('✓ 全削除しました');
+}
+
+function toCSV(arr) {
+  let csv = '日付,品名,数量,原価,理由,記録者\n';
+  arr.forEach(e => {
+    csv += `${e.date},"${e.item}","${e.qty||''}",${e.cost||0},"${e.reason||''}","${e.by||''}"\n`;
+  });
+  const sum = arr.reduce((a,b)=>a+num(b.cost),0);
+  csv += `\n合計,,,${sum},,\n`;
+  return csv;
+}
+
+function download(csv, name) {
+  const blob = new Blob([`﻿${csv}`], {type:'text/csv;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = name;
+  a.click(); URL.revokeObjectURL(url);
+}
+
+function exportCSV() {
+  const arr = getEntries().sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  if (!arr.length) { alert('記録がありません'); return; }
+  download(toCSV(arr), 'okibowl_waste_all.csv');
+  showStatus('✓ CSV出力');
+}
+function exportMonth() {
+  const m = getMonth();
+  const arr = getEntries().filter(e => (e.date||'').startsWith(m)).sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  if (!arr.length) { alert('今月の記録がありません'); return; }
+  download(toCSV(arr), `okibowl_waste_${m}.csv`);
+  showStatus('✓ 今月分CSV出力');
+}
+
+document.addEventListener('input', e => {
+  if (e.target.id === 'monthPick' || e.target.id === 'monthPurchase') updateKPI();
+});
+
+window.addEventListener('load', () => {
+  const today = new Date();
+  document.getElementById('wDate').value = today.toISOString().slice(0,10);
+  document.getElementById('monthPick').value = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}`;
+  const pur = localStorage.getItem(PUR_KEY + '_' + document.getElementById('monthPick').value);
+  if (pur) document.getElementById('monthPurchase').value = pur;
+  render();
+});
+</script>
+</body>
+</html>
