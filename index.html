@@ -1,20 +1,153 @@
 <!DOCTYPE html>
-<html lang="ja"><head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>OKI BOWL</title>
 <style>
-body{font-family:'Hiragino Sans','Yu Gothic',sans-serif;background:#f4f4f0;margin:0;padding:24px;color:#1a1a1a;}
-.page{max-width:500px;margin:0 auto;}
-h1{font-size:24px;font-weight:800;margin:16px 0 24px;letter-spacing:0.02em;}
-h1 span{color:#f5c842}
-.card{background:#fff;border-radius:12px;padding:20px;margin-bottom:12px;text-decoration:none;color:#1a1a1a;display:block;box-shadow:0 1px 6px rgba(0,0,0,.06);}
-.card .emoji{font-size:32px;margin-bottom:6px;}
-.card .title{font-size:16px;font-weight:800;}
-.card .desc{font-size:12px;color:#666;margin-top:4px;}
-.card .lock{display:inline-block;background:#1a1a1a;color:#f5c842;font-size:9px;padding:2px 8px;border-radius:10px;margin-left:6px;letter-spacing:0.05em;vertical-align:middle;font-weight:700;}
-.card:active{background:#fafafa;}
-</style></head><body><div class="page">
-<h1>OKI <span>BOWL</span></h1>
-<a class="card" href="pl.html"><div class="emoji">📊</div><div class="title">週次P/Lシート<span class="lock">🔒 PIN</span></div><div class="desc">毎日閉店後に売上・原価・人件費を入力（店長のみ・パスワード必要）</div></a>
-<a class="card" href="waste.html"><div class="emoji">🗑️</div><div class="title">廃棄記録シート</div><div class="desc">廃棄が出たらすぐ入力（全スタッフOK）</div></a>
-</div></body></html>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { font-family:'Hiragino Sans','Yu Gothic',sans-serif; background:#f4f4f0; color:#1a1a1a; margin:0; min-height:100vh; }
+
+  /* =========== HOME =========== */
+  .home { padding:24px; }
+  .home .page { max-width:500px; margin:0 auto; }
+  .home h1 { font-size:24px; font-weight:800; margin:16px 0 24px; letter-spacing:0.02em; }
+  .home h1 span { color:#f5c842; }
+  .card { background:#fff; border-radius:12px; padding:20px; margin-bottom:12px; text-decoration:none; color:#1a1a1a; display:block; box-shadow:0 1px 6px rgba(0,0,0,.06); cursor:pointer; border:none; width:100%; text-align:left; font-family:inherit; }
+  .card:hover { background:#fafafa; }
+  .card:active { background:#f0f0f0; }
+  .card .emoji { font-size:32px; margin-bottom:6px; }
+  .card .title { font-size:16px; font-weight:800; }
+  .card .desc { font-size:12px; color:#666; margin-top:4px; }
+  .card .lock { display:inline-block; background:#1a1a1a; color:#f5c842; font-size:9px; padding:2px 8px; border-radius:10px; margin-left:6px; letter-spacing:0.05em; vertical-align:middle; font-weight:700; }
+
+  /* =========== PIN =========== */
+  .pin-overlay { position:fixed; inset:0; background:#1a1a1a; color:#fff; z-index:9999; display:none; flex-direction:column; align-items:center; justify-content:center; font-family:inherit; }
+  .pin-overlay.show { display:flex; }
+  .pin-eyebrow { font-size:11px; color:#888; letter-spacing:0.2em; margin-bottom:10px; }
+  .pin-title { font-size:24px; font-weight:800; margin-bottom:8px; }
+  .pin-subtitle { font-size:12px; color:#aaa; margin-bottom:24px; }
+  .pin-input { font-size:32px; letter-spacing:0.5em; text-align:center; padding:14px 20px; border:2px solid #333; border-radius:12px; background:#222; color:#f5c842; width:200px; font-family:monospace; outline:none; }
+  .pin-error { color:#ff6b6b; font-size:12px; margin-top:14px; min-height:18px; }
+  .pin-cancel { margin-top:30px; background:none; border:1px solid #444; color:#888; padding:10px 20px; border-radius:8px; cursor:pointer; font-family:inherit; font-size:12px; }
+  .pin-cancel:hover { border-color:#666; color:#ccc; }
+  .pin-note { font-size:10px; color:#555; margin-top:40px; }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)} }
+
+  /* =========== CONTENT FRAME =========== */
+  .frame-view { display:none; height:100vh; width:100%; flex-direction:column; background:#f4f4f0; }
+  .frame-view.show { display:flex; }
+  .frame-bar { display:flex; align-items:center; gap:12px; padding:10px 14px; background:#1a1a1a; color:#fff; flex-shrink:0; }
+  .frame-bar button { background:#333; color:#fff; border:none; padding:8px 14px; border-radius:8px; font-size:13px; font-weight:700; cursor:pointer; font-family:inherit; }
+  .frame-bar button:hover { background:#444; }
+  .frame-bar .frame-title { font-size:13px; font-weight:700; flex:1; }
+  .frame-bar .frame-title span { color:#f5c842; }
+  iframe { flex:1; width:100%; border:none; background:#f4f4f0; }
+</style>
+</head>
+<body>
+
+<!-- HOME -->
+<div class="home" id="home">
+  <div class="page">
+    <h1>OKI <span>BOWL</span></h1>
+    <button class="card" onclick="openPL()">
+      <div class="emoji">📊</div>
+      <div class="title">週次P/Lシート<span class="lock">🔒 PIN</span></div>
+      <div class="desc">毎日閉店後に売上・原価・人件費を入力（店長のみ・パスワード必要）</div>
+    </button>
+    <button class="card" onclick="openWaste()">
+      <div class="emoji">🗑️</div>
+      <div class="title">廃棄記録シート</div>
+      <div class="desc">廃棄が出たらすぐ入力（全スタッフOK）</div>
+    </button>
+  </div>
+</div>
+
+<!-- PIN -->
+<div class="pin-overlay" id="pinOverlay">
+  <div class="pin-eyebrow">OKI BOWL — PROTECTED</div>
+  <div class="pin-title">🔒 PINコードを入力</div>
+  <div class="pin-subtitle">4桁のPINを入力してください</div>
+  <input class="pin-input" id="pinInput" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" placeholder="••••">
+  <div class="pin-error" id="pinError"></div>
+  <button class="pin-cancel" onclick="cancelPin()">キャンセル</button>
+  <div class="pin-note">端末内で認証・保存されます</div>
+</div>
+
+<!-- FRAME (P/L or Waste) -->
+<div class="frame-view" id="frameView">
+  <div class="frame-bar">
+    <button onclick="goHome()">← 戻る</button>
+    <div class="frame-title" id="frameTitle"></div>
+  </div>
+  <iframe id="contentFrame" src="about:blank"></iframe>
+</div>
+
+<script>
+const PIN_CORRECT = '5821';
+const PIN_KEY = 'okibowl_pl_unlocked_v2';
+const home = document.getElementById('home');
+const pinOverlay = document.getElementById('pinOverlay');
+const pinInput = document.getElementById('pinInput');
+const pinError = document.getElementById('pinError');
+const frameView = document.getElementById('frameView');
+const frameTitle = document.getElementById('frameTitle');
+const contentFrame = document.getElementById('contentFrame');
+
+function showOnly(el) {
+  home.style.display = (el === home) ? 'block' : 'none';
+  pinOverlay.classList.toggle('show', el === pinOverlay);
+  frameView.classList.toggle('show', el === frameView);
+}
+
+function openWaste() {
+  frameTitle.innerHTML = '🗑️ <span>廃棄記録シート</span>';
+  contentFrame.src = 'waste.html';
+  showOnly(frameView);
+}
+
+function openPL() {
+  if (localStorage.getItem(PIN_KEY) === '1') {
+    loadPL();
+  } else {
+    showOnly(pinOverlay);
+    pinInput.value = '';
+    pinError.textContent = '';
+    setTimeout(()=>pinInput.focus(), 100);
+  }
+}
+function loadPL() {
+  frameTitle.innerHTML = '📊 <span>週次P/Lシート</span>';
+  contentFrame.src = 'pl.html';
+  showOnly(frameView);
+}
+function cancelPin() {
+  pinInput.value = '';
+  pinError.textContent = '';
+  showOnly(home);
+}
+function goHome() {
+  contentFrame.src = 'about:blank';
+  showOnly(home);
+}
+
+pinInput.addEventListener('input', () => {
+  if (pinInput.value === PIN_CORRECT) {
+    localStorage.setItem(PIN_KEY, '1');
+    loadPL();
+  } else if (pinInput.value.length === 4) {
+    pinError.textContent = '✗ PINが違います';
+    pinInput.style.animation = 'none';
+    pinInput.offsetHeight;
+    pinInput.style.animation = 'shake 0.3s';
+    setTimeout(()=>{ pinInput.value=''; pinError.textContent=''; }, 800);
+  }
+});
+pinInput.addEventListener('keydown', e => {
+  if (e.key === 'Escape') cancelPin();
+});
+</script>
+
+</body>
+</html>
