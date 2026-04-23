@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>OKIBOWL 2号店 日別工程表</title>
+<style>
+:root{
+  --bg:#F8F5F2;--card:#fff;--border:#EAE0D8;
+  --primary:#6F4E37;--primary-pale:#F5EDE5;
+  --owner:#E07B39;--mgr:#4A7FA5;--ten:#9B59B6;--sa:#5B8A5F;--sb:#C0392B;--sc:#E67E22;
+  --done:#CCC;--text:#2C1A0E;--sub:#9A8070;
+  --ph1:#E07B39;--ph2:#5B8A5F;--ph3:#4A7FA5;--ph4:#9B59B6;--ph5:#C0392B;--ph6:#27AE60;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif;background:var(--bg);color:var(--text);font-size:13px;}
+
+/* TOP BAR */
+.topbar{background:var(--primary);color:#fff;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.topbar h1{font-size:16px;font-weight:900;letter-spacing:1px;}
+.topbar-meta{font-size:10px;opacity:.7;}
+.topbar-open{background:#FFD580;color:var(--primary);font-weight:900;font-size:12px;padding:5px 14px;border-radius:6px;}
+
+/* ROLE FILTER */
+.filter-bar{background:#fff;border-bottom:1px solid var(--border);padding:10px 24px;display:flex;align-items:center;gap:8px;position:sticky;top:53px;z-index:99;flex-wrap:wrap;}
+.filter-label{font-size:10px;font-weight:700;color:var(--sub);margin-right:4px;}
+.fbtn{border:none;border-radius:20px;padding:5px 13px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s;opacity:.6;}
+.fbtn.active{opacity:1;color:#fff;}
+.fbtn-all{background:#EEE;color:var(--text);}
+.fbtn-all.active{background:var(--primary);}
+.fbtn-owner{background:#FDE8D8;color:var(--owner);}
+.fbtn-owner.active{background:var(--owner);}
+.fbtn-mgr{background:#DDE8F5;color:var(--mgr);}
+.fbtn-mgr.active{background:var(--mgr);}
+.fbtn-ten{background:#F0E5F8;color:var(--ten);}
+.fbtn-ten.active{background:var(--ten);}
+.fbtn-sa{background:#E2F0E4;color:var(--sa);}
+.fbtn-sa.active{background:var(--sa);}
+.fbtn-sb{background:#FAE5E5;color:var(--sb);}
+.fbtn-sb.active{background:var(--sb);}
+.fbtn-sc{background:#FEF0E0;color:var(--sc);}
+.fbtn-sc.active{background:var(--sc);}
+
+/* PROGRESS */
+.prog-bar-wrap{background:#EEE;border-radius:4px;height:4px;flex:1;max-width:200px;overflow:hidden;}
+.prog-bar{height:100%;background:var(--ph6);border-radius:4px;transition:width .3s;}
+.prog-label{font-size:10px;font-weight:700;color:var(--sub);white-space:nowrap;}
+
+/* LEGEND */
+.legend{background:#fff;border-bottom:1px solid var(--border);padding:8px 24px;display:flex;gap:16px;flex-wrap:wrap;}
+.leg-item{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--sub);}
+.leg-dot{width:10px;height:10px;border-radius:50%;}
+
+/* PHASE HEADER */
+.phase-header{padding:10px 24px;margin-top:12px;display:flex;align-items:center;gap:12px;}
+.ph-badge{font-size:10px;font-weight:800;color:#fff;padding:3px 10px;border-radius:4px;}
+.ph-title{font-size:14px;font-weight:800;}
+.ph-period{font-size:11px;color:var(--sub);}
+
+/* WEEK BLOCK */
+.week{background:var(--card);border:1px solid var(--border);border-radius:12px;margin:6px 24px;overflow:hidden;}
+.week-head{display:flex;align-items:center;gap:12px;padding:10px 16px;cursor:pointer;user-select:none;background:#FDFAF7;}
+.week-head:hover{background:#F8F0E8;}
+.week-num{font-size:10px;font-weight:800;color:var(--sub);min-width:50px;}
+.week-dates{font-size:13px;font-weight:800;flex:1;}
+.week-tags{display:flex;gap:4px;}
+.week-tag{font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px;background:var(--bg);color:var(--sub);}
+.week-progress{display:flex;align-items:center;gap:6px;margin-left:auto;}
+.week-count{font-size:10px;color:var(--sub);}
+.chevron{font-size:12px;color:var(--sub);transition:transform .2s;}
+.week.open .chevron{transform:rotate(90deg);}
+
+/* DAYS */
+.days{display:none;}
+.week.open .days{display:block;}
+.day{border-top:1px solid var(--border);}
+.day-head{display:flex;align-items:center;gap:10px;padding:8px 16px;background:#FAFAFA;}
+.day-date{font-size:12px;font-weight:800;min-width:80px;color:var(--primary);}
+.day-phase-tag{font-size:9px;padding:2px 7px;border-radius:4px;font-weight:700;color:#fff;}
+.day-tasks{padding:4px 16px 10px 16px;display:flex;flex-direction:column;gap:4px;}
+
+/* TASK ITEM */
+.task{display:flex;align-items:flex-start;gap:8px;padding:5px 8px;border-radius:6px;transition:background .1s;}
+.task:hover{background:var(--bg);}
+.task.done .task-text{text-decoration:line-through;color:var(--done);}
+.task input[type=checkbox]{width:14px;height:14px;margin-top:1px;cursor:pointer;accent-color:var(--primary);}
+.role-badge{font-size:9px;font-weight:800;padding:2px 7px;border-radius:4px;color:#fff;white-space:nowrap;flex-shrink:0;}
+.rb-owner{background:var(--owner);}
+.rb-mgr{background:var(--mgr);}
+.rb-ten{background:var(--ten);}
+.rb-sa{background:var(--sa);}
+.rb-sb{background:var(--sb);}
+.rb-sc{background:var(--sc);}
+.cat-tag{font-size:9px;padding:2px 6px;border-radius:4px;background:var(--bg);color:var(--sub);white-space:nowrap;flex-shrink:0;}
+.task-text{font-size:12px;line-height:1.5;flex:1;}
+.task-important .task-text{font-weight:700;}
+.task-important .task-text::before{content:"! ";color:var(--owner);}
+.milestone-row{background:#FFFDE8;border-left:3px solid #FFD580;padding:6px 12px 6px 16px;margin:4px 16px;border-radius:0 6px 6px 0;font-size:12px;font-weight:800;color:var(--primary);}
+.milestone-row::before{content:"★ ";}
+
+/* HIDDEN ROLES */
+.task[data-role="OWNER"]{}
+.task[data-role="MGR"]{}
+.task[data-role="TEN"]{}
+.task[data-role="SA"]{}
+.task[data-role="SB"]{}
+.task[data-role="SC"]{}
+
+/* FOOTER */
+.footer{text-align:center;padding:24px;color:var(--sub);font-size:11px;}
+
+/* ===== LOGIN OVERLAY ===== */
+#login-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(150deg,#3E2A1A 0%,#6F4E37 60%,#9B6B45 100%);z-index:9999;display:flex;align-items:center;justify-content:center;}
+.login-box{background:#fff;border-radius:20px;padding:44px 32px 36px;max-width:360px;width:92%;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,.4);}
+.login-logo{font-size:30px;font-weight:900;color:#6F4E37;letter-spacing:3px;margin-bottom:2px;}
+.login-sub{font-size:12px;color:#9A8070;margin-bottom:6px;}
+.login-badge-row{display:flex;justify-content:center;gap:6px;margin-bottom:28px;flex-wrap:wrap;}
+.lb{font-size:10px;font-weight:700;padding:3px 10px;border-radius:12px;color:#fff;}
+.lb-owner{background:#E07B39;}
+.lb-mgr{background:#4A7FA5;}
+.lb-staff{background:#5B8A5F;}
+.login-label{font-size:11px;font-weight:700;color:#9A8070;text-align:left;margin-bottom:6px;}
+.login-input{width:100%;padding:13px 16px;border:2px solid #EAE0D8;border-radius:10px;font-size:15px;font-family:inherit;outline:none;transition:border .2s;margin-bottom:14px;letter-spacing:2px;}
+.login-input:focus{border-color:#6F4E37;}
+.login-btn{width:100%;padding:13px;background:#6F4E37;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;transition:background .2s;letter-spacing:1px;}
+.login-btn:hover{background:#5a3d2b;}
+.login-error{color:#C0392B;font-size:12px;margin-top:10px;font-weight:700;display:none;}
+</style>
+</head>
+<body>
+
+<!-- ===== LOGIN OVERLAY ===== -->
+<div id="login-overlay">
+  <div class="login-box">
+    <div class="login-logo">OKIBOWL</div>
+    <div class="login-sub">2号店 日別工程表</div>
+    <div class="login-badge-row">
+      <span class="lb lb-owner">OWNER</span>
+      <span class="lb lb-mgr">マネージャー・店長</span>
+      <span class="lb lb-staff">スタッフ</span>
+    </div>
+    <div class="login-label">パスワードを入力してください</div>
+    <input type="password" id="pw-input" class="login-input" placeholder="••••••••"
+      onkeydown="if(event.key==='Enter')doLogin()" autofocus>
+    <button class="login-btn" onclick="doLogin()">ログイン →</button>
+    <div class="login-error" id="login-error">❌ パスワードが正しくありません</div>
+  </div>
+</div>
+
+<div class="topbar">
+  <div>
+    <h1>OKIBOWL 2号店 日別工程表（役割別）</h1>
+    <div class="topbar-meta">2026年4月10日〜7月1日 ／ 計12週間</div>
+  </div>
+  <div class="topbar-open">グランドオープン 2026.7.1</div>
+</div>
+
+<div class="filter-bar">
+  <div class="filter-label">役割フィルター:</div>
+  <button class="fbtn fbtn-all active" onclick="filter('ALL')">全員</button>
+  <button class="fbtn fbtn-owner" onclick="filter('OWNER')">オーナー（MASAKI）</button>
+  <button class="fbtn fbtn-mgr" onclick="filter('MGR')">マネージャー</button>
+  <button class="fbtn fbtn-ten" onclick="filter('TEN')">店長</button>
+  <button class="fbtn fbtn-sa" onclick="filter('SA')">正社員A（ドリンク）</button>
+  <button class="fbtn fbtn-sb" onclick="filter('SB')">正社員B（キッチン）</button>
+  <button class="fbtn fbtn-sc" onclick="filter('SC')">正社員C（フロント）</button>
+  <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
+    <div class="prog-label" id="progLabel">進捗: 0%</div>
+    <div class="prog-bar-wrap"><div class="prog-bar" id="progBar" style="width:0%"></div></div>
+  </div>
+</div>
+
+<div class="legend">
+  <div class="leg-item"><div class="leg-dot" style="background:var(--owner)"></div>オーナー（MASAKI）- 戦略・契約・最終決定</div>
+  <div class="leg-item"><div class="leg-dot" style="background:var(--mgr)"></div>マネージャー - 運営・採用・業者管理</div>
+  <div class="leg-item"><div class="leg-dot" style="background:var(--ten)"></div>店長 - 現場オペレーション・チーム統括</div>
+  <div class="leg-item"><div class="leg-dot" style="background:var(--sa)"></div>正社員A（ドリンク担当）</div>
+  <div class="leg-item"><div class="leg-dot" style="background:var(--sb)"></div>正社員B（キッチン担当）</div>
+  <div class="leg-item"><div class="leg-dot" style="background:var(--sc)"></div>正社員C（フロント・レジ担当）</div>
+</div>
+
+<div id="main"></div>
+
+<div class="footer">OKIBOWL 2号店 日別工程表 ／ one bowl at a time ／ 2026.04</div>
+
+<script>
+// ========== PASSWORDS ==========
+// ★ パスワードはここで変更できます
+const PASSWORDS = [
+  { pass: '1234', role: 'OWNER', label: 'オーナー（MASAKI）' },
+  { pass: '1234', role: 'MGR',   label: 'マネージャー・店長' },
+  { pass: '1234', role: 'SA',    label: 'スタッフ' },
+];
+
+function doLogin(){
+  const pw = document.getElementById('pw-input').value.trim();
+  const match = PASSWORDS.find(p => p.pass === pw);
+  if(match){
+    sessionStorage.setItem('okibowl_role', match.role);
+    document.getElementById('login-overlay').style.display = 'none';
+    applyRoleFilter(match.role);
+  } else {
+    const err = document.getElementById('login-error');
+    err.style.display = 'block';
+    document.getElementById('pw-input').value = '';
+    document.getElementById('pw-input').focus();
+    setTimeout(()=>err.style.display='none', 2500);
+  }
+}
+
+function applyRoleFilter(role){
+  // OWNERは全表示、それ以外は役割フィルター適用
+  if(role === 'OWNER'){
+    filter('ALL');
+  } else if(role === 'MGR'){
+    // マネージャーと店長の両方を一旦全表示（全員見られる）
+    filter('ALL');
+  } else {
+    // スタッフ：正社員A/B/C すべて表示
+    filter('ALL');
+  }
+}
+
+// ========== DATA ==========
+const DATA = [
+  // ======== PHASE 1 ========
+  {phase:1,phaseLabel:"企画・物件・資金調達",phaseColor:"#E07B39",
+   weeks:[
+    {wn:1,dates:"4/10（木）〜 4/16（水）",tags:["物件","資金","採用準備"],
+     days:[
+      {d:"4/10（木）",ph:"物件",tasks:[
+        {role:"OWNER",cat:"物件",text:"不動産会社3社へ連絡・内見アポ取り",imp:true},
+        {role:"OWNER",cat:"管理",text:"プロジェクト全体工程表確認・チームへ共有"},
+        {role:"MGR",cat:"採用",text:"求人票ドラフト作成（Indeed・タウンワーク用）",imp:true},
+        {role:"MGR",cat:"業者",text:"内装業者候補リスト作成（3〜5社）"},
+      ]},
+      {d:"4/11（金）",ph:"物件",tasks:[
+        {role:"OWNER",cat:"物件",text:"物件内見①（国際通り候補A）",imp:true},
+        {role:"OWNER",cat:"資金",text:"銀行融資担当者へアポ取り"},
+        {role:"MGR",cat:"採用",text:"求人票最終確認・掲載手続き開始"},
+        {role:"MGR",cat:"SNS",text:"2号店SNSアカウント名・IDの検討"},
+      ]},
+      {d:"4/12（土）",ph:"物件",tasks:[
+        {role:"OWNER",cat:"物件",text:"物件内見②（国際通り候補B）"},
+        {role:"OWNER",cat:"物件",text:"候補物件の周辺競合・人流調査"},
+        {role:"MGR",cat:"採用",text:"面接質問リスト作成"},
+      ]},
+      {d:"4/13（日）",ph:"計画",tasks:[
+        {role:"OWNER",cat:"計画",text:"物件候補A/B 比較検討・条件整理"},
+        {role:"OWNER",cat:"計画",text:"開業資金・初期費用の最終試算"},
+      ]},
+      {d:"4/14（月）",ph:"資金",tasks:[
+        {role:"OWNER",cat:"資金",text:"銀行融資相談（事業計画書持参）",imp:true},
+        {role:"OWNER",cat:"許認可",text:"行政書士へ飲食店営業許可相談"},
+        {role:"MGR",cat:"採用",text:"求人掲載開始（Indeed・タウンワーク）",imp:true},
+        {role:"MGR",cat:"業者",text:"内装業者①へ見積もり依頼"},
+      ]},
+      {d:"4/15（火）",ph:"物件",tasks:[
+        {role:"OWNER",cat:"物件",text:"物件最終候補へ条件交渉・家賃・礼金確認",imp:true},
+        {role:"OWNER",cat:"物件",text:"弁護士・不動産アドバイザー確認"},
+        {role:"MGR",cat:"採用",text:"応募者への面接案内メール送信"},
+        {role:"MGR",cat:"業者",text:"内装業者②へ見積もり依頼"},
+      ]},
+      {d:"4/16（水）",ph:"物件",tasks:[
+        {role:"OWNER",cat:"物件",text:"物件契約書内容確認・修正依頼"},
+        {role:"MGR",cat:"採用",text:"面接スケジュール確定（1次面接 4/18〜）"},
+        {role:"MGR",cat:"業者",text:"MIZUKIと内装デザインコンセプト打ち合わせ"},
+      ]},
+     ]
+    },
+    {wn:2,dates:"4/17（木）〜 4/23（水）",tags:["物件契約","融資","面接"],
+     days:[
+      {d:"4/17（木）",ph:"資金",tasks:[
+        {role:"OWNER",cat:"資金",text:"融資申請書類一式準備（事業計画書・収支計画）",imp:true},
+        {role:"OWNER",cat:"物件",text:"物件契約書最終確認"},
+        {role:"MGR",cat:"採用",text:"1次面接実施（店長候補・正社員候補）",imp:true},
+        {role:"MGR",cat:"業者",text:"内装業者③へ見積もり依頼"},
+      ]},
+      {d:"4/18（金）",ph:"物件",tasks:[
+        {role:"OWNER",cat:"物件",text:"物件オーナーと最終条件交渉",imp:true},
+        {role:"MGR",cat:"採用",text:"1次面接②実施・評価シート記入"},
+        {role:"MGR",cat:"デザイン",text:"内装デザイン案 MIZUKI第1稿確認"},
+      ]},
+      {d:"4/19（土）",ph:"採用",tasks:[
+        {role:"OWNER",cat:"採用",text:"面接同席・最終候補者見極め"},
+        {role:"MGR",cat:"採用",text:"1次面接③実施（追加候補者）"},
+      ]},
+      {milestone:"物件契約締結（目標：4/20）"},
+      {d:"4/20（日）",ph:"物件",tasks:[
+        {role:"OWNER",cat:"物件",text:"物件契約締結・鍵受け取り",imp:true},
+        {role:"OWNER",cat:"資金",text:"融資申請書類銀行提出",imp:true},
+      ]},
+      {d:"4/21（月）",ph:"許認可",tasks:[
+        {role:"OWNER",cat:"許認可",text:"飲食店営業許可申請書類提出（保健所）",imp:true},
+        {role:"OWNER",cat:"許認可",text:"深夜酒類提供飲食店営業届出 確認"},
+        {role:"MGR",cat:"採用",text:"採用内定者へ連絡・条件提示"},
+        {role:"MGR",cat:"デザイン",text:"内装デザイン確定版 業者へ提出"},
+      ]},
+      {d:"4/22（火）",ph:"採用",tasks:[
+        {role:"OWNER",cat:"採用",text:"店長候補・正社員候補 最終面接・内定決定",imp:true},
+        {role:"MGR",cat:"採用",text:"雇用契約書ドラフト作成"},
+        {role:"MGR",cat:"業者",text:"内装業者3社見積もり比較・業者選定"},
+      ]},
+      {d:"4/23（水）",ph:"準備",tasks:[
+        {role:"OWNER",cat:"業者",text:"内装業者契約締結",imp:true},
+        {role:"MGR",cat:"採用",text:"採用者へ入社書類一式送付"},
+        {role:"MGR",cat:"業者",text:"設備業者（厨房機器・冷蔵ショーケース）アポ取り"},
+      ]},
+     ]
+    },
+    {wn:3,dates:"4/24（木）〜 4/30（水）",tags:["業者確定","設備発注","SNS準備"],
+     days:[
+      {d:"4/24（木）",ph:"設備",tasks:[
+        {role:"OWNER",cat:"設備",text:"厨房設備・スムージーマシン仕様確認",imp:true},
+        {role:"MGR",cat:"設備",text:"設備業者と機器リスト打ち合わせ"},
+        {role:"MGR",cat:"採用",text:"内定者オリエンテーション日程調整"},
+      ]},
+      {d:"4/25（金）",ph:"許認可",tasks:[
+        {role:"OWNER",cat:"許認可",text:"消防署への防火管理者選任届け提出"},
+        {role:"MGR",cat:"業者",text:"看板・サイン業者へ発注（国際通り・空港・とまりん）"},
+        {role:"MGR",cat:"SNS",text:"Instagram 2号店アカウント開設",imp:true},
+      ]},
+      {d:"4/26（土）",ph:"SNS",tasks:[
+        {role:"MGR",cat:"SNS",text:"TikTokアカウント開設・プロフィール設定"},
+        {role:"MGR",cat:"SNS",text:"先行投稿コンテンツ計画（工事進捗・スタッフ募集）"},
+      ]},
+      {d:"4/27（日）",ph:"計画",tasks:[
+        {role:"OWNER",cat:"計画",text:"フェーズ1完了チェック・フェーズ2計画確認"},
+        {role:"OWNER",cat:"資金",text:"融資審査状況確認"},
+      ]},
+      {d:"4/28（月）",ph:"内装",tasks:[
+        {role:"OWNER",cat:"内装",text:"内装工事着工前 現場最終確認",imp:true},
+        {role:"MGR",cat:"採用",text:"内定者オリエンテーション実施（雇用契約書署名）",imp:true},
+        {role:"MGR",cat:"研修",text:"研修スケジュール作成（1号店OJT計画）"},
+      ]},
+      {d:"4/29（火）",ph:"設備",tasks:[
+        {role:"OWNER",cat:"設備",text:"厨房設備・冷蔵ショーケース正式発注",imp:true},
+        {role:"MGR",cat:"業者",text:"チラシデザイン業者へ発注（5万部）"},
+        {role:"MGR",cat:"SNS",text:"Instagram 先行投稿①（物件取得のお知らせ）"},
+      ]},
+      {d:"4/30（水）",ph:"完了",tasks:[
+        {role:"OWNER",cat:"確認",text:"フェーズ1 全タスク完了確認・チームMTG"},
+        {role:"MGR",cat:"管理",text:"フェーズ2 詳細スケジュール全員へ共有"},
+      ]},
+     ]
+    },
+   ]
+  },
+
+  // ======== PHASE 2 ========
+  {phase:2,phaseLabel:"内装・設備工事 ＋ 採用・研修 ＋ マーケティング",phaseColor:"#5B8A5F",
+   weeks:[
+    {wn:4,dates:"5/1（金）〜 5/7（木）",tags:["工事着工","研修開始","SNS"],
+     days:[
+      {milestone:"内装工事着工（5/1）"},
+      {d:"5/1（金）",ph:"工事",tasks:[
+        {role:"OWNER",cat:"工事",text:"内装工事着工立ち会い・業者と工程確認",imp:true},
+        {role:"MGR",cat:"SNS",text:"Instagram 工事開始投稿（ビフォー写真）",imp:true},
+        {role:"TEN",cat:"研修",text:"1号店OJT研修 初日（接客・オペレーション観察）",imp:true},
+        {role:"SA",cat:"研修",text:"1号店ドリンク製造 研修①（スムージー基礎）"},
+        {role:"SB",cat:"研修",text:"1号店キッチン 研修①（ボウル仕込み基礎）"},
+      ]},
+      {d:"5/2（土）",ph:"工事",tasks:[
+        {role:"OWNER",cat:"工事",text:"工事進捗確認・写真記録"},
+        {role:"MGR",cat:"MEO",text:"Googleビジネスプロフィール 2号店登録開始",imp:true},
+        {role:"TEN",cat:"研修",text:"1号店OJT研修②（シフト・在庫管理見学）"},
+        {role:"SA",cat:"研修",text:"ドリンク研修②（レシピ暗記・比率確認）"},
+        {role:"SB",cat:"研修",text:"キッチン研修②（食材カット・仕込みスピード）"},
+        {role:"SC",cat:"研修",text:"1号店フロント研修①（レジ・接客スクリプト）"},
+      ]},
+      {d:"5/3（日）",ph:"研修",tasks:[
+        {role:"TEN",cat:"研修",text:"1号店 一日通し研修（全ポジション観察）"},
+        {role:"SA",cat:"研修",text:"ドリンク研修③（スムージー独立製造テスト）"},
+        {role:"SB",cat:"研修",text:"キッチン研修③（サラダボウル独立製造）"},
+        {role:"SC",cat:"研修",text:"フロント研修②（POSシステム操作）"},
+      ]},
+      {d:"5/4（月）",ph:"設備",tasks:[
+        {role:"OWNER",cat:"設備",text:"設備納品スケジュール確認（搬入日調整）"},
+        {role:"MGR",cat:"メニュー",text:"2号店メニュー最終ラインナップ会議",imp:true},
+        {role:"TEN",cat:"研修",text:"発注・在庫管理 実習（1号店）"},
+        {role:"SA",cat:"研修",text:"新メニュー（チアシードボウル等）レシピ習得"},
+        {role:"SB",cat:"研修",text:"食材ロスゼロ実習（循環型キッチン研修）"},
+      ]},
+      {d:"5/5（火）",ph:"採用",tasks:[
+        {role:"OWNER",cat:"採用",text:"パートタイム追加採用 最終面接"},
+        {role:"MGR",cat:"採用",text:"全スタッフ雇用契約書締結確認"},
+        {role:"MGR",cat:"SNS",text:"TikTok 投稿①（スムージー製造過程動画）"},
+        {role:"TEN",cat:"研修",text:"店長業務マニュアル読み込み・質問リスト作成"},
+      ]},
+      {d:"5/6（水）",ph:"マーケ",tasks:[
+        {role:"MGR",cat:"観光",text:"るるぶ・ラーチーゴー 掲載交渉アポ取り",imp:true},
+        {role:"MGR",cat:"SNS",text:"Instagram 投稿②（スタッフ紹介・国際通りへの想い）"},
+        {role:"TEN",cat:"研修",text:"数値管理研修（FL比率・日次売上確認方法）"},
+        {role:"SC",cat:"研修",text:"MEO対策 口コミ返信研修（1号店実践）"},
+      ]},
+      {d:"5/7（木）",ph:"確認",tasks:[
+        {role:"OWNER",cat:"確認",text:"Week1工事進捗・研修状況チームMTG",imp:true},
+        {role:"MGR",cat:"確認",text:"研修進捗チェック・課題洗い出し"},
+        {role:"TEN",cat:"確認",text:"1週間の研修振り返りレポート作成"},
+      ]},
+     ]
+    },
+    {wn:5,dates:"5/8（金）〜 5/14（木）",tags:["工事中盤","設備確認","メニュー開発"],
+     days:[
+      {d:"5/8（金）",ph:"工事",tasks:[
+        {role:"OWNER",cat:"工事",text:"内装工事 中間確認（壁・床・天井進捗）",imp:true},
+        {role:"MGR",cat:"SNS",text:"Instagram 工事進捗投稿（ビフォーアフター）"},
+        {role:"TEN",cat:"研修",text:"1号店 ピーク時間帯オペレーション研修"},
+        {role:"SA",cat:"研修",text:"ドリンクメニュー全種 製造スピードテスト"},
+        {role:"SB",cat:"研修",text:"仕込み量計算・ロス管理実習"},
+        {role:"SC",cat:"研修",text:"クレーム対応・顧客トラブル対応ロールプレイ"},
+      ]},
+      {d:"5/9（土）",ph:"メニュー",tasks:[
+        {role:"OWNER",cat:"メニュー",text:"2号店新メニュー試食会（アルコール含む）",imp:true},
+        {role:"MGR",cat:"メニュー",text:"メニュー価格・原価計算 最終確認"},
+        {role:"TEN",cat:"研修",text:"土曜ピーク帯 全ポジション研修"},
+        {role:"SA",cat:"メニュー",text:"新ドリンクメニュー試作・レシピ確定"},
+        {role:"SB",cat:"メニュー",text:"新フードメニュー試作・盛り付け確認"},
+      ]},
+      {d:"5/10（日）",ph:"研修",tasks:[
+        {role:"TEN",cat:"研修",text:"日曜閑散時間帯 在庫・清掃オペレーション研修"},
+        {role:"SA",cat:"研修",text:"ドリンク製造 品質基準確立（写真撮影）"},
+        {role:"SB",cat:"研修",text:"ロスゼロ食材 バナナブレッド試作"},
+        {role:"SC",cat:"研修",text:"物販商品 陳列・販売トーク研修"},
+      ]},
+      {d:"5/11（月）",ph:"設備",tasks:[
+        {role:"OWNER",cat:"設備",text:"厨房設備 搬入・設置立ち会い",imp:true},
+        {role:"MGR",cat:"メニュー",text:"英語・外国語対応メニュー作成着手"},
+        {role:"TEN",cat:"管理",text:"スタッフシフト管理ツール使い方習得"},
+        {role:"SA",cat:"設備",text:"スムージーマシン 搬入確認・操作研修"},
+        {role:"SB",cat:"設備",text:"キッチン設備 搬入確認・動作テスト"},
+      ]},
+      {d:"5/12（火）",ph:"マーケ",tasks:[
+        {role:"OWNER",cat:"観光",text:"るるぶ・ラーチーゴー 掲載打ち合わせ",imp:true},
+        {role:"MGR",cat:"SNS",text:"TikTok 投稿②（沖縄食材紹介動画）"},
+        {role:"MGR",cat:"チラシ",text:"チラシデザイン初稿確認・修正指示"},
+        {role:"SC",cat:"SNS",text:"Instagramストーリー 運用開始（工事レポート）"},
+      ]},
+      {d:"5/13（水）",ph:"研修",tasks:[
+        {role:"TEN",cat:"研修",text:"週次MTG進行・レポート作成 模擬練習"},
+        {role:"TEN",cat:"研修",text:"アルバイトマネジメント研修（OJTトレーナー体験）"},
+        {role:"SA",cat:"研修",text:"バリスタ技術研修（コーヒー・ドリップ）"},
+        {role:"SB",cat:"研修",text:"アレルギー対応・食品衛生 復習テスト"},
+        {role:"SC",cat:"研修",text:"POSレジ 売上締め・日報作成 研修"},
+      ]},
+      {d:"5/14（木）",ph:"確認",tasks:[
+        {role:"OWNER",cat:"確認",text:"Week5 全体進捗MTG・課題共有",imp:true},
+        {role:"MGR",cat:"確認",text:"採用・研修・工事 進捗レポート作成"},
+        {role:"TEN",cat:"確認",text:"研修チェックリスト 中間評価（自己評価）"},
+      ]},
+     ]
+    },
+    {wn:6,dates:"5/15（金）〜 5/21（木）",tags:["工事後半","MEO強化","マニュアル"],
+     days:[
+      {d:"5/15（金）",ph:"工事",tasks:[
+        {role:"OWNER",cat:"工事",text:"内装工事 後半 仕上げ工程確認"},
+        {role:"MGR",cat:"MEO",text:"Googleマップ 写真・説明文 登録・最適化",imp:true},
+        {role:"TEN",cat:"マニュアル",text:"店舗オペレーションマニュアル ドラフト作成開始",imp:true},
+        {role:"SA",cat:"研修",text:"ドリンク全メニュー 最終品質確認テスト"},
+        {role:"SB",cat:"研修",text:"フードメニュー 原価計算・提供速度テスト"},
+        {role:"SC",cat:"研修",text:"物販 商品説明・販売トーク 最終確認"},
+      ]},
+      {d:"5/16（土）",ph:"設備",tasks:[
+        {role:"OWNER",cat:"設備",text:"冷蔵ショーケース 搬入・設置・動作確認",imp:true},
+        {role:"MGR",cat:"チラシ",text:"チラシ最終稿確認・印刷発注（5万部）"},
+        {role:"TEN",cat:"研修",text:"冷蔵管理・食材保存ルール習得"},
+        {role:"SA",cat:"設備",text:"冷蔵ショーケース ドリンク陳列レイアウト設計"},
+      ]},
+      {d:"5/17（日）",ph:"SNS",tasks:[
+        {role:"MGR",cat:"SNS",text:"Instagram 投稿③（内装進捗・コンセプト紹介）"},
+        {role:"TEN",cat:"マニュアル",text:"開店・閉店チェックリスト 作成"},
+        {role:"SA",cat:"SNS",text:"ドリンク撮影・SNS素材制作（フォト）"},
+        {role:"SB",cat:"SNS",text:"フード撮影・SNS素材制作（フォト）"},
+      ]},
+      {d:"5/18（月）",ph:"什器",tasks:[
+        {role:"OWNER",cat:"什器",text:"物販棚・什器 搬入立ち会い"},
+        {role:"MGR",cat:"物販",text:"物販商品 初回在庫発注（ミント缶・グラノーラ等）",imp:true},
+        {role:"TEN",cat:"管理",text:"在庫管理システム 設定・運用開始"},
+        {role:"SC",cat:"物販",text:"物販商品 陳列プラン作成・写真撮影"},
+      ]},
+      {d:"5/19（火）",ph:"マニュアル",tasks:[
+        {role:"TEN",cat:"マニュアル",text:"スタッフ行動規範・身だしなみ基準 策定"},
+        {role:"TEN",cat:"マニュアル",text:"緊急時対応マニュアル（体調不良・クレーム）"},
+        {role:"SA",cat:"マニュアル",text:"ドリンク製造マニュアル 写真付き完成版作成"},
+        {role:"SB",cat:"マニュアル",text:"キッチン仕込みマニュアル 写真付き完成版作成"},
+        {role:"SC",cat:"マニュアル",text:"接客スクリプト・物販トーク マニュアル化"},
+      ]},
+      {d:"5/20（水）",ph:"研修",tasks:[
+        {role:"TEN",cat:"研修",text:"アルバイトスタッフ向け研修プログラム完成",imp:true},
+        {role:"MGR",cat:"SNS",text:"TikTok 投稿③（スタッフ研修密着動画）"},
+        {role:"MGR",cat:"観光",text:"観光メディア掲載 最終確認・入稿"},
+        {role:"SA",cat:"研修",text:"新スタッフへのドリンク指導 試行"},
+        {role:"SB",cat:"研修",text:"新スタッフへのキッチン指導 試行"},
+      ]},
+      {d:"5/21（木）",ph:"確認",tasks:[
+        {role:"OWNER",cat:"確認",text:"Week6 進捗MTG・工事完了予定確認",imp:true},
+        {role:"MGR",cat:"確認",text:"マニュアル・研修プログラム レビュー"},
+        {role:"TEN",cat:"確認",text:"スタッフ全員の研修進捗確認・補足研修計画"},
+      ]},
+     ]
+    },
+    {wn:7,dates:"5/22（金）〜 5/28（木）",tags:["工事仕上げ","看板設置","研修強化"],
+     days:[
+      {d:"5/22（金）",ph:"工事",tasks:[
+        {role:"OWNER",cat:"工事",text:"内装工事 仕上げ確認・手直し指示",imp:true},
+        {role:"MGR",cat:"SNS",text:"Instagram 投稿④（完成イメージCG・コンセプト）"},
+        {role:"TEN",cat:"研修",text:"2号店 仮設オペレーション シミュレーション①"},
+        {role:"SA",cat:"研修",text:"アイスブレンダー高速製造 タイムトライアル"},
+        {role:"SB",cat:"研修",text:"ラッシュ時 多品目同時調理 シミュレーション"},
+      ]},
+      {d:"5/23（土）",ph:"看板",tasks:[
+        {role:"OWNER",cat:"看板",text:"外観看板・ファサード 設置立ち会い",imp:true},
+        {role:"MGR",cat:"看板",text:"とまりん・空港配布チラシ 搬送手配"},
+        {role:"TEN",cat:"研修",text:"ホール動線シミュレーション（テーブル配置確認）"},
+        {role:"SC",cat:"設備",text:"POSシステム 2号店設定・商品登録作業",imp:true},
+      ]},
+      {d:"5/24（日）",ph:"SNS",tasks:[
+        {role:"MGR",cat:"SNS",text:"TikTok 投稿④（国際通り周辺 ロケ動画）"},
+        {role:"TEN",cat:"準備",text:"2号店 開店準備チェックリスト 実地確認"},
+        {role:"SA",cat:"準備",text:"ドリンク製造エリア レイアウト最終決定"},
+        {role:"SB",cat:"準備",text:"キッチン動線 最終確認・修正依頼"},
+        {role:"SC",cat:"準備",text:"フロント・レジエリア レイアウト最終決定"},
+      ]},
+      {d:"5/25（月）",ph:"設備",tasks:[
+        {role:"OWNER",cat:"設備",text:"音響・照明 設置・調整確認"},
+        {role:"MGR",cat:"SNS",text:"Instagram フォロワー1,000人達成施策 実施"},
+        {role:"TEN",cat:"管理",text:"発注業者リスト・緊急連絡先 一覧作成"},
+        {role:"SA",cat:"設備",text:"製氷機・ブレンダー 最終動作確認"},
+        {role:"SB",cat:"設備",text:"ガス・電気設備 最終確認（調理器具接続）"},
+      ]},
+      {d:"5/26（火）",ph:"研修",tasks:[
+        {role:"TEN",cat:"研修",text:"スタッフ全員 接客ロールプレイ 通し練習",imp:true},
+        {role:"TEN",cat:"研修",text:"評価制度6段階 全員へ説明・サイン"},
+        {role:"SA",cat:"研修",text:"アルコールメニュー 製造研修（オーガニックワイン）"},
+        {role:"SB",cat:"研修",text:"アレルギー対応メニュー 全種確認テスト"},
+        {role:"SC",cat:"研修",text:"インバウンド対応 英語フレーズ練習"},
+      ]},
+      {d:"5/27（水）",ph:"マーケ",tasks:[
+        {role:"OWNER",cat:"観光",text:"インフルエンサー招待 内覧会 打ち合わせ",imp:true},
+        {role:"MGR",cat:"チラシ",text:"チラシ納品確認・とまりん・空港 配布開始"},
+        {role:"MGR",cat:"SNS",text:"TikTok 投稿⑤（スタッフ自己紹介・チーム紹介）"},
+        {role:"SC",cat:"SNS",text:"Instagram 物販商品 商品紹介投稿"},
+      ]},
+      {d:"5/28（木）",ph:"確認",tasks:[
+        {role:"OWNER",cat:"確認",text:"Week7 進捗MTG・工事完了見込み確認",imp:true},
+        {role:"MGR",cat:"確認",text:"全チェックリスト確認・残タスク洗い出し"},
+      ]},
+     ]
+    },
+    {wn:8,dates:"5/29（金）〜 6/4（木）",tags:["内装完了","全体リハ","SNS加速"],
+     days:[
+      {d:"5/29（金）",ph:"工事",tasks:[
+        {role:"OWNER",cat:"工事",text:"内装工事 完了確認・引き渡し（目標）",imp:true},
+        {role:"OWNER",cat:"工事",text:"工事業者との精算・保証書受け取り"},
+        {role:"MGR",cat:"SNS",text:"Instagram 投稿⑤（内装完成写真 大公開）",imp:true},
+        {role:"TEN",cat:"準備",text:"全設備・備品 最終チェックリスト実施"},
+      ]},
+      {d:"5/30（土）",ph:"リハ",tasks:[
+        {role:"OWNER",cat:"リハ",text:"全スタッフ集合 初の2号店入店・顔合わせ",imp:true},
+        {role:"TEN",cat:"リハ",text:"店内オペレーション 全体リハーサル①",imp:true},
+        {role:"SA",cat:"リハ",text:"本番設備でのドリンク製造 初テスト"},
+        {role:"SB",cat:"リハ",text:"本番キッチンでのフード製造 初テスト"},
+        {role:"SC",cat:"リハ",text:"本番POSレジ 実際の会計テスト"},
+      ]},
+      {d:"5/31（日）",ph:"リハ",tasks:[
+        {role:"TEN",cat:"リハ",text:"全体リハーサル② スピードと品質の両立確認"},
+        {role:"SA",cat:"リハ",text:"ドリンク提供時間 目標（3分以内）確認"},
+        {role:"SB",cat:"リハ",text:"フード提供時間 目標（5分以内）確認"},
+        {role:"SC",cat:"リハ",text:"お会計スピード・物販案内 確認"},
+      ]},
+      {d:"6/1（月）",ph:"SNS",tasks:[
+        {role:"OWNER",cat:"SNS",text:"Instagram ライブ配信（店舗ツアー・MASAKI登場）",imp:true},
+        {role:"MGR",cat:"MEO",text:"Googleマップ 完成写真アップロード・情報更新",imp:true},
+        {role:"TEN",cat:"準備",text:"食材・消耗品 初回大量発注 手配"},
+        {role:"SC",cat:"SNS",text:"TikTok 投稿⑥（店内ツアー動画）"},
+      ]},
+      {d:"6/2（火）",ph:"準備",tasks:[
+        {role:"TEN",cat:"準備",text:"シフト表 6/15〜7/1 作成・全員確認",imp:true},
+        {role:"TEN",cat:"準備",text:"緊急時対応フロー 全員へ説明"},
+        {role:"SA",cat:"準備",text:"消耗品・ストロー・カップ等 在庫確認"},
+        {role:"SB",cat:"準備",text:"食材発注先リスト 確定・初回発注"},
+        {role:"SC",cat:"準備",text:"お釣り・レジ金 準備・確認"},
+      ]},
+      {d:"6/3（水）",ph:"研修",tasks:[
+        {role:"TEN",cat:"研修",text:"アルバイトスタッフ向け 全体研修実施",imp:true},
+        {role:"SA",cat:"研修",text:"アルバイトへのドリンク製造指導"},
+        {role:"SB",cat:"研修",text:"アルバイトへのキッチン仕込み指導"},
+        {role:"SC",cat:"研修",text:"アルバイトへの接客・レジ指導"},
+      ]},
+      {d:"6/4（木）",ph:"確認",tasks:[
+        {role:"OWNER",cat:"確認",text:"Week8 全体MTG・テスト営業最終準備確認",imp:true},
+        {role:"MGR",cat:"確認",text:"MEO・SNS・チラシ 集客施策 最終チェック"},
+        {role:"TEN",cat:"確認",text:"スタッフ全員の準備状況・不安点ヒアリング"},
+      ]},
+     ]
+    },
+    {wn:9,dates:"6/5（金）〜 6/11（木）",tags:["最終準備","インフルエンサー","食材調達"],
+     days:[
+      {d:"6/5（金）",ph:"準備",tasks:[
+        {role:"OWNER",cat:"準備",text:"保健所 営業許可証 受け取り",imp:true},
+        {role:"MGR",cat:"観光",text:"るるぶ・ラーチーゴー 掲載記事 最終確認"},
+        {role:"TEN",cat:"準備",text:"開店当日タイムライン 全員へ配布・確認"},
+        {role:"SA",cat:"準備",text:"フレッシュフルーツ仕入れ業者 最終確認"},
+        {role:"SB",cat:"準備",text:"食材納品スケジュール 全業者と最終確認"},
+      ]},
+      {d:"6/6（土）",ph:"インフルエンサー",tasks:[
+        {role:"OWNER",cat:"PR",text:"インフルエンサー・メディア関係者 内覧会開催",imp:true},
+        {role:"TEN",cat:"PR",text:"内覧会 接客・説明担当"},
+        {role:"SA",cat:"PR",text:"内覧会 ドリンク提供担当"},
+        {role:"SB",cat:"PR",text:"内覧会 フード提供担当"},
+        {role:"SC",cat:"PR",text:"内覧会 物販案内担当"},
+      ]},
+      {d:"6/7（日）",ph:"SNS",tasks:[
+        {role:"MGR",cat:"SNS",text:"Instagram 投稿⑥（内覧会の様子・口コミ紹介）",imp:true},
+        {role:"MGR",cat:"SNS",text:"TikTok 投稿⑦（インフルエンサー来店動画）"},
+        {role:"TEN",cat:"振り返り",text:"内覧会振り返りMTG・改善点整理"},
+      ]},
+      {d:"6/8（月）",ph:"準備",tasks:[
+        {role:"OWNER",cat:"準備",text:"深夜酒類提供飲食店営業届出 提出（必要な場合）"},
+        {role:"TEN",cat:"準備",text:"テスト営業①に向けた 最終オペレーション確認",imp:true},
+        {role:"SA",cat:"準備",text:"テスト営業用 仕込み量・発注量 計算"},
+        {role:"SB",cat:"準備",text:"テスト営業用 全メニュー最終仕込み計画"},
+        {role:"SC",cat:"準備",text:"テスト営業招待者リスト 案内メール送信"},
+      ]},
+      {d:"6/9（火）",ph:"英語メニュー",tasks:[
+        {role:"MGR",cat:"メニュー",text:"英語・中国語対応メニュー 最終確認・印刷発注",imp:true},
+        {role:"TEN",cat:"準備",text:"衛生管理 最終チェック（保健所基準確認）"},
+        {role:"SA",cat:"研修",text:"英語でのドリンク説明 練習"},
+        {role:"SC",cat:"研修",text:"英語・中国語 接客フレーズ 最終練習"},
+      ]},
+      {d:"6/10（水）",ph:"完了",tasks:[
+        {role:"OWNER",cat:"確認",text:"チーム体制 最終確定・役割確認サイン",imp:true},
+        {role:"MGR",cat:"確認",text:"全集客施策・SNS・MEO 最終確認"},
+        {role:"TEN",cat:"確認",text:"スタッフ全員 準備完了サイン・最終声かけ"},
+      ]},
+      {d:"6/11（木）",ph:"確認",tasks:[
+        {role:"OWNER",cat:"確認",text:"Week9 全体進捗MTG・テスト営業① 最終準備",imp:true},
+        {role:"MGR",cat:"確認",text:"SNSフォロワー数・MEO口コミ件数 確認"},
+        {role:"TEN",cat:"確認",text:"テスト営業① 全員ブリーフィング実施",imp:true},
+      ]},
+     ]
+    },
+   ]
+  },
+
+  // ======== PHASE 3 ========
+  {phase:3,phaseLabel:"テスト営業 → プレオープン → グランドオープン",phaseColor:"#C0392B",
+   weeks:[
+    {wn:10,dates:"6/12（金）〜 6/18（木）",tags:["最終仕込み","テスト営業①"],
+     days:[
+      {d:"6/12（金）",ph:"仕込み",tasks:[
+        {role:"OWNER",cat:"準備",text:"テスト営業① 最終準備・激励MTG",imp:true},
+        {role:"TEN",cat:"準備",text:"食材 大量仕込み・在庫確認"},
+        {role:"SA",cat:"準備",text:"ドリンク 仕込み・シロップ・ベース準備"},
+        {role:"SB",cat:"準備",text:"フード 仕込み（グラノーラ・トッピング全種）"},
+        {role:"SC",cat:"準備",text:"物販商品 陳列・価格タグ 最終確認"},
+      ]},
+      {d:"6/13（土）",ph:"準備",tasks:[
+        {role:"TEN",cat:"準備",text:"全設備 最終動作確認・清掃"},
+        {role:"SA",cat:"準備",text:"ドリンク製造 最終スピード確認"},
+        {role:"SB",cat:"準備",text:"全メニュー 最終仕込み完了"},
+        {role:"SC",cat:"準備",text:"レジ・POSシステム 最終テスト"},
+      ]},
+      {d:"6/14（日）",ph:"準備",tasks:[
+        {role:"TEN",cat:"準備",text:"テスト営業① スタッフ全員 最終ブリーフィング",imp:true},
+        {role:"TEN",cat:"準備",text:"ポジション確認・タイムライン配布"},
+      ]},
+      {milestone:"テスト営業① 開始（6/15）— 招待客・知人限定"},
+      {d:"6/15（月）",ph:"テスト",tasks:[
+        {role:"OWNER",cat:"テスト",text:"テスト営業① 視察・課題メモ作成",imp:true},
+        {role:"TEN",cat:"テスト",text:"テスト営業① 現場統括・リアルタイム改善",imp:true},
+        {role:"SA",cat:"テスト",text:"ドリンク提供時間・品質 記録"},
+        {role:"SB",cat:"テスト",text:"フード提供時間・品質 記録"},
+        {role:"SC",cat:"テスト",text:"会計・接客 課題メモ・お客様反応記録"},
+      ]},
+      {d:"6/16（火）",ph:"テスト",tasks:[
+        {role:"OWNER",cat:"振り返り",text:"テスト営業① 結果振り返りMTG・改善指示",imp:true},
+        {role:"TEN",cat:"振り返り",text:"課題リスト作成・改善担当者割り当て"},
+        {role:"SA",cat:"振り返り",text:"ドリンク改善点 即日対応"},
+        {role:"SB",cat:"振り返り",text:"フード・仕込み改善点 即日対応"},
+        {role:"SC",cat:"振り返り",text:"接客・レジ 改善点 即日対応"},
+      ]},
+      {d:"6/17（水）",ph:"テスト",tasks:[
+        {role:"TEN",cat:"テスト",text:"テスト営業② 前半（改善後 再テスト）",imp:true},
+        {role:"OWNER",cat:"SNS",text:"Instagram ライブ配信（テスト営業の様子・反応）",imp:true},
+        {role:"SA",cat:"テスト",text:"改善後ドリンク品質・スピード 再確認"},
+        {role:"SB",cat:"テスト",text:"改善後フード品質・スピード 再確認"},
+        {role:"SC",cat:"テスト",text:"接客品質 改善後 再テスト"},
+      ]},
+      {d:"6/18（木）",ph:"確認",tasks:[
+        {role:"OWNER",cat:"確認",text:"テスト営業① 総括MTG・KPI初回計測",imp:true},
+        {role:"MGR",cat:"SNS",text:"テスト営業の反応 SNS投稿・口コミ確認"},
+        {role:"TEN",cat:"確認",text:"KPI確認（客単価・提供時間・スタッフ稼働率）"},
+      ]},
+     ]
+    },
+    {wn:11,dates:"6/19（金）〜 6/25（木）",tags:["テスト営業②","SNSフォロワー招待"],
+     days:[
+      {d:"6/19（金）",ph:"テスト",tasks:[
+        {role:"TEN",cat:"テスト",text:"テスト営業② 継続・SNSフォロワー限定招待開始",imp:true},
+        {role:"OWNER",cat:"確認",text:"客単価・FL比率 中間確認",imp:true},
+        {role:"MGR",cat:"SNS",text:"Instagram 投稿⑦（もうすぐオープン告知）"},
+        {role:"SA",cat:"テスト",text:"ピーク時間帯 ドリンク製造 限界テスト"},
+        {role:"SB",cat:"テスト",text:"ピーク時間帯 フード製造 限界テスト"},
+        {role:"SC",cat:"テスト",text:"物販売上 初回計測・改善提案"},
+      ]},
+      {d:"6/20（土）",ph:"テスト",tasks:[
+        {role:"TEN",cat:"テスト",text:"週末ピーク想定 フルオペレーション テスト",imp:true},
+        {role:"SA",cat:"テスト",text:"最大提供数テスト（1時間あたり）"},
+        {role:"SB",cat:"テスト",text:"最大仕込み量テスト"},
+        {role:"SC",cat:"テスト",text:"インバウンドゲスト 英語対応 実地テスト"},
+      ]},
+      {d:"6/21（日）",ph:"振り返り",tasks:[
+        {role:"OWNER",cat:"振り返り",text:"テスト営業② 中間振り返りMTG",imp:true},
+        {role:"TEN",cat:"振り返り",text:"スタッフ個別面談（不安・要望ヒアリング）"},
+        {role:"MGR",cat:"SNS",text:"TikTok 投稿⑧（テスト営業の様子・スタッフ密着）"},
+      ]},
+      {d:"6/22（月）",ph:"テスト",tasks:[
+        {role:"TEN",cat:"テスト",text:"テスト営業③ 最終版（一般SNSフォロワー招待）",imp:true},
+        {role:"MGR",cat:"SNS",text:"Instagram フォロワー向けプレオープン告知",imp:true},
+        {role:"SA",cat:"テスト",text:"全ドリンク 最終品質基準クリア確認"},
+        {role:"SB",cat:"テスト",text:"全フード 最終品質基準クリア確認"},
+        {role:"SC",cat:"テスト",text:"会計・接客スコア 基準値クリア確認"},
+      ]},
+      {d:"6/23（火）",ph:"準備",tasks:[
+        {role:"TEN",cat:"準備",text:"グランドオープン向け 大量仕込み計画 確定",imp:true},
+        {role:"OWNER",cat:"PR",text:"メディア・新聞社 プレスリリース 送付",imp:true},
+        {role:"MGR",cat:"SNS",text:"Instagram 投稿⑧（カウントダウン開始）"},
+        {role:"SA",cat:"準備",text:"グランドオープン用 食材大量発注 手配"},
+        {role:"SB",cat:"準備",text:"グランドオープン用 仕込み計画 作成"},
+      ]},
+      {d:"6/24（水）",ph:"確認",tasks:[
+        {role:"OWNER",cat:"確認",text:"テスト営業② 総括・全改善点クリア確認",imp:true},
+        {role:"TEN",cat:"確認",text:"全スタッフ最終確認ミーティング",imp:true},
+        {role:"MGR",cat:"SNS",text:"TikTok 投稿⑨（開店直前 密着動画）"},
+      ]},
+      {d:"6/25（木）",ph:"確認",tasks:[
+        {role:"OWNER",cat:"確認",text:"Week11 最終振り返り・プレオープン準備完了確認",imp:true},
+        {role:"MGR",cat:"確認",text:"チラシ 観光エリア 最終配布確認"},
+        {role:"TEN",cat:"確認",text:"プレオープン・グランドオープン 全タイムライン確認"},
+      ]},
+     ]
+    },
+    {wn:12,dates:"6/26（金）〜 7/1（水）",tags:["プレオープン","グランドオープン"],
+     days:[
+      {d:"6/26（金）",ph:"仕込み",tasks:[
+        {role:"TEN",cat:"仕込み",text:"グランドオープン大量仕込み 2日前準備開始",imp:true},
+        {role:"OWNER",cat:"SNS",text:"Instagram ライブ配信（前日の様子・想い語り）",imp:true},
+        {role:"SA",cat:"仕込み",text:"ドリンクベース・シロップ 大量仕込み"},
+        {role:"SB",cat:"仕込み",text:"グラノーラ・トッピング 大量仕込み"},
+        {role:"SC",cat:"準備",text:"物販 追加補充・ディスプレイ最終調整"},
+      ]},
+      {d:"6/27（土）",ph:"仕込み",tasks:[
+        {role:"TEN",cat:"仕込み",text:"オープン2日前 全員体制で最終仕込み",imp:true},
+        {role:"TEN",cat:"確認",text:"全設備 最終動作確認 チェックリスト実施"},
+        {role:"SA",cat:"仕込み",text:"フルーツカット・ベース 前仕込み 完了"},
+        {role:"SB",cat:"仕込み",text:"全メニュー 仕込み 完了"},
+        {role:"SC",cat:"準備",text:"レジ・開店準備 最終確認"},
+      ]},
+      {milestone:"プレオープン（6/29〜6/30）"},
+      {d:"6/28（日）",ph:"プレオープン準備",tasks:[
+        {role:"OWNER",cat:"激励",text:"プレオープン前夜 スタッフ全員への激励",imp:true},
+        {role:"TEN",cat:"準備",text:"プレオープン タイムライン 全員読み合わせ",imp:true},
+        {role:"SA",cat:"準備",text:"プレオープン用 ドリンク最終仕込み 完了"},
+        {role:"SB",cat:"準備",text:"プレオープン用 フード最終仕込み 完了"},
+        {role:"SC",cat:"準備",text:"開店準備 完了確認・開店時間設定"},
+      ]},
+      {d:"6/29（月）",ph:"プレOPEN",tasks:[
+        {role:"OWNER",cat:"プレOPEN",text:"プレオープン① 視察・スタッフ応援",imp:true},
+        {role:"TEN",cat:"プレOPEN",text:"プレオープン① 現場指揮・リアルタイム改善",imp:true},
+        {role:"SA",cat:"プレOPEN",text:"プレオープン① ドリンク製造 フル稼働"},
+        {role:"SB",cat:"プレOPEN",text:"プレオープン① フード製造 フル稼働"},
+        {role:"SC",cat:"プレOPEN",text:"プレオープン① 接客・物販案内 フル稼働"},
+      ]},
+      {d:"6/30（火）",ph:"プレOPEN",tasks:[
+        {role:"OWNER",cat:"プレOPEN",text:"プレオープン② KPI速報確認・SNS発信",imp:true},
+        {role:"TEN",cat:"プレOPEN",text:"プレオープン② 現場指揮・最終調整",imp:true},
+        {role:"TEN",cat:"準備",text:"グランドオープン用 最終仕込み量 確定・発注"},
+        {role:"SA",cat:"プレOPEN",text:"プレオープン② ドリンク製造・品質確認"},
+        {role:"SB",cat:"プレOPEN",text:"プレオープン② フード製造・品質確認"},
+        {role:"SC",cat:"プレOPEN",text:"プレオープン② 接客品質 最終確認"},
+      ]},
+      {milestone:"グランドオープン（7/1）★"},
+      {d:"7/1（水）★GRAND OPEN★",ph:"GRAND OPEN",tasks:[
+        {role:"OWNER",cat:"OPEN",text:"グランドオープン 立ち会い・スタッフ激励・SNS発信",imp:true},
+        {role:"TEN",cat:"OPEN",text:"グランドオープン 現場総指揮",imp:true},
+        {role:"MGR",cat:"OPEN",text:"グランドオープン メディア対応・SNSリアルタイム投稿",imp:true},
+        {role:"SA",cat:"OPEN",text:"グランドオープン ドリンク製造 最高のパフォーマンスで",imp:true},
+        {role:"SB",cat:"OPEN",text:"グランドオープン フード製造 最高のパフォーマンスで",imp:true},
+        {role:"SC",cat:"OPEN",text:"グランドオープン 接客・物販 最高のパフォーマンスで",imp:true},
+      ]},
+     ]
+    },
+   ]
+  },
+];
+
+// ========== RENDER ==========
+let currentFilter='ALL';
+let taskMap={};
+
+function getKey(wi,di,ti){return 'task_'+wi+'_'+di+'_'+ti;}
+
+function renderAll(){
+  const main=document.getElementById('main');
+  let html='';
+  DATA.forEach(phase=>{
+    html+=`<div class="phase-header">
+      <div class="ph-badge" style="background:${phase.phaseColor}">PHASE ${phase.phase}</div>
+      <div class="ph-title">${phase.phaseLabel}</div>
+    </div>`;
+    phase.weeks.forEach(week=>{
+      const wid='week_'+week.wn;
+      html+=`<div class="week" id="${wid}">
+        <div class="week-head" onclick="toggleWeek('${wid}')">
+          <div class="week-num">Week ${week.wn}</div>
+          <div class="week-dates">${week.dates}</div>
+          <div class="week-tags">${week.tags.map(t=>`<span class="week-tag">${t}</span>`).join('')}</div>
+          <div class="week-progress">
+            <span class="week-count" id="cnt_${wid}">-</span>
+          </div>
+          <div class="chevron">›</div>
+        </div>
+        <div class="days">`;
+      week.days.forEach((day,di)=>{
+        if(day.milestone){
+          html+=`<div class="milestone-row">${day.milestone}</div>`;
+          return;
+        }
+        const phColor = phase.phaseColor;
+        html+=`<div class="day">
+          <div class="day-head">
+            <div class="day-date">${day.d}</div>
+            <div class="day-phase-tag" style="background:${phColor}">${day.ph}</div>
+          </div>
+          <div class="day-tasks">`;
+        day.tasks.forEach((task,ti)=>{
+          const k=getKey(week.wn,di,ti);
+          const saved=localStorage.getItem(k)==='1';
+          if(saved) taskMap[k]=true;
+          const rb='rb-'+task.role.toLowerCase().replace(/[^a-z]/g,'');
+          const roleLabel=task.role==='OWNER'?'オーナー':task.role==='MGR'?'マネージャー':task.role==='TEN'?'店長':task.role==='SA'?'正社員A':task.role==='SB'?'正社員B':'正社員C';
+          html+=`<div class="task${task.imp?' task-important':''}${saved?' done':''}" data-role="${task.role}" data-key="${k}" id="t_${k}">
+            <input type="checkbox" onchange="toggleTask('${k}')" ${saved?'checked':''}>
+            <span class="role-badge rb-${task.role.toLowerCase()}">${roleLabel}</span>
+            <span class="cat-tag">${task.cat}</span>
+            <span class="task-text">${task.text}</span>
+          </div>`;
+        });
+        html+=`</div></div>`;
+      });
+      html+=`</div></div>`;
+    });
+  });
+  main.innerHTML=html;
+  updateProgress();
+  // open first week by default
+  const firstWeek=document.querySelector('.week');
+  if(firstWeek) firstWeek.classList.add('open');
+  updateWeekCounts();
+}
+
+function toggleWeek(id){
+  const el=document.getElementById(id);
+  el.classList.toggle('open');
+}
+
+function toggleTask(key){
+  const el=document.getElementById('t_'+key);
+  const cb=el.querySelector('input');
+  if(cb.checked){localStorage.setItem(key,'1');el.classList.add('done');}
+  else{localStorage.removeItem(key);el.classList.remove('done');}
+  updateProgress();
+  updateWeekCounts();
+}
+
+function filter(role){
+  currentFilter=role;
+  document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('active'));
+  const map={ALL:'fbtn-all',OWNER:'fbtn-owner',MGR:'fbtn-mgr',TEN:'fbtn-ten',SA:'fbtn-sa',SB:'fbtn-sb',SC:'fbtn-sc'};
+  document.querySelectorAll('.'+map[role]).forEach(b=>b.classList.add('active'));
+  document.querySelectorAll('.task').forEach(t=>{
+    t.style.display=(role==='ALL'||t.dataset.role===role)?'flex':'none';
+  });
+}
+
+function updateProgress(){
+  const all=document.querySelectorAll('.task input[type=checkbox]');
+  const done=document.querySelectorAll('.task input[type=checkbox]:checked');
+  const pct=all.length?Math.round(done.length/all.length*100):0;
+  document.getElementById('progBar').style.width=pct+'%';
+  document.getElementById('progLabel').textContent='進捗: '+pct+'% ('+done.length+'/'+all.length+')';
+}
+
+function updateWeekCounts(){
+  DATA.forEach(phase=>{
+    phase.weeks.forEach(week=>{
+      const wid='week_'+week.wn;
+      let total=0,done=0;
+      week.days.forEach((day,di)=>{
+        if(day.milestone)return;
+        day.tasks.forEach((task,ti)=>{
+          total++;
+          if(localStorage.getItem(getKey(week.wn,di,ti))==='1')done++;
+        });
+      });
+      const el=document.getElementById('cnt_'+wid);
+      if(el)el.textContent=done+'/'+total;
+    });
+  });
+}
+
+renderAll();
+
+// セッション中はログイン状態を保持
+const _savedRole = sessionStorage.getItem('okibowl_role');
+if(_savedRole){
+  document.getElementById('login-overlay').style.display = 'none';
+  applyRoleFilter(_savedRole);
+}
+</script>
+</body>
+</html>
