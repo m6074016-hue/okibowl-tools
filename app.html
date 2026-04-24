@@ -87,6 +87,28 @@ body {
 .today-chips{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap;}
 .today-chip{background:#F0F0F0;border-radius:16px;padding:4px 10px;font-size:11px;font-weight:600;color:var(--text);}
 
+/* SALES ACHIEVEMENT */
+.sales-achieve{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:12px 0;}
+.sa-card{background:#fff;border:1px solid var(--border);border-radius:10px;padding:12px 10px;text-align:center;}
+.sa-label{font-size:10px;color:var(--text-sub);letter-spacing:0.05em;font-weight:700;margin-bottom:4px;}
+.sa-pct{font-size:22px;font-weight:900;color:var(--text);line-height:1;margin-bottom:4px;}
+.sa-pct.ok{color:var(--success,#2E8B57);}
+.sa-pct.warn{color:#E09B2D;}
+.sa-pct.bad{color:var(--accent,#E05A5A);}
+.sa-bar{height:4px;background:#EEE;border-radius:3px;overflow:hidden;margin:5px 0 4px;}
+.sa-bar-fill{height:100%;border-radius:3px;transition:width 0.3s;}
+.sa-bar-fill.ok{background:var(--success,#2E8B57);}
+.sa-bar-fill.warn{background:#E09B2D;}
+.sa-bar-fill.bad{background:var(--accent,#E05A5A);}
+.sa-num{font-size:10px;color:var(--text-sub);font-weight:600;}
+
+/* REFLECTION EXTRA */
+.reflect-card-ext{background:#fff;border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-top:8px;}
+.reflect-label-ext{font-size:11px;color:var(--text-sub);font-weight:700;margin-bottom:6px;letter-spacing:0.02em;}
+.reflect-label-ext::before{content:'';display:inline-block;width:3px;height:12px;background:var(--accent);margin-right:6px;vertical-align:middle;border-radius:2px;}
+.reflect-input-ext{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-family:inherit;min-height:52px;resize:vertical;outline:none;background:#FAFAFA;}
+.reflect-input-ext:focus{border-color:var(--accent);background:#fff;}
+
 /* KPI INPUT */
 .kpi-input-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:12px 14px;}
 .kpi-field label{font-size:10px;font-weight:700;color:var(--text-sub);display:block;margin-bottom:3px;}
@@ -448,6 +470,7 @@ body {
       <div class="today-chips" id="todayChips"></div>
     </div>
     <div id="homeStatCards"></div>
+    <div id="salesAchieveBlock"></div>
     <div class="section-label">KPI 日次入力</div>
     <div class="card">
       <div class="card-head">
@@ -771,6 +794,64 @@ var DEFAULT_KPI = [
   {id:'kpi-review',label:'口コミ数',unit:'件'},
   {id:'kpi-fl',label:'FLコスト',unit:'%'}
 ];
+
+// ========================================
+// 売上目標（tetsunagiと同値：2026年度 月別 前年比110%）
+// ========================================
+var MONTHLY_TARGETS = {
+  1: 5480530,  2: 8004277,  3: 12063640, 4: 7712305,
+  5: 7409852,  6: 6448280,  7: 6356991,  8: 12809231,
+  9: 11744645, 10: 8377061, 11: 5708358, 12: 4614894
+};
+function getMonthlyTarget(d){
+  var m=(d||new Date()).getMonth()+1;
+  return MONTHLY_TARGETS[m]||5000000;
+}
+function getDaysInMonth(d){
+  var dd=d||new Date();
+  return new Date(dd.getFullYear(),dd.getMonth()+1,0).getDate();
+}
+function getDailyTarget(d){
+  var dd=d||new Date();
+  return Math.round(getMonthlyTarget(dd)/getDaysInMonth(dd));
+}
+function getWeeklyTarget(d){
+  return getDailyTarget(d)*7;
+}
+// 月曜起点の今週の日付配列（todayを含む過去〜今日）
+function getThisWeekKeys(){
+  var now=new Date();
+  var day=now.getDay();
+  var mon=new Date(now); mon.setDate(now.getDate()-(day===0?6:day-1));
+  var keys=[];
+  for(var i=0;i<7;i++){
+    var d=new Date(mon); d.setDate(mon.getDate()+i);
+    keys.push(d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate());
+  }
+  return keys;
+}
+function getThisMonthKeys(){
+  var now=new Date(); var y=now.getFullYear(); var m=now.getMonth();
+  var days=new Date(y,m+1,0).getDate();
+  var keys=[];
+  for(var i=1;i<=days;i++) keys.push(y+'-'+(m+1)+'-'+i);
+  return keys;
+}
+function sumSalesByKeys(keys){
+  var items=getData('kpi',DEFAULT_KPI);
+  var salesKey='kpi-sales';
+  items.forEach(function(k){if(k.label.indexOf('売上')>=0)salesKey=k.id;});
+  var sum=0;
+  keys.forEach(function(k){
+    var d=load('kpi_'+k);
+    if(d){sum+=parseFloat(d[salesKey])||0;}
+  });
+  return sum;
+}
+function isWeekend(){
+  var d=new Date().getDay();
+  return d===0||d===6;
+}
 var DEFAULT_CUR = [
   {num:1,title:'ブランディング・研修',period:'初日',desc:'OKI BOWLのビジョンと価値観を理解する',color:'var(--primary)'},
   {num:2,title:'Silverレベルを目指す',period:'0 ― 2ヶ月',desc:'現場オペレーションを習得する',color:'var(--accent)'},
@@ -1612,6 +1693,7 @@ function updateAll(){
   var todoR=todoTotal-todoDone;var bT=document.getElementById('badgeTodo');bT.textContent=todoR;bT.classList.toggle('show',todoR>0);
   var mtgR=mtgTotal-mtgDone;var bM=document.getElementById('badgeMtg');bM.textContent=mtgR;bM.classList.toggle('show',mtgR>0);
   renderHomeStatCards();
+  renderSalesAchieve();
 }
 
 function resetTodo(){if(!confirm('リセットしますか？'))return;document.querySelectorAll('#todoList .task-item').forEach(function(el){el.classList.remove('done');save(el.dataset.id,false);});updateAll();showToast('リセット完了');}
@@ -1684,6 +1766,7 @@ function saveKpi(){
   updateReflect(key);
   renderHomeStatCards();
   renderKpiWeekSum();
+  renderSalesAchieve();
 }
 
 function loadKpiForDate(key){
@@ -1708,32 +1791,76 @@ function loadKpi(){
 }
 
 function updateReflect(key){
-  var data=load('kpi_'+key);
+  var data=load('kpi_'+key)||{};
   var el=document.getElementById('reflectArea');
-  // 目標達成度が入力されていて100未満の場合に振り返り欄を表示
+  var items=getData('kpi',DEFAULT_KPI);
   var targetVal=0;
-  if(data){
-    var items=getData('kpi',DEFAULT_KPI);
-    items.forEach(function(k){if(k.label.indexOf('目標')>=0||k.id==='kpi-target'){targetVal=parseFloat(data[k.id])||0;}});
+  items.forEach(function(k){if(k.label.indexOf('目標')>=0||k.id==='kpi-target'){targetVal=parseFloat(data[k.id])||0;}});
+  var dateObj=null;
+  try{var parts=(key||TODAY_KEY).split('-');dateObj=new Date(+parts[0],+parts[1]-1,+parts[2]);}catch(e){dateObj=new Date();}
+  var isWknd=dateObj?(dateObj.getDay()===0||dateObj.getDay()===6):false;
+  var h='';
+  // 今日の振り返り
+  var reflectHead=targetVal>0&&targetVal<100?'今日の振り返り（達成度 '+targetVal+'%）':'今日の振り返り';
+  h+='<div class="reflect-card-ext"><div class="reflect-label-ext">'+reflectHead+'</div><textarea class="reflect-input-ext" id="reflectInput" placeholder="今日の気づき・良かった点・課題を1行で" oninput="saveReflect()">'+(data._reflect||'')+'</textarea></div>';
+  // 明日のアクション
+  h+='<div class="reflect-card-ext"><div class="reflect-label-ext">明日のアクション</div><textarea class="reflect-input-ext" id="reflectNext" placeholder="明日やる1つの具体的アクション" oninput="saveReflect()">'+(data._nextAction||'')+'</textarea></div>';
+  // 週末のみ：来週のアクション
+  if(isWknd){
+    h+='<div class="reflect-card-ext" style="border-color:var(--accent);"><div class="reflect-label-ext">来週のアクション（週末振り返り）</div><textarea class="reflect-input-ext" id="reflectWeek" placeholder="来週取り組むテーマ・改善点" oninput="saveReflect()">'+(data._weekAction||'')+'</textarea></div>';
   }
-  if(targetVal>0&&targetVal<100){
-    el.innerHTML='<div class="reflect-card"><div class="reflect-label">目標未達の振り返り（達成度: '+targetVal+'%）</div><textarea class="reflect-input" id="reflectInput" placeholder="なぜ目標に達成できなかったか？改善点は？" oninput="saveReflect()">'+((data&&data._reflect)||'')+'</textarea></div>';
-  } else {
-    var existingReflect=(data&&data._reflect)||'';
-    if(existingReflect){
-      el.innerHTML='<div class="reflect-card"><div class="reflect-label">振り返りメモ</div><textarea class="reflect-input" id="reflectInput" placeholder="振り返り" oninput="saveReflect()">'+existingReflect+'</textarea></div>';
-    } else {
-      el.innerHTML='';
-    }
-  }
+  el.innerHTML=h;
 }
 
 function saveReflect(){
   var key=SELECTED_DATE_KEY||TODAY_KEY;
   var data=load('kpi_'+key)||{};
-  var reflectEl=document.getElementById('reflectInput');
-  if(reflectEl) data._reflect=reflectEl.value;
+  var r=document.getElementById('reflectInput');
+  var n=document.getElementById('reflectNext');
+  var w=document.getElementById('reflectWeek');
+  if(r) data._reflect=r.value;
+  if(n) data._nextAction=n.value;
+  if(w) data._weekAction=w.value;
   save('kpi_'+key,data);
+}
+
+// ========================================
+// 売上達成率カード（日次・週次・月次）
+// ========================================
+function renderSalesAchieve(){
+  var el=document.getElementById('salesAchieveBlock');
+  if(!el)return;
+  var now=new Date();
+  var todaySales=0;
+  var todayData=load('kpi_'+TODAY_KEY);
+  if(todayData){
+    var items=getData('kpi',DEFAULT_KPI);
+    items.forEach(function(k){if(k.label.indexOf('売上')>=0)todaySales=parseFloat(todayData[k.id])||0;});
+  }
+  var dailyTgt=getDailyTarget(now);
+  var weeklyTgt=getWeeklyTarget(now);
+  var monthlyTgt=getMonthlyTarget(now);
+  var weekSales=sumSalesByKeys(getThisWeekKeys());
+  var monthSales=sumSalesByKeys(getThisMonthKeys());
+  function pct(a,t){return t>0?Math.round(a/t*100):0;}
+  function cls(p){return p>=100?'ok':p>=80?'warn':'bad';}
+  function fmt(n){return '¥'+Math.round(n).toLocaleString();}
+  var dP=pct(todaySales,dailyTgt), wP=pct(weekSales,weeklyTgt), mP=pct(monthSales,monthlyTgt);
+  var h='<div class="sales-achieve">';
+  h+='<div class="sa-card"><div class="sa-label">今日</div>';
+  h+='<div class="sa-pct '+cls(dP)+'">'+dP+'%</div>';
+  h+='<div class="sa-bar"><div class="sa-bar-fill '+cls(dP)+'" style="width:'+Math.min(dP,100)+'%"></div></div>';
+  h+='<div class="sa-num">'+fmt(todaySales)+' / '+fmt(dailyTgt)+'</div></div>';
+  h+='<div class="sa-card"><div class="sa-label">今週</div>';
+  h+='<div class="sa-pct '+cls(wP)+'">'+wP+'%</div>';
+  h+='<div class="sa-bar"><div class="sa-bar-fill '+cls(wP)+'" style="width:'+Math.min(wP,100)+'%"></div></div>';
+  h+='<div class="sa-num">'+fmt(weekSales)+' / '+fmt(weeklyTgt)+'</div></div>';
+  h+='<div class="sa-card"><div class="sa-label">今月</div>';
+  h+='<div class="sa-pct '+cls(mP)+'">'+mP+'%</div>';
+  h+='<div class="sa-bar"><div class="sa-bar-fill '+cls(mP)+'" style="width:'+Math.min(mP,100)+'%"></div></div>';
+  h+='<div class="sa-num">'+fmt(monthSales)+' / '+fmt(monthlyTgt)+'</div></div>';
+  h+='</div>';
+  el.innerHTML=h;
 }
 
 function saveRptField(id){save('rpt_'+id,document.getElementById(id).value);}
