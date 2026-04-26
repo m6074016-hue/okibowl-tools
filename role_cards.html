@@ -390,9 +390,69 @@
     cursor: pointer;
     font-family: inherit;
   }
+  /* PIN GATE */
+  #pin-gate {
+    position: fixed; inset: 0; z-index: 9999;
+    background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+  }
+  #pin-gate .box {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 36px 32px;
+    box-shadow: var(--shadow-md);
+    max-width: 360px;
+    width: 100%;
+    text-align: center;
+  }
+  #pin-gate .eye {
+    font-size: 11px; color: var(--accent-warm);
+    letter-spacing: 0.22em; text-transform: uppercase; font-weight: 700;
+    margin-bottom: 10px;
+  }
+  #pin-gate h2 {
+    font-size: 22px; font-weight: 800; color: var(--ink);
+    letter-spacing: -0.01em; margin-bottom: 6px;
+  }
+  #pin-gate p {
+    font-size: 13px; color: var(--muted); line-height: 1.7; margin-bottom: 22px;
+  }
+  #pin-gate input {
+    width: 100%; padding: 14px 16px;
+    font-size: 18px; font-family: inherit; font-weight: 700;
+    border: 1px solid var(--line); border-radius: 10px;
+    background: var(--surface-2); color: var(--ink);
+    text-align: center; letter-spacing: 0.5em;
+    outline: none; transition: all .15s;
+  }
+  #pin-gate input:focus { background: var(--surface); border-color: var(--accent-warm); }
+  #pin-gate button {
+    width: 100%; margin-top: 12px;
+    padding: 13px; font-size: 14px; font-weight: 700; font-family: inherit;
+    border: none; border-radius: 10px;
+    background: var(--ink); color: var(--accent);
+    cursor: pointer; transition: all .15s;
+  }
+  #pin-gate button:hover { background: #2a2a28; }
+  #pin-gate .err { color: var(--ng); font-size: 12px; margin-top: 10px; min-height: 16px; font-weight: 600; }
+  body.locked { overflow: hidden; }
+  body.locked .navbar, body.locked .slide { visibility: hidden; }
 </style>
 </head>
-<body>
+<body class="locked">
+
+<div id="pin-gate">
+  <div class="box">
+    <div class="eye">RESTRICTED</div>
+    <h2>役割ガイド</h2>
+    <p>このページは関係者限定です。<br>PIN を入力してください。</p>
+    <input type="password" id="pin-input" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="off" placeholder="••••••">
+    <button onclick="checkPin()">入室</button>
+    <div class="err" id="pin-err"></div>
+  </div>
+</div>
 
 <div class="navbar">
   <button class="active role-cover" onclick="show('cover',this)">📚 全体</button>
@@ -717,6 +777,23 @@
 </div>
 
 <script>
+const PIN = '839274';
+function checkPin(){
+  const v = document.getElementById('pin-input').value.trim();
+  const err = document.getElementById('pin-err');
+  if(v === PIN){
+    document.getElementById('pin-gate').style.display = 'none';
+    document.body.classList.remove('locked');
+  } else {
+    err.textContent = 'PIN が違います';
+    document.getElementById('pin-input').value = '';
+  }
+}
+document.getElementById('pin-input').addEventListener('keydown', e=>{
+  if(e.key === 'Enter') checkPin();
+});
+document.getElementById('pin-input').focus();
+
 function show(id, btn){
   document.querySelectorAll('.slide').forEach(s=>s.classList.remove('show'));
   document.getElementById('s-'+id).classList.add('show');
