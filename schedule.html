@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>OKI BOWL 正社員スケジュール</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { font-family:'Hiragino Sans','Yu Gothic',sans-serif; background:#f4f4f0; color:#1a1a1a; padding:16px 12px 60px; }
+  .page { max-width: 980px; margin: 0 auto; }
+
+  header.hero { background: #1a1a1a; color: #fff; border-radius: 14px; padding: 26px 28px; margin-bottom: 16px; }
+  .hero .eyebrow { font-size: 10px; color: #888; letter-spacing: 0.22em; margin-bottom: 8px; }
+  .hero h1 { font-size: 24px; font-weight: 800; margin-bottom: 6px; }
+  .hero h1 span { color: #f5c842; }
+  .hero p { font-size: 12px; color: #aaa; line-height: 1.7; }
+  .hero .principles { margin-top: 14px; display: flex; gap: 14px; flex-wrap: wrap; font-size: 11px; }
+  .hero .principles div { color: #ccc; }
+  .hero .principles div strong { color: #f5c842; display: block; font-size: 10px; letter-spacing: 0.1em; }
+
+  .tabs { display:flex; gap:4px; margin-bottom:14px; padding-bottom:8px; overflow-x:auto; }
+  .tab { flex-shrink:0; padding: 10px 16px; background: #fff; border: 1px solid #e8e8e5; border-radius: 22px; font-size: 12px; font-weight: 700; color: #555; cursor: pointer; font-family: inherit; white-space:nowrap; }
+  .tab:hover { background: #fafafa; }
+  .tab.active { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+
+  .panel { display:none; }
+  .panel.show { display:block; }
+
+  .card { background: #fff; border-radius: 12px; padding: 20px 22px; margin-bottom: 14px; box-shadow: 0 1px 6px rgba(0,0,0,0.06); }
+  .card h2 { font-size: 14px; font-weight: 800; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 2px solid #f0f0f0; display: flex; align-items: center; gap: 8px; }
+  .card h2 .badge { font-size: 9px; background: #f5c842; color: #1a1a1a; padding: 3px 8px; border-radius: 10px; letter-spacing:0.05em; font-weight:800; }
+  .card h2 .badge.green { background: #4a7c59; color: #fff; }
+  .card h2 .badge.blue { background: #3d5a99; color: #fff; }
+  .card h2 .badge.purple { background: #7c3d99; color: #fff; }
+  .card h2 .badge.red { background: #c0392b; color: #fff; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  thead th { background: #f8f8f5; padding: 9px 10px; font-size: 11px; color: #666; text-align: left; border-bottom: 2px solid #e8e8e5; font-weight: 700; }
+  tbody td { padding: 9px 10px; border-bottom: 1px solid #f0f0f0; line-height: 1.7; vertical-align: top; }
+  tbody tr:last-child td { border-bottom: none; }
+  td.t { color: #1a1a1a; font-weight: 700; white-space: nowrap; min-width: 100px; }
+  td.dy { font-weight:700; color:#1a1a1a; min-width:36px; }
+  td.num { text-align:right; font-weight:700; color:#1a1a1a; }
+
+  .meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-top: 8px; }
+  .meta-item { background: #fafafa; border: 1px solid #eee; border-radius: 8px; padding: 12px 14px; font-size: 11px; line-height: 1.7; }
+  .meta-item strong { color: #1a1a1a; display: block; margin-bottom: 4px; font-size:12px; }
+
+  .kpi-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:10px; margin-top:8px; }
+  .kpi-box { background:#fafafa; border:1px solid #eee; border-radius:10px; padding:12px; text-align:center; }
+  .kpi-box .lbl { font-size:10px; color:#888; letter-spacing:0.05em; font-weight:700; margin-bottom:4px; }
+  .kpi-box .val { font-size:20px; font-weight:900; color:#1a1a1a; line-height:1.2; }
+  .kpi-box .val small { font-size:11px; color:#666; font-weight:600; }
+  .kpi-box .ctx { font-size:10px; color:#999; margin-top:4px; }
+
+  ul.checklist { list-style:none; }
+  ul.checklist li { padding: 8px 0; border-bottom: 1px solid #f5f5f5; font-size: 12px; line-height: 1.7; }
+  ul.checklist li:last-child { border-bottom: none; }
+  ul.checklist li::before { content:'✓ '; color:#4a7c59; font-weight:800; margin-right:4px; }
+  ul.bullet { list-style:none; padding-left:0; }
+  ul.bullet li { padding:5px 0; padding-left:18px; position:relative; font-size:12px; line-height:1.7; }
+  ul.bullet li::before { content:'■'; position:absolute; left:0; color:#f5c842; font-size:10px; }
+
+  .alert { background: #fff8e1; border-left: 4px solid #f5c842; border-radius: 6px; padding: 12px 16px; font-size: 11px; color: #555; line-height: 1.8; margin-top: 10px; }
+  .alert strong { color: #1a1a1a; display:block; margin-bottom:3px; font-size:12px; }
+  .alert.red { background:#fff0f0; border-color:#c0392b; }
+  .alert.green { background:#f0faf4; border-color:#4a7c59; }
+
+  .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  @media (max-width: 600px) { .grid-2 { grid-template-columns:1fr; } }
+
+  .ladder { display:grid; grid-template-columns:repeat(4, 1fr); gap:6px; margin-top:8px; }
+  @media (max-width: 600px) { .ladder { grid-template-columns:1fr 1fr; } }
+  .ladder-step { background:#fafafa; border:1px solid #eee; border-radius:8px; padding:10px; }
+  .ladder-step .step-n { font-size:9px; color:#888; letter-spacing:0.1em; font-weight:700; }
+  .ladder-step .step-t { font-size:13px; font-weight:800; color:#1a1a1a; margin-top:2px; }
+  .ladder-step .step-d { font-size:10px; color:#555; margin-top:4px; line-height:1.5; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="hero">
+    <div class="eyebrow">OKI BOWL — FULL-TIME EMPLOYEE OPERATING SYSTEM</div>
+    <h1>正社員 <span>スケジュール</span></h1>
+    <p>OKI BOWL の正社員に求める「成果責任・戦略参画・自己成長」の3軸を運用に落とし込んだ仕様書。タスク表ではなく、半期評価で問われるアウトプットへの逆引きで設計。</p>
+    <div class="principles">
+      <div><strong>RESPONSIBILITY</strong>数字に責任を持つ</div>
+      <div><strong>OWNERSHIP</strong>領域を持ち改善する</div>
+      <div><strong>DEVELOPMENT</strong>自分と後輩を育てる</div>
+    </div>
+  </header>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('std')">📋 共通フレーム</button>
+    <button class="tab" onclick="showTab('manager')">👔 店長</button>
+    <button class="tab" onclick="showTab('silverA')">🎤 silver A</button>
+    <button class="tab" onclick="showTab('silverB')">🍳 silver B</button>
+    <button class="tab" onclick="showTab('bronze')">📱 bronze</button>
+  </div>
+
+  <!-- ========== 共通フレーム ========== -->
+  <div class="panel show" id="panel-std">
+
+    <div class="card">
+      <h2><span class="badge">FRAME</span>正社員に求める3つの責任</h2>
+      <div class="meta-grid">
+        <div class="meta-item"><strong>① 業績責任</strong>担当領域の数字（売上・原価・接客指標等）を半期で達成する。未達なら原因分析と次期改善策を提示できる。</div>
+        <div class="meta-item"><strong>② 領域責任</strong>担当領域のSOP・改善・後輩指導を主体的にリード。受け身の業務遂行ではなく改善提案を月1回以上アウトプット。</div>
+        <div class="meta-item"><strong>③ 自己発展責任</strong>個人の成長計画（PDP）を自ら持ち、四半期ごとに進捗を1on1で報告。スキル獲得が処遇に連動する。</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span class="badge green">TIME ALLOC</span>1日の時間配分（戦略×現場×成長）</h2>
+      <table>
+        <thead><tr><th>時間帯</th><th>主活動</th><th>配分比</th></tr></thead>
+        <tbody>
+          <tr><td class="t">08:30〜09:00</td><td>朝礼・本日のフォーカス共有・前日数値確認</td><td class="num">5%</td></tr>
+          <tr><td class="t">09:00〜14:00</td><td>現場運営（ランチピーク含む）</td><td class="num">40%</td></tr>
+          <tr><td class="t">14:00〜17:00</td><td>戦略タスク（発注・SOP改善・スタッフ面談・分析・SNS）</td><td class="num">30%</td></tr>
+          <tr><td class="t">17:00〜21:30</td><td>現場運営（ディナーピーク・締め）</td><td class="num">25%</td></tr>
+          <tr><td class="t">21:30〜22:00</td><td>日次振り返り・明日のアクション宣言（app.html入力）</td><td class="num">必須</td></tr>
+        </tbody>
+      </table>
+      <div class="alert">
+        <strong>正社員ポイント</strong>
+        現場稼働は <strong>65%</strong> が上限。残り35%は戦略・育成・自己研鑽に確保する。これが守れない＝採用人数か業務設計を見直す合図。
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span class="badge blue">CYCLE</span>運用サイクル（日・週・月・四半期・半期）</h2>
+      <table>
+        <thead><tr><th>サイクル</th><th>正社員に求められるアウトプット</th></tr></thead>
+        <tbody>
+          <tr><td class="t">日次</td><td>KPI入力・今日の振り返り・明日のアクション1行（app.html）</td></tr>
+          <tr><td class="t">週次</td><td>担当領域の数字レビュー・改善1件提案・1on1（30分）</td></tr>
+          <tr><td class="t">月次</td><td>担当KPIの月間振り返りレポート・翌月の改善計画提出</td></tr>
+          <tr><td class="t">四半期</td><td>OKR設定（3つの目標）・PDP（個人成長計画）レビュー・360°フィードバック</td></tr>
+          <tr><td class="t">半期</td><td>評価面談（60分）・処遇確定・次期テーマ決定</td></tr>
+          <tr><td class="t">年次</td><td>年度方針共有・キャリア面談・昇格／昇給判定</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h2><span class="badge purple">DEV</span>個人成長計画（PDP）の最低要件</h2>
+      <ul class="checklist">
+        <li>四半期ごとに <strong>3つのスキルゴール</strong> を設定（業務スキル2＋ヒューマンスキル1）</li>
+        <li>毎月の1on1で進捗を報告し、必要なリソース（書籍・外部講座・実地経験）を上長と合意</li>
+        <li>年度ごとに「自分が育てる対象」を1名以上指名（後輩育成責任）</li>
+        <li>OKI BOWL の経営課題1つを「自分のテーマ」として持つ（領域責任）</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2><span class="badge red">REWARD</span>処遇との連動</h2>
+      <table>
+        <thead><tr><th>判定区分</th><th>条件</th><th>処遇</th></tr></thead>
+        <tbody>
+          <tr><td class="t">S 卓越</td><td>担当領域目標 +110%超達成かつ後輩育成成果あり</td><td>翌期昇給＋インセンティブ＋昇格検討</td></tr>
+          <tr><td class="t">A 優秀</td><td>担当領域目標 100〜109%達成</td><td>翌期昇給またはインセンティブ</td></tr>
+          <tr><td class="t">B 標準</td><td>目標 80〜99%達成</td><td>維持＋PDP重点強化</td></tr>
+          <tr><td class="t">C 要改善</td><td>目標 60〜79%</td><td>3ヶ月の改善プラン・進捗観察</td></tr>
+          <tr><td class="t">D 要面談</td><td>目標 60%未満または重大な領域責任放棄</td><td>役割再定義 or 配置転換 / 場合により雇用形態見直し</td></tr>
+        </tbody>
+      </table>
+      <div class="alert green">
+        <strong>原則</strong>
+        正社員の処遇は<strong>頑張った時間</strong>ではなく<strong>残した成果</strong>に連動する。何時間働いたかよりも、領域で何を実現したかを見る。
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span class="badge">YEARLY</span>年間カレンダー</h2>
+      <table>
+        <thead><tr><th>時期</th><th>イベント</th></tr></thead>
+        <tbody>
+          <tr><td class="t">4月</td><td>年度キックオフ・年間OKR発表・新卒オリエン</td></tr>
+          <tr><td class="t">7〜8月</td><td>夏季繁忙期・全員稼働・繁忙期手当判定</td></tr>
+          <tr><td class="t">9月下旬</td><td>上半期評価準備（自己評価記入・実績集計）</td></tr>
+          <tr><td class="t" style="background:#fff8e1;color:#cc6600;">★10/5</td><td><strong>★初回 上半期評価実施</strong>（店長×OWNER 60分）／処遇確定</td></tr>
+          <tr><td class="t">11〜1月</td><td>閑散期：教育投資・SOP整備・新規企画</td></tr>
+          <tr><td class="t">3月下旬</td><td>下半期評価準備</td></tr>
+          <tr><td class="t">4月上旬</td><td>下半期評価実施・年度総括・次年度方針</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ========== 店長 ========== -->
+  <div class="panel" id="panel-manager">
+
+    <div class="card">
+      <h2><span class="badge red">ROLE</span>店長 — 利益責任者</h2>
+      <p style="font-size:12px;color:#555;line-height:1.8;margin-bottom:8px;">店舗のP/L最終責任者。OWNERのビジョンを現場で結実させ、組織を継続的に強くする立場。経営の右腕。</p>
+      <div class="meta-grid">
+        <div class="meta-item"><strong>領域責任</strong>店舗P/L全体・採用・育成・SOP整備</div>
+        <div class="meta-item"><strong>判断権限</strong>50万円以下の現場改善投資・採用1次面接決裁</div>
+        <div class="meta-item"><strong>勤務</strong>週5〜6日 / 月180〜200h（管理職裁量）</div>
+        <div class="meta-item"><strong>評価期</strong>半期1回（評価シート100点で判定）</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>担当KPI（半期目標）</h2>
+      <div class="kpi-grid">
+        <div class="kpi-box"><div class="lbl">営業利益率</div><div class="val">15<small>%以上</small></div><div class="ctx">+3%超で昇給対象</div></div>
+        <div class="kpi-box"><div class="lbl">FL比率</div><div class="val">60<small>%以下</small></div><div class="ctx">F30%/L30%</div></div>
+        <div class="kpi-box"><div class="lbl">スタッフ定着率</div><div class="val">100<small>%</small></div><div class="ctx">離職ゼロ目標</div></div>
+        <div class="kpi-box"><div class="lbl">エスカレ件数</div><div class="val">5<small>件以下/月</small></div><div class="ctx">自己解決率</div></div>
+        <div class="kpi-box"><div class="lbl">後継育成</div><div class="val">1<small>名/半期</small></div><div class="ctx">店長代行レベル</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>戦略タスク（週次）</h2>
+      <table>
+        <thead><tr><th>曜日</th><th>戦略タスク</th><th>所要</th></tr></thead>
+        <tbody>
+          <tr><td class="dy">月</td><td>週次P/Lまとめ → OWNER口頭報告（数字＋仮説＋打ち手）</td><td>30分</td></tr>
+          <tr><td class="dy">火</td><td>全KPIレビュー・未達項目の対策実行決裁</td><td>20分</td></tr>
+          <tr><td class="dy">水</td><td>来週シフト確定（人件費試算・繁閑予測込み）</td><td>60分</td></tr>
+          <tr><td class="dy">木</td><td>スタッフ1on1（30分×2名）／成長計画レビュー</td><td>60分</td></tr>
+          <tr><td class="dy">金</td><td>週末準備・業績速報・改善1件提案</td><td>30分</td></tr>
+          <tr><td class="dy">土・日</td><td>ピーク統括＋週次振り返り＋来週アクション宣言</td><td>運営中</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h2>月次・四半期の戦略アウトプット</h2>
+      <ul class="bullet">
+        <li><strong>月次レポート</strong>：P/L＋スタッフ動向＋顧客動向＋翌月改善計画をOWNERに提出（月末日まで）</li>
+        <li><strong>四半期OKR</strong>：店舗の3大目標を設定・OWNER承認・全員に共有</li>
+        <li><strong>半期戦略</strong>：閑散期施策／繁忙期準備計画／設備投資提案</li>
+        <li><strong>採用・育成</strong>：年間採用計画／キャリアパス整備／正社員候補bronze→silverの昇格判定</li>
+        <li><strong>外部連携</strong>：MEO・撮影・デザイン外部リソースのKPI管理</li>
+      </ul>
+    </div>
+
+    <div class="alert red">
+      <strong>店長の最重要マインド</strong>
+      「現場で頑張る」ではなく「数字を残す」。シフトに入りすぎていたら戦略時間を失っているサイン。<strong>silver Bが店長代行で1日回せる状態</strong>を半年以内に作るのが最優先課題。
+    </div>
+  </div>
+
+  <!-- ========== silver A ========== -->
+  <div class="panel" id="panel-silverA">
+
+    <div class="card">
+      <h2><span class="badge green">ROLE</span>silver A — 顧客体験責任者</h2>
+      <p style="font-size:12px;color:#555;line-height:1.8;margin-bottom:8px;">OKI BOWL のブランド第一接点。リピート顧客・観光客の「もう一度来たい」を設計する立場。接客のプロフェッショナル。</p>
+      <div class="meta-grid">
+        <div class="meta-item"><strong>領域責任</strong>顧客体験設計・接客SOP・多言語対応・口コミ管理</div>
+        <div class="meta-item"><strong>判断権限</strong>クレーム1次対応・サービスリカバリ予算（月1万円まで）</div>
+        <div class="meta-item"><strong>勤務</strong>週5日 / 月160〜180h</div>
+        <div class="meta-item"><strong>連携先</strong>CMO（販促）／店長（運営）／bronze（教育）</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>担当KPI（半期目標）</h2>
+      <div class="kpi-grid">
+        <div class="kpi-box"><div class="lbl">Googleレビュー平均</div><div class="val">4.5<small>以上</small></div><div class="ctx">月次測定</div></div>
+        <div class="kpi-box"><div class="lbl">月次レビュー数</div><div class="val">30<small>件以上</small></div><div class="ctx">声かけ施策込み</div></div>
+        <div class="kpi-box"><div class="lbl">リピーター率</div><div class="val">25<small>%以上</small></div><div class="ctx">顧客台帳ベース</div></div>
+        <div class="kpi-box"><div class="lbl">英語接客</div><div class="val">100<small>%</small></div><div class="ctx">観光客対応完結</div></div>
+        <div class="kpi-box"><div class="lbl">後輩教育</div><div class="val">2<small>名/半期</small></div><div class="ctx">接客自立判定</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>戦略タスク（週次）</h2>
+      <ul class="bullet">
+        <li>月：先週のお客様の声まとめ → 店長報告 → CMO/CPOへ示唆連携</li>
+        <li>火：多言語対応コンテンツ整備（メニュー・案内）／英語ロープレ自主練</li>
+        <li>水：常連客リスト更新・誕生日／記念日対応プラン</li>
+        <li>木：bronze・新人の接客ロープレ実施（30分）</li>
+        <li>金：週末体制チェック・サービスリカバリ準備</li>
+        <li>土・日：ピーク現場リーダー（接客全体の品質責任）</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>月次・四半期の戦略アウトプット</h2>
+      <ul class="bullet">
+        <li><strong>月次CXレポート</strong>：レビュー集計＋クレーム傾向＋改善提案を店長へ提出</li>
+        <li><strong>四半期顧客体験テーマ</strong>：季節・観光トレンドを踏まえた体験設計（CMOと共同）</li>
+        <li><strong>接客SOP更新</strong>：年2回（半期評価のタイミング）</li>
+        <li><strong>外国語コンテンツ</strong>：英語＋もう1言語追加（韓国語/中国語）の段階整備</li>
+      </ul>
+    </div>
+
+    <div class="alert">
+      <strong>silver A の昇格基準（→ 副店長候補）</strong>
+      上記KPI 2半期連続でA以上達成＋接客SOPの全面リーダーシップ＋後輩2名以上の自立育成 → 副店長候補へ。
+    </div>
+  </div>
+
+  <!-- ========== silver B ========== -->
+  <div class="panel" id="panel-silverB">
+
+    <div class="card">
+      <h2><span class="badge blue">ROLE</span>silver B — オペレーション・原価責任者</h2>
+      <p style="font-size:12px;color:#555;line-height:1.8;margin-bottom:8px;">利益体質の中核。原価率・廃棄率・回転率に責任を持ち、調達からレシピ管理まで一気通貫で改善する立場。利益を生むエンジン。</p>
+      <div class="meta-grid">
+        <div class="meta-item"><strong>領域責任</strong>原価管理・在庫管理・厨房オペ効率・レシピSOP・仕入先関係</div>
+        <div class="meta-item"><strong>判断権限</strong>仕入先1次選定・発注量決定・廃棄基準運用</div>
+        <div class="meta-item"><strong>勤務</strong>週5日 / 月160〜180h</div>
+        <div class="meta-item"><strong>連携先</strong>CFO（数字）／CPO（メニュー）／店長（運営）</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>担当KPI（半期目標）</h2>
+      <div class="kpi-grid">
+        <div class="kpi-box"><div class="lbl">F比率</div><div class="val">30<small>%以下</small></div><div class="ctx">月次集計</div></div>
+        <div class="kpi-box"><div class="lbl">廃棄率</div><div class="val">3<small>%以下</small></div><div class="ctx">廃棄記録ベース</div></div>
+        <div class="kpi-box"><div class="lbl">仕込み効率</div><div class="val">+10<small>%</small></div><div class="ctx">前期比改善</div></div>
+        <div class="kpi-box"><div class="lbl">仕入交渉</div><div class="val">3<small>件/半期</small></div><div class="ctx">単価or条件改善</div></div>
+        <div class="kpi-box"><div class="lbl">SOP整備</div><div class="val">100<small>%</small></div><div class="ctx">全レシピ最新化</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>戦略タスク（週次）</h2>
+      <ul class="bullet">
+        <li>月：週次原価計算・F比率トラッキング</li>
+        <li>火：仕込み効率改善（時間計測・無駄削減・標準化）</li>
+        <li>水：設備点検・冷蔵庫整理（先入先出徹底）</li>
+        <li>木：原価チェック・店長へ価格戦略提案</li>
+        <li>金：週末在庫確保・発注追加</li>
+        <li>土・日：ピーク厨房リーダー</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>月次・四半期の戦略アウトプット</h2>
+      <ul class="bullet">
+        <li><strong>月次原価レポート</strong>：F比率／廃棄率／回転率／改善提案を店長＋CFOへ提出</li>
+        <li><strong>仕入先評価</strong>：年2回 全仕入先の品質・価格・納期を点数化／入替検討</li>
+        <li><strong>レシピSOP更新</strong>：四半期ごと（CPOと連携）</li>
+        <li><strong>厨房機器ROI</strong>：年1回 設備の費用対効果検証・更新提案</li>
+        <li><strong>新メニュー原価設計</strong>：CPOと共同で原価率30%以下を担保</li>
+      </ul>
+    </div>
+
+    <div class="alert">
+      <strong>silver B の昇格基準（→ オペレーションマネージャー候補）</strong>
+      F比率28%以下を2半期連続キープ＋仕入先関係の独立運営＋厨房後継1名育成 → オペレーションマネージャー / 2号店副店長候補。
+    </div>
+  </div>
+
+  <!-- ========== bronze ========== -->
+  <div class="panel" id="panel-bronze">
+
+    <div class="card">
+      <h2><span class="badge purple">ROLE</span>bronze — 次期silver候補・ブランド発信担当</h2>
+      <p style="font-size:12px;color:#555;line-height:1.8;margin-bottom:8px;">将来のsilverを目指す育成枠。同時にOKI BOWLのブランド発信（SNS）の主担当として、外向きの「顔」を作る役割。半年〜1年でsilverへ昇格判定。</p>
+      <div class="meta-grid">
+        <div class="meta-item"><strong>領域責任</strong>SNS発信全般・現場実行・後輩補助</div>
+        <div class="meta-item"><strong>判断権限</strong>SNS投稿の最終決裁（ブランドルール内）</div>
+        <div class="meta-item"><strong>勤務</strong>週4〜5日 / 月140〜160h</div>
+        <div class="meta-item"><strong>連携先</strong>CMO（戦略）／silver A（接客）／silver B（オペ）</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>担当KPI（半期目標）</h2>
+      <div class="kpi-grid">
+        <div class="kpi-box"><div class="lbl">SNS投稿数</div><div class="val">12<small>本/月</small></div><div class="ctx">週3本×4週</div></div>
+        <div class="kpi-box"><div class="lbl">フォロワー増</div><div class="val">+500<small>/半期</small></div><div class="ctx">Instagram</div></div>
+        <div class="kpi-box"><div class="lbl">エンゲージ率</div><div class="val">3<small>%以上</small></div><div class="ctx">業界平均超</div></div>
+        <div class="kpi-box"><div class="lbl">スキル習得</div><div class="val">5<small>項目/半期</small></div><div class="ctx">スキルマップ</div></div>
+        <div class="kpi-box"><div class="lbl">独立稼働</div><div class="val">100<small>%</small></div><div class="ctx">単独シフト可</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>成長ロードマップ（→ silver昇格まで）</h2>
+      <div class="ladder">
+        <div class="ladder-step"><div class="step-n">PHASE 1 (0〜2ヶ月)</div><div class="step-t">基本オペ習得</div><div class="step-d">全ポジションの基本フロー理解／メニュー全暗記</div></div>
+        <div class="ladder-step"><div class="step-n">PHASE 2 (2〜4ヶ月)</div><div class="step-t">独立稼働</div><div class="step-d">単独シフト勤務可／クレーム1次対応／SNS自走</div></div>
+        <div class="ladder-step"><div class="step-n">PHASE 3 (4〜6ヶ月)</div><div class="step-t">後輩指導</div><div class="step-d">新人教育担当／SNS担当として確立／改善提案月1件</div></div>
+        <div class="ladder-step" style="background:#fff8e1;border-color:#f5c842;"><div class="step-n">PHASE 4 (6〜12ヶ月)</div><div class="step-t">silver昇格判定</div><div class="step-d">領域責任を1つ持つ／半期評価でA以上 → silver A or B</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>SNS戦略アウトプット（CMO連携）</h2>
+      <ul class="bullet">
+        <li><strong>月次テーマ</strong>：CMOから提示される月のテーマに沿った投稿企画立案</li>
+        <li><strong>撮影〜投稿</strong>：自分で完結（カメラ・編集アプリ・キャプション・ハッシュタグ）</li>
+        <li><strong>月次インサイト</strong>：リーチ・エンゲージ・新規フォロワーをCMOへレポート</li>
+        <li><strong>四半期トレンド分析</strong>：競合カフェ・観光トレンドからネタ提案</li>
+        <li><strong>UGC収集</strong>：来店客の投稿を収集・公式アカウントで紹介</li>
+      </ul>
+    </div>
+
+    <div class="alert green">
+      <strong>bronze の評価ポイント</strong>
+      「言われたことをやる」ではなく「自分のSNSで店の集客を作る」。投稿数だけでなく<strong>来店動機につながったか</strong>をエンゲージとアンケートで測定。silver昇格は<strong>数字での貢献</strong>が条件。
+    </div>
+  </div>
+
+</div>
+
+<script>
+function showTab(id) {
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('show'));
+  event.currentTarget.classList.add('active');
+  document.getElementById('panel-'+id).classList.add('show');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+</script>
+</body>
+</html>
