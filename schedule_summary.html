@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>正社員スケジュール — 趣旨説明スライド</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { font-family:'Hiragino Sans','Yu Gothic',sans-serif; background:#1a1a1a; color:#fff; min-height:100vh; padding:0; }
+
+  .deck { max-width: 1100px; margin: 0 auto; padding: 24px 16px 80px; }
+
+  .slide {
+    background: #fff;
+    color: #1a1a1a;
+    border-radius: 18px;
+    padding: 48px 56px;
+    margin-bottom: 22px;
+    min-height: 440px;
+    position: relative;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+  }
+  .slide-num {
+    position: absolute;
+    top: 20px;
+    right: 28px;
+    font-size: 11px;
+    color: #aaa;
+    letter-spacing: 0.15em;
+    font-weight: 700;
+  }
+  .slide.cover {
+    background: #1a1a1a;
+    color: #fff;
+    padding: 72px 56px;
+    min-height: 480px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .slide.cover .eyebrow { font-size: 12px; color: #888; letter-spacing: 0.3em; margin-bottom: 18px; }
+  .slide.cover h1 { font-size: 48px; font-weight: 900; line-height: 1.2; margin-bottom: 14px; }
+  .slide.cover h1 span { color: #f5c842; }
+  .slide.cover p { font-size: 14px; color: #aaa; line-height: 1.9; max-width: 600px; }
+  .slide.cover .meta { margin-top: 36px; display: flex; gap: 28px; flex-wrap: wrap; font-size: 11px; color: #888; }
+  .slide.cover .meta strong { display: block; color: #f5c842; font-size: 10px; letter-spacing: 0.15em; margin-bottom: 4px; }
+
+  .slide-tag { display:inline-block; background:#1a1a1a; color:#f5c842; font-size:10px; letter-spacing:0.18em; padding:4px 12px; border-radius:14px; font-weight:800; margin-bottom: 14px; }
+  .slide-tag.green { background:#4a7c59; color:#fff; }
+  .slide-tag.blue { background:#3d5a99; color:#fff; }
+  .slide-tag.purple { background:#7c3d99; color:#fff; }
+  .slide-tag.red { background:#c0392b; color:#fff; }
+
+  .slide h2 { font-size: 28px; font-weight: 900; margin-bottom: 20px; line-height: 1.3; }
+  .slide h2 span { color: #f5c842; }
+  .slide .lead { font-size: 14px; color: #555; line-height: 1.9; margin-bottom: 24px; max-width: 720px; }
+
+  .points { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+  .point { background: #fafafa; border: 1px solid #eee; border-radius: 10px; padding: 18px 20px; }
+  .point .n { font-size: 11px; color: #f5c842; font-weight: 800; letter-spacing: 0.15em; }
+  .point .t { font-size: 15px; font-weight: 800; margin: 6px 0 8px; color: #1a1a1a; }
+  .point .d { font-size: 12px; color: #555; line-height: 1.8; }
+
+  ul.bullet { list-style: none; padding-left: 0; }
+  ul.bullet li { padding: 9px 0; padding-left: 26px; position: relative; font-size: 13px; line-height: 1.8; border-bottom: 1px solid #f5f5f5; }
+  ul.bullet li:last-child { border-bottom: none; }
+  ul.bullet li::before { content: ''; position: absolute; left: 0; top: 16px; width: 14px; height: 2px; background: #f5c842; }
+  ul.bullet li strong { color: #1a1a1a; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 8px; }
+  thead th { background: #1a1a1a; color:#fff; padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 700; letter-spacing: 0.05em; }
+  tbody td { padding: 12px 14px; border-bottom: 1px solid #f0f0f0; line-height: 1.7; vertical-align: top; }
+  tbody tr:last-child td { border-bottom: none; }
+  td.t { color: #1a1a1a; font-weight: 800; white-space: nowrap; min-width: 90px; }
+
+  .alert { background: #fff8e1; border-left: 5px solid #f5c842; border-radius: 8px; padding: 16px 22px; margin-top: 20px; font-size: 13px; line-height: 1.9; }
+  .alert strong { color: #1a1a1a; display: block; margin-bottom: 4px; font-size: 14px; }
+  .alert.red { background:#fff0f0; border-color:#c0392b; }
+
+  .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  @media (max-width: 700px) {
+    .slide { padding: 32px 24px; }
+    .slide.cover { padding: 56px 24px; }
+    .slide.cover h1 { font-size: 32px; }
+    .slide h2 { font-size: 22px; }
+    .grid-2 { grid-template-columns: 1fr; }
+  }
+
+  .nav { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 18px; }
+  .nav a { background: #333; color: #f5c842; text-decoration: none; padding: 8px 14px; border-radius: 18px; font-size: 11px; font-weight: 700; letter-spacing: 0.05em; }
+  .nav a:hover { background: #444; }
+
+  @media print {
+    body { background: #fff; }
+    .nav { display:none; }
+    .slide { break-after: page; box-shadow: none; }
+  }
+</style>
+</head>
+<body>
+<div class="deck">
+
+  <div class="nav">
+    <a href="#s1">① 目的</a>
+    <a href="#s2">② ゴール</a>
+    <a href="#s3">③ ルール</a>
+    <a href="#s4">④ 運用方法</a>
+    <a href="#s5">⑤ 注意事項</a>
+    <a href="javascript:window.print()">🖨 印刷</a>
+  </div>
+
+  <!-- COVER -->
+  <div class="slide cover">
+    <div class="eyebrow">OKI BOWL — FULL-TIME EMPLOYEE OPERATING SYSTEM</div>
+    <h1>正社員スケジュール<br><span>趣旨説明</span></h1>
+    <p>「タスクをこなす雇用」から「成果を残す雇用」へ。<br>このスライドは、正社員スケジュールシートの目的・運用ルール・処遇連動を5分で理解するための共通言語です。</p>
+    <div class="meta">
+      <div><strong>対象</strong>OKI BOWL 全正社員</div>
+      <div><strong>初回共有</strong>月次MTG（毎月10日）</div>
+      <div><strong>初回評価</strong>2026-10-05（上半期）</div>
+      <div><strong>作成</strong>マネージャー</div>
+    </div>
+  </div>
+
+  <!-- SLIDE 1 / 目的 -->
+  <div class="slide" id="s1">
+    <div class="slide-num">01 / 05</div>
+    <span class="slide-tag">PURPOSE</span>
+    <h2>このシートの<span>目的</span></h2>
+    <p class="lead">月次の振り返りだけでは「来月頑張ろう症候群」に陥る。日次・週次・四半期・半期の小刻みな振り返りで<strong>成果に直結する正社員</strong>を育てるための共通フレームを定める。</p>
+    <div class="points">
+      <div class="point">
+        <div class="n">PURPOSE 1</div>
+        <div class="t">成果責任の見える化</div>
+        <div class="d">担当領域の数字（売上・原価・接客指標）に半期で責任を持つ。何時間働いたかではなく、何を残したかを評価する。</div>
+      </div>
+      <div class="point">
+        <div class="n">PURPOSE 2</div>
+        <div class="t">役割の独立運営</div>
+        <div class="d">店長の判断を待たずに、各正社員が自領域を主体的に改善できる組織にする。判断権限と意思決定範囲を明文化。</div>
+      </div>
+      <div class="point">
+        <div class="n">PURPOSE 3</div>
+        <div class="t">キャリア発展の保証</div>
+        <div class="d">PDP（個人成長計画）と昇格基準を明示し、努力が処遇・昇格に直結する仕組みにする。離職を防ぎチームを強くする。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 2 / ゴール -->
+  <div class="slide" id="s2">
+    <div class="slide-num">02 / 05</div>
+    <span class="slide-tag green">GOAL</span>
+    <h2>到達したい<span>3つのゴール</span></h2>
+    <p class="lead">半期（6ヶ月）で以下が達成できている状態を目指す。これが正社員に求めるクオリティ。</p>
+    <table>
+      <thead><tr><th style="width:30%;">ゴール</th><th>定義</th></tr></thead>
+      <tbody>
+        <tr><td class="t">① 数字責任</td><td>各ポジションの担当KPIを半期目標 80%以上達成。未達でも原因分析と次期改善策を自ら提示できる。</td></tr>
+        <tr><td class="t">② 領域オーナーシップ</td><td>担当領域のSOP整備・改善提案を月1件以上アウトプット。店長の指示待ちにならない。</td></tr>
+        <tr><td class="t">③ 後継人材育成</td><td>自分の下に1名以上「育てる対象」を持ち、半年で独立稼働可能なレベルまで引き上げる。</td></tr>
+      </tbody>
+    </table>
+    <div class="alert">
+      <strong>正社員の最終ゴール</strong>
+      「自分が休んでも領域が回る状態」を半期で作る。<br>これができていればS〜A評価／できていなければ役割再定義の対象。
+    </div>
+  </div>
+
+  <!-- SLIDE 3 / ルール -->
+  <div class="slide" id="s3">
+    <div class="slide-num">03 / 05</div>
+    <span class="slide-tag blue">RULE</span>
+    <h2>守るべき<span>5つのルール</span></h2>
+    <ul class="bullet">
+      <li><strong>日次入力ルール：</strong>毎日21:30〜22:00の間に「今日の振り返り＋明日のアクション」をapp.htmlに必ず1行ずつ記入する</li>
+      <li><strong>時間配分ルール：</strong>現場稼働は週時間の65%以下に抑える。残り35%は戦略タスク・育成・自己研鑽に使う</li>
+      <li><strong>1on1ルール：</strong>店長と毎月30分の1on1。PDP（個人成長計画）の進捗を必ず報告する</li>
+      <li><strong>四半期OKRルール：</strong>四半期ごとに3つの目標（業務2＋ヒューマン1）を設定し、上長と合意する</li>
+      <li><strong>処遇連動ルール：</strong>半期評価でB以上を維持できなければ、役割再定義または雇用形態見直しの対象になる</li>
+    </ul>
+    <div class="alert red">
+      <strong>厳守事項</strong>
+      日次入力を週3日以上飛ばした場合は、店長から警告。月単位で改善が見られない場合は評価Cの対象。<br>振り返りはこの仕組みの心臓部。
+    </div>
+  </div>
+
+  <!-- SLIDE 4 / 運用方法 -->
+  <div class="slide" id="s4">
+    <div class="slide-num">04 / 05</div>
+    <span class="slide-tag purple">OPERATION</span>
+    <h2>具体的な<span>運用方法</span></h2>
+    <table>
+      <thead><tr><th style="width:18%;">サイクル</th><th>誰が</th><th>何をする</th></tr></thead>
+      <tbody>
+        <tr><td class="t">日次</td><td>全正社員</td><td>app.htmlに今日の振り返り＋明日のアクションを1行入力</td></tr>
+        <tr><td class="t">週次</td><td>各ポジション</td><td>担当KPIの数字確認・改善1件提案・店長と簡易共有</td></tr>
+        <tr><td class="t">月次</td><td>各ポジション</td><td>月間レポート（KPI達成度＋改善計画）を店長に提出（月末日）</td></tr>
+        <tr><td class="t">月次</td><td>店長</td><td>全体MTG（毎月10日）で前月総括＋今月テーマ発表</td></tr>
+        <tr><td class="t">月次</td><td>店長×各員</td><td>1on1（30分）：PDP進捗・四半期OKR進捗を確認</td></tr>
+        <tr><td class="t">四半期</td><td>全正社員</td><td>OKR設定＋360°フィードバック</td></tr>
+        <tr><td class="t">半期</td><td>店長×OWNER</td><td>評価面談（60分）→ 処遇確定（昇給・インセンティブ・改善計画）</td></tr>
+      </tbody>
+    </table>
+    <div class="alert">
+      <strong>使うツール</strong>
+      📊 OKI BOWL Manager（app.html）／👥 正社員スケジュール（schedule.html）／📋 店長評価シート（半期評価時）／📅 Googleカレンダー（評価日・MTG日）
+    </div>
+  </div>
+
+  <!-- SLIDE 5 / 注意事項 -->
+  <div class="slide" id="s5">
+    <div class="slide-num">05 / 05</div>
+    <span class="slide-tag red">NOTES</span>
+    <h2>運用上の<span>注意事項</span></h2>
+    <div class="grid-2">
+      <div class="point">
+        <div class="n">NOTE 1</div>
+        <div class="t">処遇は時間でなく成果に連動する</div>
+        <div class="d">残業時間の長さは評価対象外。むしろ65%ルールを破る働き方は赤信号。「成果を残しつつ時間を守る」が正社員の腕の見せ所。</div>
+      </div>
+      <div class="point">
+        <div class="n">NOTE 2</div>
+        <div class="t">エスカレ件数も評価対象</div>
+        <div class="d">店長への相談・判断依頼が月5件超は自己解決能力の不足とみなす。深刻案件のみエスカレ。</div>
+      </div>
+      <div class="point">
+        <div class="n">NOTE 3</div>
+        <div class="t">PDPは半期で更新</div>
+        <div class="d">スキル目標が達成済みの場合、次のレベルに引き上げる。停滞は「成長していない」のサイン。</div>
+      </div>
+      <div class="point">
+        <div class="n">NOTE 4</div>
+        <div class="t">後継育成は採用前提</div>
+        <div class="d">「自分の代わりがいない」状態は組織リスク。半期で1名以上、後継候補を指名・育成する。</div>
+      </div>
+      <div class="point">
+        <div class="n">NOTE 5</div>
+        <div class="t">役割は固定でない</div>
+        <div class="d">silver A→副店長／silver B→2号店副店長／bronze→silver昇格 など、達成度次第で役割変更あり。</div>
+      </div>
+      <div class="point">
+        <div class="n">NOTE 6</div>
+        <div class="t">困った時のSOS</div>
+        <div class="d">領域責任の重圧で潰れそうになる前に、店長またはOWNERへ早期相談。1人で抱えて辞めるのが最悪のシナリオ。</div>
+      </div>
+    </div>
+    <div class="alert">
+      <strong>このスライドの位置づけ</strong>
+      正社員全員が読み・理解する「共通言語」。質問は1on1または全体MTGで歓迎。<br>
+      原本：<code style="background:#f5f5f5;padding:2px 6px;border-radius:4px;font-size:11px;">/okibowl-tools/schedule.html</code>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
