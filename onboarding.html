@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>OKI BOWL 2号店 立ち上げ計画</title>
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+  body { font-family:'Hiragino Sans','Yu Gothic',sans-serif; background:#f4f4f0; color:#1a1a1a; padding:16px 12px 80px; }
+  .page { max-width:1080px; margin:0 auto; }
+
+  .hero { background:#1a1a1a; color:#fff; border-radius:16px; padding:30px 32px; margin-bottom:18px; }
+  .hero .eyebrow { font-size:11px; color:#888; letter-spacing:0.22em; margin-bottom:10px; }
+  .hero h1 { font-size:30px; font-weight:900; line-height:1.25; margin-bottom:8px; }
+  .hero h1 span { color:#f5c842; }
+  .hero p { font-size:13px; color:#bbb; line-height:1.8; max-width:760px; }
+  .hero .meta { margin-top:18px; display:flex; gap:24px; flex-wrap:wrap; font-size:11px; }
+  .hero .meta div { color:#888; }
+  .hero .meta strong { color:#f5c842; display:block; font-size:10px; letter-spacing:0.12em; margin-bottom:3px; }
+
+  .tabs { display:flex; gap:6px; margin-bottom:14px; padding-bottom:6px; overflow-x:auto; }
+  .tab { flex-shrink:0; padding:11px 18px; background:#fff; border:1px solid #e8e8e5; border-radius:24px; font-size:12px; font-weight:800; color:#555; cursor:pointer; font-family:inherit; white-space:nowrap; }
+  .tab.active { background:#1a1a1a; color:#f5c842; border-color:#1a1a1a; }
+
+  .panel { display:none; }
+  .panel.show { display:block; }
+
+  .card { background:#fff; border-radius:14px; padding:22px 24px; margin-bottom:14px; box-shadow:0 1px 6px rgba(0,0,0,0.06); }
+  .card h2 { font-size:15px; font-weight:900; margin-bottom:14px; padding-bottom:10px; border-bottom:2px solid #f0f0f0; display:flex; align-items:center; gap:10px; }
+  .card h2 .pb { font-size:10px; padding:4px 10px; border-radius:14px; letter-spacing:0.1em; font-weight:800; }
+  .pb.p1 { background:#f5c842; color:#1a1a1a; }
+  .pb.p2 { background:#4a7c59; color:#fff; }
+  .pb.p3 { background:#3d5a99; color:#fff; }
+  .pb.p4 { background:#7c3d99; color:#fff; }
+  .pb.red { background:#c0392b; color:#fff; }
+
+  table { width:100%; border-collapse:collapse; font-size:12px; }
+  thead th { background:#f8f8f5; padding:9px 10px; text-align:left; font-size:11px; color:#666; font-weight:800; border-bottom:2px solid #e8e8e5; letter-spacing:0.03em; }
+  tbody td { padding:9px 10px; border-bottom:1px solid #f0f0f0; line-height:1.7; vertical-align:top; }
+  tbody tr:last-child td { border-bottom:none; }
+  td.t { font-weight:800; color:#1a1a1a; white-space:nowrap; min-width:60px; }
+  td.day { background:#f8f8f5; font-weight:800; }
+
+  ul.bullet { list-style:none; padding-left:0; }
+  ul.bullet li { padding:6px 0 6px 22px; position:relative; font-size:12px; line-height:1.8; }
+  ul.bullet li::before { content:'■'; position:absolute; left:0; color:#f5c842; font-size:9px; top:9px; }
+
+  .check { list-style:none; padding-left:0; }
+  .check li { padding:8px 0; padding-left:30px; position:relative; font-size:12px; line-height:1.7; border-bottom:1px solid #f5f5f5; }
+  .check li::before { content:''; position:absolute; left:2px; top:10px; width:16px; height:16px; border:2px solid #ddd; border-radius:4px; }
+  .check li:last-child { border-bottom:none; }
+
+  .alert { background:#fff8e1; border-left:5px solid #f5c842; border-radius:6px; padding:12px 16px; margin-top:12px; font-size:12px; line-height:1.8; }
+  .alert strong { display:block; color:#1a1a1a; margin-bottom:3px; font-size:13px; }
+  .alert.red { background:#fff0f0; border-color:#c0392b; }
+  .alert.green { background:#f0faf4; border-color:#4a7c59; }
+
+  /* 90 day phase visual */
+  .phase-bar { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-bottom:14px; }
+  .phase-cell { padding:14px; border-radius:10px; color:#fff; }
+  .phase-cell.p1 { background:#f5c842; color:#1a1a1a; }
+  .phase-cell.p2 { background:#4a7c59; }
+  .phase-cell.p3 { background:#3d5a99; }
+  .phase-cell .lbl { font-size:10px; letter-spacing:0.1em; font-weight:800; opacity:0.8; }
+  .phase-cell .name { font-size:14px; font-weight:900; margin-top:3px; }
+  .phase-cell .desc { font-size:11px; margin-top:5px; line-height:1.6; opacity:0.95; }
+
+  /* Calendar grid */
+  .cal-row { display:grid; grid-template-columns:repeat(10,1fr); gap:3px; margin-top:6px; }
+  .cal-day { background:#fafafa; border:1px solid #eee; border-radius:6px; padding:7px 4px; text-align:center; font-size:9px; line-height:1.4; min-height:46px; }
+  .cal-day .d { font-weight:800; color:#1a1a1a; font-size:11px; display:block; margin-bottom:2px; }
+  .cal-day.k { background:#fff8e1; border-color:#f5c842; }
+  .cal-day.k2 { background:#e8f5e9; border-color:#4a7c59; color:#1a1a1a; }
+  .cal-day.k3 { background:#e3f2fd; border-color:#3d5a99; }
+  .cal-day.k4 { background:#fdedec; border-color:#c0392b; font-weight:800; }
+  @media (max-width: 780px) { .cal-row { grid-template-columns:repeat(5,1fr); } }
+
+  .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  @media (max-width: 700px) { .grid-2 { grid-template-columns:1fr; } }
+
+  .mini-kpi { display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:8px; }
+  .mini-kpi .b { background:#fafafa; border:1px solid #eee; border-radius:8px; padding:11px; }
+  .mini-kpi .b .l { font-size:10px; color:#888; font-weight:700; letter-spacing:0.05em; }
+  .mini-kpi .b .v { font-size:18px; font-weight:900; color:#1a1a1a; line-height:1.1; margin-top:3px; }
+  .mini-kpi .b .v small { font-size:11px; color:#666; font-weight:700; }
+
+  /* Person plan card */
+  .person-card { background:#fafafa; border:1px solid #eee; border-radius:10px; padding:14px 16px; margin-bottom:10px; }
+  .person-card h3 { font-size:14px; font-weight:900; margin-bottom:8px; display:flex; align-items:center; gap:8px; }
+  .person-card h3 .role { font-size:10px; padding:2px 8px; border-radius:10px; background:#1a1a1a; color:#f5c842; font-weight:800; letter-spacing:0.05em; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="hero">
+    <div class="eyebrow">OKI BOWL · NEW STORE LAUNCH PLAN</div>
+    <h1>2号店 <span>立ち上げ計画</span></h1>
+    <p>店長以外が全員未経験社員での新規オープン。90日のオンボーディング・個人別育成プラン・100日オープンカレンダーで、未経験者を「現場で戦力」にする計画書。</p>
+    <div class="meta">
+      <div><strong>OPEN日（仮）</strong>未定（このプランを基準に逆算）</div>
+      <div><strong>編成</strong>店長1名＋未経験社員3〜5名</div>
+      <div><strong>外部支援</strong>1号店から週2〜3日ヘルプ</div>
+      <div><strong>初回半期評価</strong>OPEN後7ヶ月目</div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('curriculum',this)">① 90日 共通カリキュラム</button>
+    <button class="tab" onclick="showTab('plan',this)">② 個人別 90日プラン</button>
+    <button class="tab" onclick="showTab('cal',this)">③ OPEN 100日カレンダー</button>
+  </div>
+
+  <!-- ============ ① CURRICULUM ============ -->
+  <div class="panel show" id="p-curriculum">
+
+    <div class="card">
+      <h2><span class="pb p1">PHASE OVERVIEW</span>90日 3フェーズ</h2>
+      <div class="phase-bar">
+        <div class="phase-cell p1">
+          <div class="lbl">DAY 1〜30</div>
+          <div class="name">PHASE 1 — 基礎習得</div>
+          <div class="desc">ブランド理解・基本オペ・衛生・接客の型</div>
+        </div>
+        <div class="phase-cell p2">
+          <div class="lbl">DAY 31〜60</div>
+          <div class="name">PHASE 2 — 応用＋仮配属</div>
+          <div class="desc">セクション仮配属・繁忙時間の経験</div>
+        </div>
+        <div class="phase-cell p3">
+          <div class="lbl">DAY 61〜90</div>
+          <div class="name">PHASE 3 — 独立稼働</div>
+          <div class="desc">単独シフト・改善提案・Day91で正式配置判定</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span class="pb p1">PHASE 1</span>Day 1〜30：基礎習得</h2>
+      <table>
+        <thead><tr><th>週</th><th>到達目標</th><th>研修内容</th></tr></thead>
+        <tbody>
+          <tr><td class="t">Week 1</td><td>OKI BOWLを語れる</td><td>ブランド研修（ビジョン・価値観・歴史）／勤怠ルール／全メニュー暗記／衛生基本</td></tr>
+          <tr><td class="t">Week 2</td><td>レジ・接客の基本ができる</td><td>レジ操作／挨拶・笑顔の型／英語フレーズ20個／観光客対応シミュレーション</td></tr>
+          <tr><td class="t">Week 3</td><td>調理基本ができる</td><td>アサイーボウル基本／ドリンク作り／盛り付け基準／衛生管理徹底</td></tr>
+          <tr><td class="t">Week 4</td><td>1人で1工程まわせる</td><td>仕込み補助／在庫補充／清掃ルーチン／Week1〜3の総復習＋テスト</td></tr>
+        </tbody>
+      </table>
+      <div class="alert">
+        <strong>Day 30 到達基準（全員必須）</strong>
+        ・全メニュー暗記100%／・レジ単独稼働可／・基本英語接客／・衛生・身だしなみ満点／・日報入力習慣化
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span class="pb p2">PHASE 2</span>Day 31〜60：応用＋仮配属</h2>
+      <table>
+        <thead><tr><th>週</th><th>到達目標</th><th>研修内容</th></tr></thead>
+        <tbody>
+          <tr><td class="t">Week 5</td><td>仮ロール体験開始</td><td>各人を「接客系（A）／オペ系（B）／現場実行（bronze）」に仮配属</td></tr>
+          <tr><td class="t">Week 6</td><td>ピーク時間で動ける</td><td>ランチ・ディナーピークの実戦経験／クレーム1次対応シミュレーション</td></tr>
+          <tr><td class="t">Week 7</td><td>セクション業務の理解</td><td>仮ロールに応じた専門スキル（接客SOP / 仕込み効率 / 在庫管理）</td></tr>
+          <tr><td class="t">Week 8</td><td>1on1で適性確認</td><td>店長と全員1on1（30分×全員）／Phase 3に向けた個別調整</td></tr>
+        </tbody>
+      </table>
+      <div class="alert green">
+        <strong>Day 60 到達基準</strong>
+        ・ピーク帯で1時間単独稼働可／・仮ロールの基本SOPを言える／・自分の強み・弱みを言語化できる／・改善提案1件以上
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span class="pb p3">PHASE 3</span>Day 61〜90：独立稼働＋正式配置判定</h2>
+      <table>
+        <thead><tr><th>週</th><th>到達目標</th><th>研修内容</th></tr></thead>
+        <tbody>
+          <tr><td class="t">Week 9</td><td>単独シフト開始</td><td>店長不在の時間帯（短時間）でも回せる／緊急時の連絡手順</td></tr>
+          <tr><td class="t">Week 10</td><td>後輩指導を体験</td><td>新人ヘルプスタッフへOJT実施（短時間）／教える側の練習</td></tr>
+          <tr><td class="t">Week 11</td><td>数字を読む</td><td>自店舗のKPI（売上・FL・廃棄）の意味を理解／日次入力に対する解説</td></tr>
+          <tr><td class="t">Week 12</td><td>正式配置判定MTG</td><td>店長×OWNERで全員の配属確定（silver A／silver B／bronze継続）</td></tr>
+        </tbody>
+      </table>
+      <div class="alert red">
+        <strong>Day 90 判定基準</strong>
+        S：silver（A or B）昇格／A：bronze（次期silver候補）継続／B：bronze（標準）／C：研修延長＋改善計画／D：役割再定義
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>共通スキル習得チェックリスト（Day1〜90累計）</h2>
+      <ul class="check">
+        <li>OKI BOWLのビジョンと価値観を自分の言葉で説明できる</li>
+        <li>全メニューの内容・原価帯・推奨を即答できる</li>
+        <li>レジ・オーダー・キッチンを単独で1時間以上回せる</li>
+        <li>英語で観光客の注文〜会計まで完結できる</li>
+        <li>衛生管理の手順を完全に守れる</li>
+        <li>クレームに一次対応できる（深刻なら店長エスカレ）</li>
+        <li>日報を毎日入力する習慣がある</li>
+        <li>自店舗のKPI（売上・FL）を読める</li>
+        <li>後輩・新人を1人サポートできる</li>
+        <li>改善提案を月1件以上アウトプットできる</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ============ ② INDIVIDUAL PLAN ============ -->
+  <div class="panel" id="p-plan">
+
+    <div class="card">
+      <h2><span class="pb p2">INDIVIDUAL</span>個人別90日育成プラン（テンプレ）</h2>
+      <p style="font-size:12px;color:#555;line-height:1.8;margin-bottom:10px;">
+        新入社員1人ずつにこのテンプレを記入。採用面接時に渡し「3ヶ月後にこの状態を目指す」を握る。
+      </p>
+
+      <div class="person-card">
+        <h3>📝 育成プラン記入欄 <span class="role">TEMPLATE</span></h3>
+        <table>
+          <tbody>
+            <tr><td class="t" style="width:140px;">氏名</td><td>____________________</td></tr>
+            <tr><td class="t">入社日</td><td>____年__月__日</td></tr>
+            <tr><td class="t">採用時の強み</td><td>例：英語が話せる／カフェ経験半年／真面目／元気がある</td></tr>
+            <tr><td class="t">採用時の課題</td><td>例：人前で話すのが苦手／長時間労働の経験なし</td></tr>
+            <tr><td class="t">仮ロール（Day31〜）</td><td>silver A候補 / silver B候補 / bronze継続 のどれか</td></tr>
+            <tr><td class="t">90日の本人目標</td><td>「Day90までに___できるようになる」 ※本人記入</td></tr>
+            <tr><td class="t">店長からの期待</td><td>例：英語接客の柱を担ってほしい／キッチンのスピードを上げてほしい</td></tr>
+            <tr><td class="t">指導担当（OJT）</td><td>店長／1号店ヘルプ ____________</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>30 / 60 / 90 日チェックポイント</h2>
+      <table>
+        <thead><tr><th>タイミング</th><th>チェック項目</th><th>誰が判定</th></tr></thead>
+        <tbody>
+          <tr><td class="t">Day 30</td><td>基礎習得チェックリスト10項目／勤怠／姿勢</td><td>店長</td></tr>
+          <tr><td class="t">Day 60</td><td>仮ロール適応度／ピーク時間の貢献度／改善提案1件</td><td>店長＋OWNER同席1on1</td></tr>
+          <tr><td class="t">Day 90</td><td>正式配置判定（S/A/B/C/D）／処遇連動</td><td>店長＋OWNER（評価面談）</td></tr>
+        </tbody>
+      </table>
+      <div class="alert">
+        <strong>1on1ルール</strong>
+        Day1〜30：週1回（15分）／Day31〜60：隔週（30分）／Day61〜90：隔週（30分）<br>
+        早期離職を防ぐため、特にDay7・Day14・Day30の3回は<strong>離職リスク特定MTG</strong>として運用する。
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>仮ロール別の90日育成テーマ</h2>
+      <div class="grid-2">
+        <div class="person-card">
+          <h3>🎤 silver A候補（接客特化）</h3>
+          <ul class="bullet">
+            <li>Day1〜30：英語接客フレーズ50個＋常連メモ運用</li>
+            <li>Day31〜60：接客リーダー体験／クレーム1次対応</li>
+            <li>Day61〜90：レビュー収集施策の試行・効果測定</li>
+            <li>判定後：Googleレビュー4.0以上維持できればsilver A確定</li>
+          </ul>
+        </div>
+        <div class="person-card">
+          <h3>🍳 silver B候補（オペ特化）</h3>
+          <ul class="bullet">
+            <li>Day1〜30：仕込み手順全暗記／衛生管理熟達</li>
+            <li>Day31〜60：原価意識の習得／在庫補充ルール理解</li>
+            <li>Day61〜90：廃棄削減1件試行・効果測定</li>
+            <li>判定後：F比率35%以下キープできればsilver B確定</li>
+          </ul>
+        </div>
+        <div class="person-card">
+          <h3>🌱 bronze（継続）</h3>
+          <ul class="bullet">
+            <li>Day1〜30：基本オペを満遍なく</li>
+            <li>Day31〜60：得意領域を見つける（接客？オペ？）</li>
+            <li>Day61〜90：単独稼働＋小さな改善提案</li>
+            <li>判定後：6ヶ月後の半期評価でsilver昇格を目指す</li>
+          </ul>
+        </div>
+        <div class="person-card">
+          <h3>⚠️ 配属変更リスクの判定</h3>
+          <ul class="bullet">
+            <li>Day30チェックで基礎到達50%未満 → 研修期延長検討</li>
+            <li>Day60で仮ロールに合わない → 配属変更</li>
+            <li>離職意向が出たら → OWNER同席で原因究明</li>
+            <li>急速に伸びる人材は前倒し抜擢</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ ③ OPEN CALENDAR ============ -->
+  <div class="panel" id="p-cal">
+
+    <div class="card">
+      <h2><span class="pb red">PRE-OPEN</span>OPEN前30日（準備期）</h2>
+      <table>
+        <thead><tr><th>期間</th><th>主タスク</th><th>担当</th></tr></thead>
+        <tbody>
+          <tr><td class="t">D-30〜D-21</td><td>採用完了・契約締結／オリエン資料配布／制服採寸</td><td>店長＋OWNER</td></tr>
+          <tr><td class="t">D-20〜D-15</td><td>店長による全員研修Phase1のWeek1〜2先取り（座学）</td><td>店長</td></tr>
+          <tr><td class="t">D-14〜D-7</td><td>1号店ヘルプ集合／実機トレーニング開始／メニュー試食</td><td>1号店店長＋ヘルプ</td></tr>
+          <tr><td class="t">D-7〜D-1</td><td>プレオープン（招待客）／本番想定ロープレ／問題点抽出</td><td>全員</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h2><span class="pb p1">DAY 1〜30</span>OPEN〜1ヶ月（緊急稼働期）</h2>
+      <p style="font-size:11px;color:#666;margin-bottom:8px;">数字で見る進捗：</p>
+      <div class="cal-row">
+        <div class="cal-day k4"><span class="d">D1</span>OPEN</div>
+        <div class="cal-day"><span class="d">D2</span>翌日振返</div>
+        <div class="cal-day"><span class="d">D3</span>調整</div>
+        <div class="cal-day"><span class="d">D4</span>調整</div>
+        <div class="cal-day"><span class="d">D5</span>初週末</div>
+        <div class="cal-day"><span class="d">D6</span>週末</div>
+        <div class="cal-day"><span class="d">D7</span>週末</div>
+        <div class="cal-day k"><span class="d">D8</span>1週間振返</div>
+        <div class="cal-day"><span class="d">D14</span></div>
+        <div class="cal-day k"><span class="d">D15</span>2週評価</div>
+      </div>
+      <div class="cal-row" style="margin-top:6px;">
+        <div class="cal-day"><span class="d">D16</span></div>
+        <div class="cal-day"><span class="d">D20</span></div>
+        <div class="cal-day"><span class="d">D21</span>3週末</div>
+        <div class="cal-day"><span class="d">D22</span></div>
+        <div class="cal-day"><span class="d">D25</span></div>
+        <div class="cal-day"><span class="d">D27</span></div>
+        <div class="cal-day"><span class="d">D28</span></div>
+        <div class="cal-day"><span class="d">D29</span></div>
+        <div class="cal-day k4"><span class="d">D30</span>★1ヶ月評価</div>
+        <div class="cal-day"><span class="d">D31</span>Phase2へ</div>
+      </div>
+      <div class="alert red">
+        <strong>OPEN〜30日の最重要事項</strong>
+        ・店長は週60h超の見込み（管理職裁量）。1号店ヘルプを最大投入<br>
+        ・初週・2週目はクレーム発生率が最も高い → 店長が現場張り付き<br>
+        ・Day30に新人全員と1on1（基礎習得到達度確認）
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span class="pb p2">DAY 31〜60</span>1〜2ヶ月（仮配属・分業開始）</h2>
+      <ul class="bullet">
+        <li>新人を仮ロール配属（接客A／オペB／bronze）</li>
+        <li>1号店ヘルプを段階的に減らす（週3→週2→週1）</li>
+        <li>シフト枠の自走テスト（短時間の店長不在帯）</li>
+        <li>初の月次レポート作成（店長→OWNER）</li>
+        <li>D60に仮ロール適合判定（OWNER同席1on1）</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2><span class="pb p3">DAY 61〜100</span>2ヶ月〜OPEN後100日（独立稼働期）</h2>
+      <ul class="bullet">
+        <li>新人が単独シフト勤務可能になる（Day61〜）</li>
+        <li>1号店ヘルプ撤収（Day70目処）／自走完全化</li>
+        <li>Day90 正式配置判定MTG</li>
+        <li>Day91〜：silver A／silver B／bronze の正式組織編成スタート</li>
+        <li>Day100：オープン100日記念MTG＋OWNERへの報告会</li>
+      </ul>
+      <div class="alert green">
+        <strong>Day 100 達成目標</strong>
+        ・初月売上目標 80%以上達成<br>
+        ・スタッフ離職 0名<br>
+        ・正式組織編成完了（silver 1〜2名・bronze 1〜2名）<br>
+        ・ロス率 5%以下
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>重要KPI（OPEN初日からトラッキング）</h2>
+      <div class="mini-kpi">
+        <div class="b"><div class="l">日次売上達成率</div><div class="v">100<small>%</small></div></div>
+        <div class="b"><div class="l">クレーム件数</div><div class="v">0<small>件/週</small></div></div>
+        <div class="b"><div class="l">スタッフ離職</div><div class="v">0<small>名</small></div></div>
+        <div class="b"><div class="l">レビュー初週</div><div class="v">4.0<small>↑</small></div></div>
+        <div class="b"><div class="l">店長負荷</div><div class="v">65<small>h/週</small></div></div>
+      </div>
+      <div class="alert">
+        <strong>赤信号トリガー</strong>
+        ・店長週70h超 → 1号店ヘルプ追加投入<br>
+        ・新人1人でも離職意向 → OWNER同席で即面談<br>
+        ・1週間でクレーム3件超 → 翌週は店長現場張り付き<br>
+        ・初月売上達成率70%未満 → 翌月の販促強化（OWNER直轄）
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function showTab(id, btn){
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('show'));
+  if(btn) btn.classList.add('active');
+  document.getElementById('p-'+id).classList.add('show');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+</script>
+</body>
+</html>
