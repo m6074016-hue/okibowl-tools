@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>OKI BOWL 役割1枚ガイド</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: 'Hiragino Sans','Yu Gothic',sans-serif;
+    background: #1a1a1a;
+    color: #1a1a1a;
+    min-height: 100vh;
+    padding: 16px 8px 80px;
+  }
+
+  /* NAV TABS */
+  .navbar {
+    max-width: 980px;
+    margin: 0 auto 16px;
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .navbar button {
+    padding: 10px 14px;
+    background: #333;
+    border: none;
+    color: #ddd;
+    border-radius: 22px;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .navbar button:hover { background: #444; }
+  .navbar button.active.role-cover { background: #f5c842; color: #1a1a1a; }
+  .navbar button.active.role-manager { background: #c0392b; color: #fff; }
+  .navbar button.active.role-silverA { background: #4a7c59; color: #fff; }
+  .navbar button.active.role-silverB { background: #3d5a99; color: #fff; }
+  .navbar button.active.role-bronze { background: #7c3d99; color: #fff; }
+
+  /* SLIDE */
+  .slide {
+    max-width: 980px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 20px;
+    padding: 36px 38px;
+    display: none;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+    min-height: 80vh;
+  }
+  .slide.show { display: block; }
+
+  /* HEADER */
+  .role-header {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding-bottom: 22px;
+    border-bottom: 3px solid;
+    margin-bottom: 26px;
+  }
+  .role-icon {
+    width: 80px; height: 80px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 44px;
+    flex-shrink: 0;
+  }
+  .role-info h1 {
+    font-size: 28px;
+    font-weight: 900;
+    line-height: 1.2;
+    margin-bottom: 6px;
+  }
+  .role-info .mission {
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.7;
+  }
+  .role-info .sub {
+    font-size: 11px;
+    color: #888;
+    letter-spacing: 0.15em;
+    margin-top: 4px;
+  }
+
+  /* COLOR THEMES */
+  #s-manager .role-header { border-color: #c0392b; }
+  #s-manager .role-icon   { background: #fdedec; color: #c0392b; }
+  #s-manager .accent      { color: #c0392b; }
+  #s-manager .accent-bg   { background: #fdedec; border-color: #c0392b; }
+  #s-silverA .role-header { border-color: #4a7c59; }
+  #s-silverA .role-icon   { background: #e8f5e9; color: #4a7c59; }
+  #s-silverA .accent      { color: #4a7c59; }
+  #s-silverA .accent-bg   { background: #e8f5e9; border-color: #4a7c59; }
+  #s-silverB .role-header { border-color: #3d5a99; }
+  #s-silverB .role-icon   { background: #e3f2fd; color: #3d5a99; }
+  #s-silverB .accent      { color: #3d5a99; }
+  #s-silverB .accent-bg   { background: #e3f2fd; border-color: #3d5a99; }
+  #s-bronze .role-header  { border-color: #7c3d99; }
+  #s-bronze .role-icon    { background: #f3e5f5; color: #7c3d99; }
+  #s-bronze .accent       { color: #7c3d99; }
+  #s-bronze .accent-bg    { background: #f3e5f5; border-color: #7c3d99; }
+  #s-cover .role-header   { border-color: #f5c842; }
+  #s-cover .role-icon     { background: #fff8e1; color: #1a1a1a; }
+  #s-cover .accent        { color: #1a1a1a; }
+
+  /* SECTION TITLE */
+  .sec-title {
+    font-size: 13px;
+    font-weight: 900;
+    letter-spacing: 0.1em;
+    margin: 26px 0 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .sec-title::before {
+    content: '';
+    width: 4px;
+    height: 18px;
+    border-radius: 2px;
+    background: currentColor;
+  }
+  .sec-title .num {
+    font-size: 12px;
+    background: #1a1a1a;
+    color: #fff;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+  }
+
+  /* DAILY FLOW (visual horizontal) */
+  .flow {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .flow-step {
+    background: #fafafa;
+    border: 2px solid #eee;
+    border-radius: 12px;
+    padding: 14px 8px;
+    text-align: center;
+    position: relative;
+  }
+  .flow-step .emoji { font-size: 28px; }
+  .flow-step .time { font-size: 10px; color: #888; font-weight: 800; letter-spacing: 0.05em; margin: 4px 0 2px; }
+  .flow-step .what { font-size: 11px; color: #1a1a1a; font-weight: 700; line-height: 1.5; }
+
+  /* KPI grid */
+  .kpi-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+  }
+  .kpi-cell {
+    background: #fafafa;
+    border: 2px solid #eee;
+    border-left: 4px solid;
+    border-radius: 10px;
+    padding: 14px;
+  }
+  .kpi-cell .lbl { font-size: 11px; color: #666; font-weight: 700; margin-bottom: 4px; }
+  .kpi-cell .num { font-size: 26px; font-weight: 900; line-height: 1; }
+  .kpi-cell .num small { font-size: 13px; color: #666; font-weight: 700; margin-left: 3px; }
+  .kpi-cell .ctx { font-size: 10px; color: #888; margin-top: 4px; }
+
+  /* NG / OK */
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 600px) { .pair { grid-template-columns: 1fr; } }
+  .ng, .ok {
+    border-radius: 10px;
+    padding: 14px 16px;
+    border: 2px solid;
+  }
+  .ng { background: #fff5f5; border-color: #ffcccc; }
+  .ok { background: #f0faf4; border-color: #b6e0c0; }
+  .ng h3 { font-size: 13px; font-weight: 900; color: #c0392b; margin-bottom: 8px; }
+  .ok h3 { font-size: 13px; font-weight: 900; color: #4a7c59; margin-bottom: 8px; }
+  .ng ul, .ok ul { list-style: none; }
+  .ng li, .ok li {
+    font-size: 12px;
+    line-height: 1.7;
+    padding: 4px 0;
+    padding-left: 22px;
+    position: relative;
+  }
+  .ng li::before { content: '✗'; position: absolute; left: 0; color: #c0392b; font-weight: 900; }
+  .ok li::before { content: '✓'; position: absolute; left: 0; color: #4a7c59; font-weight: 900; }
+
+  /* SOS */
+  .sos {
+    background: #fff8e1;
+    border: 2px solid #f5c842;
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin-top: 22px;
+    font-size: 12px;
+    line-height: 1.8;
+  }
+  .sos strong { display: block; font-size: 13px; margin-bottom: 4px; }
+
+  /* ORG CHART (cover slide) */
+  .org-chart {
+    background: #fafafa;
+    border-radius: 16px;
+    padding: 30px 20px;
+    margin: 20px 0;
+  }
+  .org-row {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    position: relative;
+  }
+  .org-row::after {
+    content: '';
+    position: absolute;
+    bottom: -16px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2px;
+    height: 16px;
+    background: #ccc;
+  }
+  .org-row:last-child::after { display: none; }
+  .org-node {
+    background: #fff;
+    border: 2px solid #ddd;
+    border-radius: 14px;
+    padding: 14px 18px;
+    text-align: center;
+    min-width: 150px;
+  }
+  .org-node.owner { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+  .org-node.manager { background: #fff8e1; border-color: #f5c842; }
+  .org-node .icon { font-size: 28px; }
+  .org-node .ttl { font-size: 13px; font-weight: 800; margin-top: 4px; }
+  .org-node .desc { font-size: 10px; color: #888; margin-top: 2px; }
+  .org-node.owner .desc { color: #888; }
+
+  .role-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top:14px; }
+  @media (max-width: 600px) { .role-grid { grid-template-columns: 1fr; } }
+  .role-grid .org-node { min-width: auto; }
+
+  /* PIE CHART (純利益/コスト) */
+  .pie-wrap { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; margin-top: 8px; }
+  .pie {
+    width: 140px; height: 140px;
+    border-radius: 50%;
+    background: conic-gradient(#c0392b 0% 30%, #3d5a99 30% 60%, #888 60% 75%, #4a7c59 75% 100%);
+    flex-shrink: 0;
+  }
+  .pie-legend { font-size: 12px; line-height: 2; }
+  .pie-legend span { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -2px; }
+
+  /* GROWTH STAIRS (bronze) */
+  .stairs {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+    margin-top: 10px;
+    align-items: end;
+  }
+  @media (max-width: 600px) { .stairs { grid-template-columns: repeat(2,1fr); } }
+  .stair {
+    background: #f3e5f5;
+    border-top: 4px solid #7c3d99;
+    border-radius: 10px 10px 0 0;
+    padding: 14px 10px;
+    text-align: center;
+  }
+  .stair:nth-child(1) { min-height: 100px; opacity: 0.4; }
+  .stair:nth-child(2) { min-height: 130px; opacity: 0.6; }
+  .stair:nth-child(3) { min-height: 160px; opacity: 0.8; }
+  .stair:nth-child(4) { min-height: 200px; background: #fff8e1; border-top-color:#f5c842; }
+  .stair .ph { font-size: 10px; color: #7c3d99; font-weight: 800; }
+  .stair:nth-child(4) .ph { color: #cc8800; }
+  .stair .label { font-size: 12px; font-weight: 800; margin-top: 4px; line-height: 1.4; }
+  .stair .when { font-size: 10px; color: #666; margin-top: 4px; }
+
+  /* CIRCULAR FLOW (silver A) */
+  .circ-flow {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-top: 8px;
+    position: relative;
+  }
+  @media (max-width: 600px) { .circ-flow { grid-template-columns: 1fr 1fr; } }
+  .circ-flow .step {
+    background: #fff;
+    border: 2px solid #4a7c59;
+    border-radius: 50%;
+    aspect-ratio: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    text-align: center;
+  }
+  .circ-flow .step .e { font-size: 26px; }
+  .circ-flow .step .t { font-size: 10px; font-weight: 800; margin-top: 3px; }
+
+  /* COST FLOW (silver B) */
+  .cost-flow { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; margin-top: 8px; align-items: stretch; }
+  @media (max-width: 600px) { .cost-flow { grid-template-columns: repeat(2,1fr); gap:6px; } }
+  .cost-step {
+    background: #e3f2fd;
+    padding: 14px 8px;
+    text-align: center;
+    border-right: 2px solid #fff;
+    position: relative;
+  }
+  .cost-step:last-child { border-right: none; background: #ffe5e5; }
+  .cost-step .e { font-size: 26px; }
+  .cost-step .t { font-size: 11px; font-weight: 800; color: #3d5a99; margin-top: 3px; }
+  .cost-step:last-child .t { color: #c0392b; }
+  .cost-step .arrow {
+    position: absolute;
+    right: -10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 18px;
+    color: #3d5a99;
+    z-index: 1;
+  }
+  .cost-step:last-child .arrow { display: none; }
+
+  @media print {
+    body { background: #fff; padding: 0; }
+    .navbar { display: none; }
+    .slide { display: block !important; box-shadow: none; page-break-after: always; min-height: auto; }
+  }
+
+  .print-btn {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 10px 14px;
+    background: #fff;
+    border: 1px solid #555;
+    color: #ddd;
+    border-radius: 22px;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+    font-family: inherit;
+  }
+</style>
+</head>
+<body>
+
+<div class="navbar">
+  <button class="active role-cover" onclick="show('cover',this)">📚 全体</button>
+  <button class="role-manager" onclick="show('manager',this)">👔 店長</button>
+  <button class="role-silverA" onclick="show('silverA',this)">🎤 silver A</button>
+  <button class="role-silverB" onclick="show('silverB',this)">🍳 silver B</button>
+  <button class="role-bronze" onclick="show('bronze',this)">🌱 bronze</button>
+  <button class="print-btn" onclick="window.print()">🖨 印刷</button>
+</div>
+
+<!-- ================== COVER ================== -->
+<div class="slide show" id="s-cover">
+  <div class="role-header">
+    <div class="role-icon">🍽️</div>
+    <div class="role-info">
+      <h1>OKI BOWL <span class="accent" style="color:#f5c842;">役割1枚ガイド</span></h1>
+      <div class="mission">飲食店ではたらく仲間が「自分のやること」を1分で理解できるガイド</div>
+      <div class="sub">FOR EVERY MEMBER · 1 PAGE / ROLE</div>
+    </div>
+  </div>
+
+  <div class="sec-title accent"><span class="num">1</span>OKI BOWLの役割の地図</div>
+
+  <div class="org-chart">
+    <div class="org-row">
+      <div class="org-node owner">
+        <div class="icon">👑</div>
+        <div class="ttl">OWNER</div>
+        <div class="desc">最終責任者・SNSも担当</div>
+      </div>
+    </div>
+    <div class="org-row">
+      <div class="org-node manager">
+        <div class="icon">📋</div>
+        <div class="ttl">マネージャー</div>
+        <div class="desc">店長へ方針展開</div>
+      </div>
+    </div>
+    <div class="org-row">
+      <div class="org-node" style="background:#fdedec;border-color:#c0392b;">
+        <div class="icon">👔</div>
+        <div class="ttl">店長</div>
+        <div class="desc">店舗の利益責任者</div>
+      </div>
+    </div>
+    <div class="role-grid">
+      <div class="org-node" style="background:#e8f5e9;border-color:#4a7c59;">
+        <div class="icon">🎤</div>
+        <div class="ttl">silver A</div>
+        <div class="desc">接客・体験</div>
+      </div>
+      <div class="org-node" style="background:#e3f2fd;border-color:#3d5a99;">
+        <div class="icon">🍳</div>
+        <div class="ttl">silver B</div>
+        <div class="desc">調理・原価</div>
+      </div>
+    </div>
+    <div class="role-grid" style="margin-top:6px;">
+      <div class="org-node" style="background:#f3e5f5;border-color:#7c3d99;grid-column:1 / -1;">
+        <div class="icon">🌱</div>
+        <div class="ttl">bronze</div>
+        <div class="desc">将来のsilver候補・現場でしっかり働く</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec-title accent"><span class="num">2</span>共通ルール（誰でも守ること）</div>
+  <div class="kpi-row">
+    <div class="kpi-cell" style="border-left-color:#f5c842;">
+      <div class="lbl">挨拶・身だしなみ</div>
+      <div class="num" style="font-size:18px;">気持ちよく</div>
+      <div class="ctx">出勤したら笑顔で「おはようございます」</div>
+    </div>
+    <div class="kpi-cell" style="border-left-color:#f5c842;">
+      <div class="lbl">時間</div>
+      <div class="num" style="font-size:18px;">10分前出勤</div>
+      <div class="ctx">準備して定刻に動けるように</div>
+    </div>
+    <div class="kpi-cell" style="border-left-color:#f5c842;">
+      <div class="lbl">困った時</div>
+      <div class="num" style="font-size:18px;">早めに相談</div>
+      <div class="ctx">1人で抱え込まない</div>
+    </div>
+  </div>
+
+  <div class="sos">
+    <strong>📌 このガイドの使い方</strong>
+    自分の担当ロールのページを<strong>毎月1回読み返す</strong>。半期評価（10月／4月）はこの内容で評価される。
+  </div>
+</div>
+
+<!-- ================== 店長 ================== -->
+<div class="slide" id="s-manager">
+  <div class="role-header">
+    <div class="role-icon">👔</div>
+    <div class="role-info">
+      <h1>店長 — <span class="accent">店舗の利益責任者</span></h1>
+      <div class="mission">「お店で<strong>利益を残し</strong>、<strong>人を育て</strong>、<strong>仕組みを作る</strong>」</div>
+      <div class="sub">MANAGER · 月180〜200h · 半期評価対象</div>
+    </div>
+  </div>
+
+  <div class="sec-title accent"><span class="num">1</span>1日の動き（時間で見る）</div>
+  <div class="flow">
+    <div class="flow-step"><div class="emoji">📊</div><div class="time">08:30</div><div class="what">前日数字を確認</div></div>
+    <div class="flow-step"><div class="emoji">📣</div><div class="time">09:00</div><div class="what">朝礼で目標共有</div></div>
+    <div class="flow-step"><div class="emoji">🍽️</div><div class="time">12:00</div><div class="what">ピーク現場統括</div></div>
+    <div class="flow-step"><div class="emoji">📝</div><div class="time">15:00</div><div class="what">事務・1on1</div></div>
+    <div class="flow-step"><div class="emoji">🌙</div><div class="time">19:30</div><div class="what">夜ピーク現場</div></div>
+    <div class="flow-step"><div class="emoji">✍️</div><div class="time">21:30</div><div class="what">日報＋明日宣言</div></div>
+  </div>
+
+  <div class="sec-title accent"><span class="num">2</span>守る数字（半期目標）</div>
+  <div class="kpi-row">
+    <div class="kpi-cell accent-bg"><div class="lbl">営業利益率</div><div class="num accent">15<small>%↑</small></div><div class="ctx">利益が残るか</div></div>
+    <div class="kpi-cell accent-bg"><div class="lbl">FL比率</div><div class="num accent">60<small>%以下</small></div><div class="ctx">食材＋人件費</div></div>
+    <div class="kpi-cell accent-bg"><div class="lbl">スタッフ離職</div><div class="num accent">0<small>名</small></div><div class="ctx">辞めさせない</div></div>
+    <div class="kpi-cell accent-bg"><div class="lbl">後継育成</div><div class="num accent">1<small>名</small></div><div class="ctx">代行できる人を作る</div></div>
+  </div>
+
+  <div class="sec-title accent"><span class="num">3</span>やってはいけない / やるべき</div>
+  <div class="pair">
+    <div class="ng">
+      <h3>✗ NG行動</h3>
+      <ul>
+        <li>シフトに入りすぎて事務が回らない</li>
+        <li>OWNERへの相談が月5件超</li>
+        <li>スタッフを叱るだけで育てない</li>
+      </ul>
+    </div>
+    <div class="ok">
+      <h3>✓ OK行動</h3>
+      <ul>
+        <li>数字を毎日見て、原因と対策を考える</li>
+        <li>1人ひとりに月30分以上の対話時間</li>
+        <li>「自分が休んでも回る」設計を作る</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="sos">
+    <strong>🆘 困った時の連絡先</strong>
+    <strong>OWNER（masaki）</strong>へ直接連絡。深刻な案件・50万超の判断・採用決裁・対外トラブルはOWNER承認が必要。
+  </div>
+</div>
+
+<!-- ================== silver A ================== -->
+<div class="slide" id="s-silverA">
+  <div class="role-header">
+    <div class="role-icon">🎤</div>
+    <div class="role-info">
+      <h1>silver A — <span class="accent">お客様体験のプロ</span></h1>
+      <div class="mission">「お客様に<strong>もう一度来たい</strong>と思わせる接客を作る人」</div>
+      <div class="sub">CUSTOMER EXPERIENCE LEAD · 月160〜180h</div>
+    </div>
+  </div>
+
+  <div class="sec-title accent"><span class="num">1</span>接客フロー（どう動くか）</div>
+  <div class="circ-flow">
+    <div class="step"><div class="e">👋</div><div class="t">お迎え</div></div>
+    <div class="step"><div class="e">📋</div><div class="t">注文取り</div></div>
+    <div class="step"><div class="e">😊</div><div class="t">提供＆会話</div></div>
+    <div class="step"><div class="e">🙏</div><div class="t">お見送り→次回へ</div></div>
+  </div>
+  <p style="font-size:11px;color:#666;margin-top:8px;text-align:center;">この4ステップ全部で「もう一度来たい」を作る</p>
+
+  <div class="sec-title accent"><span class="num">2</span>守る数字（半期目標）</div>
+  <div class="kpi-row">
+    <div class="kpi-cell accent-bg"><div class="lbl">Googleレビュー</div><div class="num accent">4.5<small>↑</small></div><div class="ctx">月平均</div></div>
+    <div class="kpi-cell accent-bg"><div class="lbl">月のレビュー数</div><div class="num accent">30<small>件</small></div><div class="ctx">声かけ込み</div></div>
+    <div class="kpi-cell accent-bg"><div class="lbl">リピーター率</div><div class="num accent">25<small>%</small></div><div class="ctx">2回目来店</div></div>
+    <div class="kpi-cell accent-bg"><div class="lbl">英語接客</div><div class="num accent">100<small>%</small></div><div class="ctx">観光客対応完結</div></div>
+  </div>
+
+  <div class="sec-title accent"><span class="num">3</span>やってはいけない / やるべき</div>
+  <div class="pair">
+    <div class="ng">
+      <h3>✗ NG行動</h3>
+      <ul>
+        <li>常連の名前・好みを覚えない</li>
+        <li>クレーム時に言い訳・反論</li>
+        <li>外国人が来ても「分かりません」で終わる</li>
+      </ul>
+    </div>
+    <div class="ok">
+      <h3>✓ OK行動</h3>
+      <ul>
+        <li>常連メモを更新・名前で呼ぶ</li>
+        <li>クレームはまず「申し訳ありません」</li>
+        <li>翻訳アプリ＋ジェスチャーで完結させる</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="sos">
+    <strong>🆘 困った時</strong>
+    <strong>クレームが大きい</strong>・<strong>怪我・体調不良の対応</strong> → 即店長へ。<strong>軽微なお詫び（1万円以内）</strong>は自分で判断OK。
+  </div>
+</div>
+
+<!-- ================== silver B ================== -->
+<div class="slide" id="s-silverB">
+  <div class="role-header">
+    <div class="role-icon">🍳</div>
+    <div class="role-info">
+      <h1>silver B — <span class="accent">利益を作るキッチンの主</span></h1>
+      <div class="mission">「<strong>無駄を減らす</strong>・<strong>仕入れを賢く</strong>・<strong>仕込みを早く</strong>」</div>
+      <div class="sub">OPERATIONS & COST LEAD · 月160〜180h</div>
+    </div>
+  </div>
+
+  <div class="sec-title accent"><span class="num">1</span>食材の流れ（どこで利益が消えるか）</div>
+  <div class="cost-flow">
+    <div class="cost-step"><div class="e">📦</div><div class="t">仕入れ</div><div class="arrow">→</div></div>
+    <div class="cost-step"><div class="e">🍴</div><div class="t">仕込み</div><div class="arrow">→</div></div>
+    <div class="cost-step"><div class="e">🍽️</div><div class="t">提供（売上）</div><div class="arrow">→</div></div>
+    <div class="cost-step"><div class="e">🗑️</div><div class="t">廃棄（赤字）</div></div>
+  </div>
+  <p style="font-size:11px;color:#666;margin-top:8px;text-align:center;">仕入れ→仕込み→提供で<strong>利益</strong>／途中で<strong>廃棄</strong>になると赤字</p>
+
+  <div class="sec-title accent"><span class="num">2</span>守る数字（半期目標）</div>
+  <div class="kpi-row">
+    <div class="kpi-cell accent-bg"><div class="lbl">F比率（食材費）</div><div class="num accent">30<small>%以下</small></div><div class="ctx">月次</div></div>
+    <div class="kpi-cell accent-bg"><div class="lbl">廃棄率</div><div class="num accent">3<small>%以下</small></div><div class="ctx">月次</div></div>
+    <div class="kpi-cell accent-bg"><div class="lbl">仕込み効率</div><div class="num accent">+10<small>%</small></div><div class="ctx">前期比</div></div>
+    <div class="kpi-cell accent-bg"><div class="lbl">仕入れ交渉</div><div class="num accent">3<small>件</small></div><div class="ctx">単価or条件改善</div></div>
+  </div>
+
+  <div class="sec-title accent"><span class="num">3</span>やってはいけない / やるべき</div>
+  <div class="pair">
+    <div class="ng">
+      <h3>✗ NG行動</h3>
+      <ul>
+        <li>「足りないかも」で多めに仕込む</li>
+        <li>古い食材を奥にしまう</li>
+        <li>廃棄を記録しないで捨てる</li>
+      </ul>
+    </div>
+    <div class="ok">
+      <h3>✓ OK行動</h3>
+      <ul>
+        <li>曜日別の売上予測で仕込み量を決める</li>
+        <li>先入れ先出し（古い→手前）を徹底</li>
+        <li>毎日の廃棄を必ず記録（waste.html）</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="sos">
+    <strong>🆘 困った時</strong>
+    <strong>設備トラブル</strong>・<strong>仕入先の遅延</strong>・<strong>大量廃棄</strong> → 即店長へ。<strong>発注量変更・代替仕入れ</strong>は自分で判断OK。
+  </div>
+</div>
+
+<!-- ================== bronze ================== -->
+<div class="slide" id="s-bronze">
+  <div class="role-header">
+    <div class="role-icon">🌱</div>
+    <div class="role-info">
+      <h1>bronze — <span class="accent">次のsilverを目指す現場の柱</span></h1>
+      <div class="mission">「<strong>毎日の現場を確実に</strong>こなして、<strong>次のレベル</strong>へ進む」</div>
+      <div class="sub">RISING TALENT · 月140〜160h</div>
+    </div>
+  </div>
+
+  <div class="sec-title accent"><span class="num">1</span>成長の階段（どう昇格するか）</div>
+  <div class="stairs">
+    <div class="stair">
+      <div class="ph">PHASE 1</div>
+      <div class="label">基本オペ習得</div>
+      <div class="when">0〜2ヶ月</div>
+    </div>
+    <div class="stair">
+      <div class="ph">PHASE 2</div>
+      <div class="label">独立稼働</div>
+      <div class="when">2〜4ヶ月</div>
+    </div>
+    <div class="stair">
+      <div class="ph">PHASE 3</div>
+      <div class="label">後輩指導</div>
+      <div class="when">4〜6ヶ月</div>
+    </div>
+    <div class="stair">
+      <div class="ph">PHASE 4</div>
+      <div class="label">silver昇格</div>
+      <div class="when">6〜12ヶ月</div>
+    </div>
+  </div>
+
+  <div class="sec-title accent"><span class="num">2</span>守る数字（半期目標）</div>
+  <div class="kpi-row">
+    <div class="kpi-cell accent-bg"><div class="lbl">タスク完遂率</div><div class="num accent">95<small>%</small></div><div class="ctx">日次チェック</div></div>
+    <div class="kpi-cell accent-bg"><div class="lbl">スキル習得</div><div class="num accent">5<small>項目</small></div><div class="ctx">半期で5つ</div></div>
+    <div class="kpi-cell accent-bg"><div class="lbl">改善提案</div><div class="num accent">1<small>件/月</small></div><div class="ctx">小さくてOK</div></div>
+    <div class="kpi-cell accent-bg"><div class="lbl">単独シフト</div><div class="num accent">100<small>%</small></div><div class="ctx">1人で回せる</div></div>
+  </div>
+
+  <div class="sec-title accent"><span class="num">3</span>やってはいけない / やるべき</div>
+  <div class="pair">
+    <div class="ng">
+      <h3>✗ NG行動</h3>
+      <ul>
+        <li>言われたことだけやって終わる</li>
+        <li>分からないまま放置する</li>
+        <li>SNSは触らない（OWNER専任）</li>
+      </ul>
+    </div>
+    <div class="ok">
+      <h3>✓ OK行動</h3>
+      <ul>
+        <li>「次なにやればいい？」を自分で見つける</li>
+        <li>分からないことはすぐ質問</li>
+        <li>毎月1つ「ここを改善できる」を提案</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="sos">
+    <strong>🆘 困った時</strong>
+    まず<strong>silver A／B（先輩）</strong>に質問。緊急なら<strong>店長</strong>。質問は恥ずかしくない。<strong>分からないまま動くのが一番危険</strong>。
+  </div>
+</div>
+
+<script>
+function show(id, btn){
+  document.querySelectorAll('.slide').forEach(s=>s.classList.remove('show'));
+  document.getElementById('s-'+id).classList.add('show');
+  document.querySelectorAll('.navbar button').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+// キーボード矢印で切替
+document.addEventListener('keydown', e=>{
+  if(e.key!=='ArrowLeft' && e.key!=='ArrowRight') return;
+  const ids = ['cover','manager','silverA','silverB','bronze'];
+  const cur = ids.findIndex(id => document.getElementById('s-'+id).classList.contains('show'));
+  const next = e.key==='ArrowRight' ? Math.min(cur+1,ids.length-1) : Math.max(cur-1,0);
+  if(next!==cur){
+    const btns = document.querySelectorAll('.navbar button');
+    show(ids[next], btns[next]);
+  }
+});
+</script>
+</body>
+</html>
