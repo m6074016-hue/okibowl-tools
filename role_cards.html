@@ -777,22 +777,67 @@
 </div>
 
 <script>
-const PIN = '839274';
-function checkPin(){
-  const v = document.getElementById('pin-input').value.trim();
+const PIN_HASH = '9a6f59f4c25980ed6b32efc562f91db15e15ae469840f35c43e58497f92289bb';
+const LOCK_KEY = 'okibowl_roles_lock';
+const FAIL_KEY = 'okibowl_roles_fail';
+const MAX_FAILS = 5;
+const LOCK_MS = 60000;
+
+async function sha256(text){
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+function getLockRemaining(){
+  const until = parseInt(localStorage.getItem(LOCK_KEY) || '0', 10);
+  const now = Date.now();
+  return until > now ? until - now : 0;
+}
+
+function showLockoutUI(){
   const err = document.getElementById('pin-err');
-  if(v === PIN){
+  const input = document.getElementById('pin-input');
+  let remaining = Math.ceil(getLockRemaining() / 1000);
+  if(remaining <= 0){
+    err.textContent = '';
+    input.disabled = false;
+    input.focus();
+    return;
+  }
+  input.disabled = true;
+  err.textContent = `ロック中（残り ${remaining} 秒）`;
+  setTimeout(showLockoutUI, 1000);
+}
+
+async function checkPin(){
+  const input = document.getElementById('pin-input');
+  const err = document.getElementById('pin-err');
+  if(getLockRemaining() > 0){ showLockoutUI(); return; }
+  const v = input.value.trim();
+  if(!v){ return; }
+  const h = await sha256(v);
+  if(h === PIN_HASH){
+    localStorage.removeItem(FAIL_KEY);
+    localStorage.removeItem(LOCK_KEY);
     document.getElementById('pin-gate').style.display = 'none';
     document.body.classList.remove('locked');
   } else {
-    err.textContent = 'PIN が違います';
-    document.getElementById('pin-input').value = '';
+    const fails = parseInt(localStorage.getItem(FAIL_KEY) || '0', 10) + 1;
+    localStorage.setItem(FAIL_KEY, String(fails));
+    input.value = '';
+    if(fails >= MAX_FAILS){
+      localStorage.setItem(LOCK_KEY, String(Date.now() + LOCK_MS));
+      localStorage.removeItem(FAIL_KEY);
+      showLockoutUI();
+    } else {
+      err.textContent = `PIN が違います（あと ${MAX_FAILS - fails} 回）`;
+    }
   }
 }
 document.getElementById('pin-input').addEventListener('keydown', e=>{
   if(e.key === 'Enter') checkPin();
 });
-document.getElementById('pin-input').focus();
+if(getLockRemaining() > 0){ showLockoutUI(); } else { document.getElementById('pin-input').focus(); }
 
 function show(id, btn){
   document.querySelectorAll('.slide').forEach(s=>s.classList.remove('show'));
