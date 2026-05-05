@@ -1932,13 +1932,14 @@ function buildDateSelect(){
   var el=document.getElementById('dateSelectRow');
   var now=new Date();
   var day=now.getDay();
-  var mon=new Date(now);mon.setDate(now.getDate()-(day===0?6:day-1)+WEEK_OFFSET*7);
-  var todayDate=new Date();todayDate.setHours(0,0,0,0);
+  var monBase=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  monBase.setDate(monBase.getDate()-(day===0?6:day-1)+WEEK_OFFSET*7);
+  var todayDate=new Date(now.getFullYear(),now.getMonth(),now.getDate());
   var wd=load('kpi_week')||{};
   var html='<button class="date-nav-btn" onclick="changeWeek(-1)" title="前週">◀</button>';
   for(var i=0;i<7;i++){
-    var d=new Date(mon);d.setDate(mon.getDate()+i);
-    if(WEEK_OFFSET===0 && d>todayDate) break;
+    var d=new Date(monBase.getFullYear(),monBase.getMonth(),monBase.getDate()+i);
+    if(WEEK_OFFSET===0 && d.getTime()>todayDate.getTime()) break;
     var key=getDateKey(d);
     var isToday=key===TODAY_KEY;
     var hasData=wd[key]&&Object.keys(wd[key]).some(function(kk){return wd[key][kk]&&kk!=='_reflect';});
@@ -1946,8 +1947,6 @@ function buildDateSelect(){
   }
   if(WEEK_OFFSET<0){
     html+='<button class="date-nav-btn" onclick="changeWeek(1)" title="次週">▶</button>';
-  }
-  if(WEEK_OFFSET<0){
     html+='<span class="week-label">'+Math.abs(WEEK_OFFSET)+'週前</span>';
   }
   el.innerHTML=html;
