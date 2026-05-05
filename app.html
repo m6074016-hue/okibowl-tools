@@ -344,10 +344,28 @@ body {
 .adm-order-group{display:flex;gap:3px;}
 
 /* DATE SELECT */
-.date-select-row{display:flex;gap:6px;padding:8px 14px;align-items:center;border-bottom:1px solid var(--border);}
+.date-select-row{display:flex;gap:6px;padding:8px 14px;align-items:center;border-bottom:1px solid var(--border);flex-wrap:wrap;}
 .date-select-btn{padding:6px 12px;border-radius:16px;border:1px solid var(--border);background:#FFF;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;color:var(--text-sub);transition:all .15s;}
 .date-select-btn.active{background:var(--primary);color:#FFF;border-color:var(--primary);}
 .date-select-btn:active{opacity:.8;}
+.date-select-btn.has-data{background:#F0F5EE;border-color:var(--success);color:var(--success);}
+.date-select-btn.has-data.active{background:var(--primary);color:#FFF;border-color:var(--primary);}
+.date-nav-btn{padding:6px 10px;border-radius:16px;border:1px solid var(--border);background:var(--surface-2);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;color:var(--text);}
+.date-nav-btn:active{opacity:.7;background:#EEE;}
+.week-label{font-size:10px;color:var(--text-sub);font-weight:700;margin-left:4px;}
+
+/* MONTHLY HISTORY */
+.month-summary{padding:9px 14px;background:var(--surface-2);border-bottom:1px solid var(--border);font-size:11px;display:flex;gap:14px;align-items:center;}
+.month-summary strong{color:var(--text);font-weight:800;}
+.month-day-row{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid #F5F5F5;cursor:pointer;font-size:12px;transition:background .15s;}
+.month-day-row:last-child{border-bottom:none;}
+.month-day-row:active{background:#FAFAFA;}
+.month-day-date{font-weight:700;color:var(--text);}
+.month-day-date.today{color:var(--accent);}
+.month-day-stats{display:flex;gap:10px;font-size:11px;color:var(--text-sub);}
+.month-day-stats strong{color:var(--text);font-weight:800;}
+.month-toggle-arrow{font-size:11px;color:var(--text-sub);font-weight:900;transition:transform .2s;}
+.month-toggle-arrow.open{transform:rotate(90deg);}
 
 /* QUICK INPUT */
 .quick-row{display:flex;gap:6px;padding:4px 14px 8px;flex-wrap:wrap;}
@@ -503,6 +521,7 @@ body {
     </div>
     <div id="reflectArea"></div>
     <div id="kpiWeekSumBlock"></div>
+    <div id="kpiMonthlyHistory"></div>
     <div class="section-label">進捗</div>
     <div class="card">
       <div class="card-head">
@@ -1382,6 +1401,98 @@ function renderKpiWeekSum(){
   el.innerHTML=h;
 }
 
+function renderKpiMonthlyHistory(){
+  var el=document.getElementById('kpiMonthlyHistory');
+  if(!el)return;
+  var wd=load('kpi_week')||{};
+  var keys=Object.keys(wd);
+  if(!keys.length){el.innerHTML='';return;}
+  var kpiItems=getData('kpi',DEFAULT_KPI);
+  var salesId='kpi-sales',flId='kpi-fl';
+  // 月でグループ化
+  var months={};
+  keys.forEach(function(k){
+    var p=k.split('-');if(p.length<3)return;
+    var ym=p[0]+'-'+(p[1].length===1?'0'+p[1]:p[1]);
+    if(!months[ym])months[ym]=[];
+    months[ym].push({key:k,data:wd[k]});
+  });
+  var monthKeys=Object.keys(months).sort().reverse();
+  var html='<div class="section-label">月別記録</div>';
+  monthKeys.forEach(function(ym,idx){
+    var p=ym.split('-');var y=+p[0],m=+p[1];
+    var entries=months[ym].sort(function(a,b){
+      var pa=a.key.split('-'),pb=b.key.split('-');
+      return new Date(+pb[0],+pb[1]-1,+pb[2])-new Date(+pa[0],+pa[1]-1,+pa[2]);
+    });
+    var totalSales=0,sumFL=0,flCnt=0,daysWithSales=0;
+    entries.forEach(function(e){
+      var s=parseFloat(e.data[salesId])||0;if(s){totalSales+=s;daysWithSales++;}
+      var f=parseFloat(e.data[flId]);if(f){sumFL+=f;flCnt++;}
+    });
+    var avgFL=flCnt?Math.round(sumFL/flCnt*10)/10:0;
+    var avgSales=daysWithSales?Math.round(totalSales/daysWithSales):0;
+    var isOpen=idx===0;
+    html+='<div class="card" style="margin-bottom:10px;">';
+    html+='<div class="card-head" onclick="toggleMonth(\''+ym+'\')" style="cursor:pointer;">';
+    html+='<div class="ch-dot" style="background:var(--walnut);"></div>';
+    html+='<span class="ch-title">'+y+'年'+m+'月</span>';
+    html+='<span class="ch-badge">'+entries.length+'日入力</span>';
+    html+='<span class="month-toggle-arrow'+(isOpen?' open':'')+'" id="arrow-'+ym+'">▶</span>';
+    html+='</div>';
+    html+='<div class="month-summary">';
+    html+='<span style="color:var(--text-sub);">合計売上</span><strong>¥'+totalSales.toLocaleString()+'</strong>';
+    if(daysWithSales)html+='<span style="color:var(--text-sub);">日平均</span><strong>¥'+avgSales.toLocaleString()+'</strong>';
+    if(flCnt)html+='<span style="color:var(--text-sub);">平均FL</span><strong>'+avgFL+'%</strong>';
+    html+='</div>';
+    html+='<div class="month-days" id="month-'+ym+'" style="display:'+(isOpen?'block':'none')+';">';
+    entries.forEach(function(e){
+      var pp=e.key.split('-');var d=new Date(+pp[0],+pp[1]-1,+pp[2]);
+      var lbl=(+pp[1])+'/'+(+pp[2])+'('+DAYS_LABEL[d.getDay()]+')';
+      var sales=parseFloat(e.data[salesId])||0;
+      var fl=parseFloat(e.data[flId])||0;
+      var rep=parseFloat(e.data['kpi-repeat'])||0;
+      var rev=parseFloat(e.data['kpi-review'])||0;
+      var isToday=e.key===TODAY_KEY;
+      html+='<div class="month-day-row" onclick="loadDateFromHistory(\''+e.key+'\')">';
+      html+='<div class="month-day-date'+(isToday?' today':'')+'">'+lbl+(isToday?' <span style="font-size:9px;color:var(--accent);">今日</span>':'')+'</div>';
+      html+='<div class="month-day-stats">';
+      if(sales)html+='<span>売上 <strong>¥'+sales.toLocaleString()+'</strong></span>';
+      if(fl)html+='<span>FL <strong>'+fl+'%</strong></span>';
+      if(rev)html+='<span>口コミ <strong>'+rev+'</strong></span>';
+      html+='</div></div>';
+    });
+    html+='</div></div>';
+  });
+  el.innerHTML=html;
+}
+
+function toggleMonth(ym){
+  var el=document.getElementById('month-'+ym);
+  var arrow=document.getElementById('arrow-'+ym);
+  if(!el)return;
+  var willOpen=el.style.display==='none';
+  el.style.display=willOpen?'block':'none';
+  if(arrow)arrow.classList.toggle('open',willOpen);
+}
+
+function loadDateFromHistory(key){
+  SELECTED_DATE_KEY=key;
+  var p=key.split('-');var d=new Date(+p[0],+p[1]-1,+p[2]);
+  document.getElementById('kpiDateLabel').textContent=getDateLabel(d);
+  // 該当週に切り替え
+  var now=new Date();var nday=now.getDay();
+  var thisMon=new Date(now);thisMon.setDate(now.getDate()-(nday===0?6:nday-1));thisMon.setHours(0,0,0,0);
+  var dDay=d.getDay();var dMon=new Date(d);dMon.setDate(d.getDate()-(dDay===0?6:dDay-1));dMon.setHours(0,0,0,0);
+  WEEK_OFFSET=Math.round((dMon-thisMon)/(7*86400000));
+  if(WEEK_OFFSET>0)WEEK_OFFSET=0;
+  buildDateSelect();
+  loadKpiForDate(key);
+  updateReflect(key);
+  var inputCard=document.getElementById('kpiInputGrid');
+  if(inputCard)inputCard.scrollIntoView({behavior:'smooth',block:'center'});
+}
+
 function renderShiftSummary(){
   var el=document.getElementById('shiftAlertSummary');
   if(!el)return;
@@ -1464,7 +1575,7 @@ function loadGrowthFocus(){
 
 function renderAll(){
   renderTodo();renderStaff();renderMtg();renderKpiFields();renderChips();renderCur();renderShift();renderShiftAlert();
-  loadKpi();updateAll();renderKpiWeekSum();renderSkillAssess();loadGrowthFocus();
+  loadKpi();updateAll();renderKpiWeekSum();renderKpiMonthlyHistory();renderSkillAssess();loadGrowthFocus();
 }
 
 // ========================================
@@ -1815,21 +1926,37 @@ var DAYS_LABEL=['日','月','火','水','木','金','土'];
 function getDateKey(d){return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
 function getDateLabel(d){return (d.getMonth()+1)+'/'+d.getDate()+' ('+DAYS_LABEL[d.getDay()]+')';}
 
+var WEEK_OFFSET=0; // 0=今週, -1=先週, ...
+
 function buildDateSelect(){
   var el=document.getElementById('dateSelectRow');
   var now=new Date();
-  // 月曜を起点に今日まで表示
   var day=now.getDay();
-  var mon=new Date(now);mon.setDate(now.getDate()-(day===0?6:day-1));
-  var dates=[];
-  var d=new Date(mon);
-  while(getDateKey(d)<=TODAY_KEY){dates.push(new Date(d));d.setDate(d.getDate()+1);}
-  el.innerHTML='';
-  dates.forEach(function(d){
+  var mon=new Date(now);mon.setDate(now.getDate()-(day===0?6:day-1)+WEEK_OFFSET*7);
+  var todayDate=new Date();todayDate.setHours(0,0,0,0);
+  var wd=load('kpi_week')||{};
+  var html='<button class="date-nav-btn" onclick="changeWeek(-1)" title="前週">◀</button>';
+  for(var i=0;i<7;i++){
+    var d=new Date(mon);d.setDate(mon.getDate()+i);
+    if(WEEK_OFFSET===0 && d>todayDate) break;
     var key=getDateKey(d);
     var isToday=key===TODAY_KEY;
-    el.innerHTML+='<button class="date-select-btn'+(key===SELECTED_DATE_KEY?' active':'')+'" style="'+(isToday?'border-color:var(--primary);font-weight:900;':'')+'" onclick="selectDate(\''+key+'\',\''+getDateLabel(d)+'\')">'+getDateLabel(d)+(isToday?' 今日':'')+'</button>';
-  });
+    var hasData=wd[key]&&Object.keys(wd[key]).some(function(kk){return wd[key][kk]&&kk!=='_reflect';});
+    html+='<button class="date-select-btn'+(key===SELECTED_DATE_KEY?' active':'')+(hasData?' has-data':'')+'" style="'+(isToday?'border-color:var(--primary);font-weight:900;':'')+'" onclick="selectDate(\''+key+'\',\''+getDateLabel(d)+'\')">'+getDateLabel(d)+(isToday?' 今日':'')+'</button>';
+  }
+  if(WEEK_OFFSET<0){
+    html+='<button class="date-nav-btn" onclick="changeWeek(1)" title="次週">▶</button>';
+  }
+  if(WEEK_OFFSET<0){
+    html+='<span class="week-label">'+Math.abs(WEEK_OFFSET)+'週前</span>';
+  }
+  el.innerHTML=html;
+}
+
+function changeWeek(delta){
+  WEEK_OFFSET+=delta;
+  if(WEEK_OFFSET>0) WEEK_OFFSET=0;
+  buildDateSelect();
 }
 
 function selectDate(key,label){
@@ -1874,6 +2001,8 @@ function saveKpi(){
   updateReflect(key);
   renderHomeStatCards();
   renderKpiWeekSum();
+  renderKpiMonthlyHistory();
+  buildDateSelect();
   renderSalesAchieve();
 }
 
