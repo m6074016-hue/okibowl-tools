@@ -157,6 +157,17 @@ body {
 .chk-box.self-on{border-color:var(--sage);background:var(--sage);}
 .chk-box.self-on::after,.chk-box.adm-on::after{content:'';position:absolute;left:4px;top:1px;width:6px;height:10px;border:2px solid #fff;border-top:none;border-left:none;transform:rotate(45deg);}
 .chk-box.adm-on{border-color:var(--primary);background:var(--primary);}
+.chk-box.self-prog,.chk-box.adm-prog{border-color:#E09B2D;background:#FFF5E6;}
+.chk-box.self-prog::after,.chk-box.adm-prog::after{content:'';position:absolute;left:3px;top:5px;width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-bottom:8px solid #E09B2D;}
+.chk-week.focus-week{background:#FFFBEB;border-left:3px solid #E09B2D;}
+.chk-focus-btn{font-size:9px;padding:3px 9px;border:1px solid var(--border);background:#FFF;border-radius:10px;cursor:pointer;font-family:inherit;color:var(--text-sub);font-weight:700;margin-left:6px;letter-spacing:.02em;}
+.chk-focus-btn.on{background:#FFE08A;border-color:#E09B2D;color:#A07820;}
+.chk-focus-btn:active{opacity:.7;}
+.chk-state-legend{font-size:9px;color:var(--text-sub);padding:6px 14px;line-height:1.6;background:#FAFAFA;border-bottom:1px solid var(--border);display:flex;gap:12px;flex-wrap:wrap;align-items:center;}
+.chk-state-legend .lg{display:inline-block;width:11px;height:11px;border-radius:2px;vertical-align:middle;margin-right:3px;border:1px solid #CCC;}
+.chk-state-legend .lg.prog{background:#FFF5E6;border-color:#E09B2D;position:relative;}
+.chk-state-legend .lg.prog::after{content:'';position:absolute;left:1px;top:3px;width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;border-bottom:6px solid #E09B2D;}
+.chk-state-legend .lg.done{background:var(--sage);border-color:var(--sage);}
 .chk-text{font-size:12px;flex:1;line-height:1.4;color:var(--text);}
 .chk-text.done{text-decoration:line-through;color:#BBB;}
 .chk-adm-lbl{font-size:9px;color:var(--text-sub);flex-shrink:0;width:12px;text-align:center;}
@@ -1008,15 +1019,20 @@ function setData(key,arr){save('admin_'+key,arr);}
 // ========================================
 // RENDER DYNAMIC LISTS
 // ========================================
+function getTodoDoneForDate(dateKey){return load('todo_done_'+dateKey)||{};}
+function getStaffDoneForDate(dateKey){return load('staff_done_'+dateKey)||{};}
+
 function renderTodo(){
   var items=getData('todo',DEFAULT_TODO);
   var el=document.getElementById('todoList');
   el.innerHTML='';
+  var dateKey=SELECTED_DATE_KEY||TODAY_KEY;
+  var done=getTodoDoneForDate(dateKey);
   items.forEach(function(t){
     var d=document.createElement('div');
     d.className='task-item';d.dataset.id=t.id;d.onclick=function(){toggleTask(d);};
     d.innerHTML='<div class="task-checkbox">&#10003;</div><span class="task-text">'+t.text+'</span><span class="task-alert">!</span>'+(t.freq?'<span class="task-freq"'+(t.freq==='緊急'?' style="color:var(--danger);"':'')+'>'+t.freq+'</span>':'');
-    if(load(t.id)===true)d.classList.add('done');
+    if(done[t.id]===true)d.classList.add('done');
     el.appendChild(d);
   });
 }
@@ -1024,11 +1040,13 @@ function renderStaff(){
   var items=getData('staff',DEFAULT_STAFF);
   var el=document.getElementById('staffList');
   el.innerHTML='';
+  var dateKey=SELECTED_DATE_KEY||TODAY_KEY;
+  var done=getStaffDoneForDate(dateKey);
   items.forEach(function(t){
     var d=document.createElement('div');
-    d.className='task-item';d.dataset.id=t.id;d.onclick=function(){toggleTask(d);};
+    d.className='task-item';d.dataset.id=t.id;d.onclick=function(){toggleTask(d,'staff');};
     d.innerHTML='<div class="task-checkbox">&#10003;</div><span class="task-text">'+t.text+'</span><span class="task-alert">!</span>';
-    if(load(t.id)===true)d.classList.add('done');
+    if(done[t.id]===true)d.classList.add('done');
     el.appendChild(d);
   });
 }
@@ -1244,25 +1262,34 @@ function renderCheckTab(){
 }
 
 function renderWeeklyChk(){
-  var h='';
+  var h='<div class="chk-state-legend">凡例: <span><span class="lg"></span>未着手</span><span><span class="lg prog"></span>進行中</span><span><span class="lg done"></span>完了</span><span style="margin-left:auto;color:var(--text-sub);">タップで状態が切り替わります</span></div>';
+  var focusWk=parseInt(localStorage.getItem('okibowl_focus_week')||'0');
   WEEKLY_CHK.forEach(function(mo){
     h+='<div class="chk-month-wrap">';
     h+='<div class="chk-section-head '+mo.cls+'"><span>0'+mo.month+' MONTH</span><span style="font-size:10px;opacity:.8;">'+mo.label+'</span></div>';
     mo.weeks.forEach(function(wk){
-      h+='<div class="chk-week">';
-      h+='<div class="chk-week-title-row"><span class="chk-week-title">'+wk.title+'</span><span class="chk-wnum">WEEK '+String(wk.n).padStart(2,'0')+'</span></div>';
+      var isFocus=focusWk===wk.n;
+      h+='<div class="chk-week'+(isFocus?' focus-week':'')+'">';
+      h+='<div class="chk-week-title-row"><span class="chk-week-title">'+wk.title+'</span>';
+      h+='<button class="chk-focus-btn'+(isFocus?' on':'')+'" onclick="toggleWeekFocus('+wk.n+')">'+(isFocus?'★ 今週重点':'☆ 重点に設定')+'</button>';
+      h+='<span class="chk-wnum">WEEK '+String(wk.n).padStart(2,'0')+'</span></div>';
+      var done=0,prog=0;
       wk.items.forEach(function(item,idx){
         var sk='wchk_s_'+wk.n+'_'+idx,ak='wchk_a_'+wk.n+'_'+idx;
-        var so=localStorage.getItem('okibowl_'+sk)==='1',ao=localStorage.getItem('okibowl_'+ak)==='1';
+        var sv=localStorage.getItem('okibowl_'+sk),av=localStorage.getItem('okibowl_'+ak);
+        var sCls=sv==='1'?' self-on':(sv==='2'?' self-prog':'');
+        var aCls=av==='1'?' adm-on':(av==='2'?' adm-prog':'');
+        if(sv==='1')done++;else if(sv==='2')prog++;
         h+='<div class="chk-item">';
-        h+='<div class="chk-box'+(so?' self-on':'')+'" onclick="toggleSelfChk(\''+sk+'\')"></div>';
-        h+='<span class="chk-text'+(so?' done':'')+'">'+item+'</span>';
-        h+='<div class="chk-box'+(ao?' adm-on':'')+'" onclick="toggleAdmChk(\''+ak+'\')"></div>';
+        h+='<div class="chk-box'+sCls+'" onclick="toggleSelfChk(\''+sk+'\')"></div>';
+        h+='<span class="chk-text'+(sv==='1'?' done':'')+'">'+item+'</span>';
+        h+='<div class="chk-box'+aCls+'" onclick="toggleAdmChk(\''+ak+'\')"></div>';
         h+='<span class="chk-adm-lbl">管</span>';
         h+='</div>';
       });
-      var sv=localStorage.getItem('okibowl_wscore_'+wk.n)||'';
-      h+='<div class="chk-score-row"><span class="chk-score-lbl">達成度:</span><input class="chk-score-in" type="number" min="0" max="100" value="'+sv+'" onchange="saveChkScore(\'wscore_'+wk.n+'\',this.value)" placeholder="0"><span class="chk-score-pct">%</span></div>';
+      var score=done+prog*0.5;
+      var pct=wk.items.length?Math.round(score/wk.items.length*100):0;
+      h+='<div class="chk-score-row"><span class="chk-score-lbl">達成度 '+pct+'%</span><div class="chk-prog-bar"><div class="chk-prog-fill" style="width:'+pct+'%"></div></div><span class="chk-score-pct">完了'+done+' / 進行中'+prog+' / 全'+wk.items.length+'</span></div>';
       h+='</div>';
     });
     h+='</div>';
@@ -1278,20 +1305,23 @@ function renderHrChk(){
     ph.steps.forEach(function(st){
       h+='<div class="chk-week">';
       h+='<div class="chk-week-title-row"><span class="chk-week-title">'+st.title+'</span><span class="chk-wnum">STEP '+String(st.n).padStart(2,'0')+'</span></div>';
+      var done=0,prog=0;
       st.items.forEach(function(item,idx){
         var sk='hrchk_s_'+st.n+'_'+idx,ak='hrchk_a_'+st.n+'_'+idx;
-        var so=localStorage.getItem('okibowl_'+sk)==='1',ao=localStorage.getItem('okibowl_'+ak)==='1';
+        var sv=localStorage.getItem('okibowl_'+sk),av=localStorage.getItem('okibowl_'+ak);
+        var sCls=sv==='1'?' self-on':(sv==='2'?' self-prog':'');
+        var aCls=av==='1'?' adm-on':(av==='2'?' adm-prog':'');
+        if(sv==='1')done++;else if(sv==='2')prog++;
         h+='<div class="chk-item">';
-        h+='<div class="chk-box'+(so?' self-on':'')+'" onclick="toggleSelfChk(\''+sk+'\')"></div>';
-        h+='<span class="chk-text'+(so?' done':'')+'">'+item+'</span>';
-        h+='<div class="chk-box'+(ao?' adm-on':'')+'" onclick="toggleAdmChk(\''+ak+'\')"></div>';
+        h+='<div class="chk-box'+sCls+'" onclick="toggleSelfChk(\''+sk+'\')"></div>';
+        h+='<span class="chk-text'+(sv==='1'?' done':'')+'">'+item+'</span>';
+        h+='<div class="chk-box'+aCls+'" onclick="toggleAdmChk(\''+ak+'\')"></div>';
         h+='<span class="chk-adm-lbl">管</span>';
         h+='</div>';
       });
-      var done=0;
-      for(var i=0;i<st.items.length;i++){if(localStorage.getItem('okibowl_hrchk_s_'+st.n+'_'+i)==='1')done++;}
-      var pct=st.items.length?Math.round(done/st.items.length*100):0;
-      h+='<div class="chk-score-row"><span class="chk-score-lbl">達成度 '+pct+'%</span><div class="chk-prog-bar"><div class="chk-prog-fill" style="width:'+pct+'%"></div></div></div>';
+      var score=done+prog*0.5;
+      var pct=st.items.length?Math.round(score/st.items.length*100):0;
+      h+='<div class="chk-score-row"><span class="chk-score-lbl">達成度 '+pct+'%</span><div class="chk-prog-bar"><div class="chk-prog-fill" style="width:'+pct+'%"></div></div><span class="chk-score-pct">完了'+done+' / 進行中'+prog+' / 全'+st.items.length+'</span></div>';
       h+='</div>';
     });
     h+='</div>';
@@ -1321,15 +1351,31 @@ function admChkUnlock(callback){
   showToast('管理者モード: 5分間有効');
   callback();
 }
+function cycleChk(key){
+  // 未着手 → 進行中(2) → 完了(1) → 未着手
+  var cur=localStorage.getItem('okibowl_'+key);
+  if(cur==='1'){localStorage.removeItem('okibowl_'+key);}
+  else if(cur==='2'){localStorage.setItem('okibowl_'+key,'1');}
+  else{localStorage.setItem('okibowl_'+key,'2');}
+}
 function toggleSelfChk(key){
-  var cur=localStorage.getItem('okibowl_'+key)==='1';
-  localStorage.setItem('okibowl_'+key,cur?'0':'1');
+  cycleChk(key);
+  renderCheckTab();
+}
+function toggleWeekFocus(wkN){
+  var cur=parseInt(localStorage.getItem('okibowl_focus_week')||'0');
+  if(cur===wkN){
+    localStorage.removeItem('okibowl_focus_week');
+    showToast('今週重点を解除');
+  } else {
+    localStorage.setItem('okibowl_focus_week',String(wkN));
+    showToast('WEEK '+String(wkN).padStart(2,'0')+' を今週重点に設定');
+  }
   renderCheckTab();
 }
 function toggleAdmChk(key){
   admChkUnlock(function(){
-    var cur=localStorage.getItem('okibowl_'+key)==='1';
-    localStorage.setItem('okibowl_'+key,cur?'0':'1');
+    cycleChk(key);
     renderCheckTab();
   });
 }
@@ -1892,7 +1938,16 @@ var TODAY_KEY='';
 (function initDate(){var now=new Date();var days=['日','月','火','水','木','金','土'];var ds=(now.getMonth()+1)+'/'+now.getDate()+' ('+days[now.getDay()]+')';document.getElementById('dateBadge').textContent=ds;TODAY_KEY=now.getFullYear()+'-'+(now.getMonth()+1)+'-'+now.getDate();document.getElementById('kpiDateLabel').textContent=ds;var h=now.getHours();document.getElementById('todayGreeting').textContent=h<11?'おはようございます':h<17?'お疲れ様です':'お疲れ様でした';if(now.getDay()===2)document.getElementById('todaySubtitle').textContent='今日はMTGの日です';if(now.getDay()===0&&now.getHours()>=18)document.getElementById('todaySubtitle').textContent='週次レポート提出日です';})();
 
 function switchPage(name,btn){document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});document.querySelectorAll('.nav-btn').forEach(function(b){b.classList.remove('active');});document.getElementById('page-'+name).classList.add('active');btn.classList.add('active');if(name==='mtg')buildReport();if(name==='shift')renderShiftAlert();if(name==='check')renderCheckTab();}
-function toggleTask(el){el.classList.toggle('done');save(el.dataset.id,el.classList.contains('done'));updateAll();if(el.classList.contains('done'))showToast('完了');}
+function toggleTask(el,kind){
+  el.classList.toggle('done');
+  var dateKey=SELECTED_DATE_KEY||TODAY_KEY;
+  var storeKey=(kind==='staff'?'staff_done_':'todo_done_')+dateKey;
+  var done=load(storeKey)||{};
+  done[el.dataset.id]=el.classList.contains('done');
+  save(storeKey,done);
+  updateAll();
+  if(el.classList.contains('done'))showToast('完了');
+}
 function toggleMtg(el){el.classList.toggle('done');save(el.dataset.id,el.classList.contains('done'));updateAll();if(el.classList.contains('done'))showToast('チェック済み');}
 function toggleEval(btn){btn.classList.toggle('done');save(btn.dataset.id,btn.classList.contains('done'));btn.querySelector('.es').textContent=btn.classList.contains('done')?'済':'--';if(btn.classList.contains('done'))showToast('評価完了');}
 
@@ -1915,7 +1970,14 @@ function updateAll(){
   renderSalesAchieve();
 }
 
-function resetTodo(){if(!confirm('リセットしますか？'))return;document.querySelectorAll('#todoList .task-item').forEach(function(el){el.classList.remove('done');save(el.dataset.id,false);});updateAll();showToast('リセット完了');}
+function resetTodo(){
+  if(!confirm('表示中の日付のチェックをリセットしますか？'))return;
+  var dateKey=SELECTED_DATE_KEY||TODAY_KEY;
+  save('todo_done_'+dateKey,{});
+  save('staff_done_'+dateKey,{});
+  renderTodo();renderStaff();updateAll();
+  showToast('リセット完了');
+}
 function resetMtg(){if(!confirm('リセットしますか？'))return;document.querySelectorAll('.mtg-item').forEach(function(el){el.classList.remove('done');save(el.dataset.id,false);});updateAll();showToast('リセット完了');}
 function saveMemo(){var a=document.getElementById('memoArea');save('memo',a.value);document.getElementById('memoCount').textContent=a.value.length+'文字';}
 
@@ -1962,9 +2024,12 @@ function selectDate(key,label){
   SELECTED_DATE_KEY=key;
   document.getElementById('kpiDateLabel').textContent=label;
   document.querySelectorAll('.date-select-btn').forEach(function(b){b.classList.remove('active');});
-  event.target.classList.add('active');
+  if(typeof event!=='undefined' && event.target) event.target.classList.add('active');
   loadKpiForDate(key);
   updateReflect(key);
+  renderTodo();
+  renderStaff();
+  updateAll();
 }
 
 function buildQuickRow(){
@@ -1987,17 +2052,21 @@ function quickSales(val){
 
 function saveKpi(){
   var key=SELECTED_DATE_KEY||TODAY_KEY;
+  var existing=load('kpi_'+key)||{};
   var items=getData('kpi',DEFAULT_KPI);var data={};
   items.forEach(function(k){data[k.id]=document.getElementById(k.id)?document.getElementById(k.id).value||'':'';});
-  // 振り返りメモも保存
-  var reflectEl=document.getElementById('reflectInput');
-  if(reflectEl)data._reflect=reflectEl.value||'';
+  // 振り返り3点を全て保存（明日のアクション・来週のアクションも保持）
+  var r=document.getElementById('reflectInput');
+  var n=document.getElementById('reflectNext');
+  var w=document.getElementById('reflectWeek');
+  data._reflect=r?r.value:(existing._reflect||'');
+  data._nextAction=n?n.value:(existing._nextAction||'');
+  data._weekAction=w?w.value:(existing._weekAction||'');
   save('kpi_'+key,data);
   // 週次データ（月曜起点の7日分）
   var wd=load('kpi_week')||{};wd[key]=data;save('kpi_week',wd);
   document.getElementById('kpiSavedMsg').textContent='保存済み ('+key+')';
   showToast('KPI保存完了');
-  updateReflect(key);
   renderHomeStatCards();
   renderKpiWeekSum();
   renderKpiMonthlyHistory();
