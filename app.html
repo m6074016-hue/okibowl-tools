@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>OKI BOWL Manager</title>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 <style>
 :root {
   --primary: #1a1a1a;
@@ -763,6 +765,102 @@ body {
 </div>
 
 <script>
+// ========================================
+// FIREBASE REALTIME DB 同期 (店長PC ↔ オーナー携帯)
+// ========================================
+(function setupFirebaseSync(){
+  var firebaseConfig = {
+    apiKey: "AIzaSyBs-_CgExTJWWG-jZWni3wB50THZ59KrrQ",
+    authDomain: "okibowl-manager.firebaseapp.com",
+    databaseURL: "https://okibowl-manager-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "okibowl-manager",
+    storageBucket: "okibowl-manager.firebasestorage.app",
+    messagingSenderId: "188540684677",
+    appId: "1:188540684677:web:66bba2460a9a340ef59cec"
+  };
+  if(typeof firebase==='undefined'){console.warn('[FB] SDK未ロード'); window._fbReady=Promise.resolve(); return;}
+  try{ firebase.initializeApp(firebaseConfig); }catch(e){console.warn('[FB] init err',e);}
+  var db = firebase.database();
+  window.fbDB = db;
+
+  // 同期しないキー（端末固有の設定）
+  var NO_SYNC = ['okibowl_pin','okibowl_smaregi_cfg','okibowl_pl_unlocked'];
+  function shouldSync(k){return k && k.indexOf('okibowl_')===0 && NO_SYNC.indexOf(k)===-1;}
+
+  var origSet = Storage.prototype.setItem;
+  var origGet = Storage.prototype.getItem;
+  var origRemove = Storage.prototype.removeItem;
+
+  // localStorage への書き込みを Firebase へミラー
+  Storage.prototype.setItem = function(k,v){
+    origSet.call(this,k,v);
+    if(this===localStorage && shouldSync(k)){
+      try{ db.ref('store/'+k).set(v); showSyncBadge('保存中…'); setTimeout(function(){showSyncBadge('クラウド同期OK');},400);}catch(e){}
+    }
+  };
+  Storage.prototype.removeItem = function(k){
+    origRemove.call(this,k);
+    if(this===localStorage && shouldSync(k)){
+      try{ db.ref('store/'+k).remove(); }catch(e){}
+    }
+  };
+
+  // 右上に同期インジケータを表示
+  function showSyncBadge(msg){
+    var el = document.getElementById('fbSyncBadge');
+    if(!el){
+      if(!document.body) return;
+      el = document.createElement('div');
+      el.id = 'fbSyncBadge';
+      el.style.cssText = 'position:fixed;top:7px;right:7px;background:#5b8c5a;color:#fff;padding:3px 10px;border-radius:12px;font-size:9px;font-weight:700;z-index:10000;font-family:inherit;letter-spacing:.02em;opacity:.92;pointer-events:none;';
+      document.body.appendChild(el);
+    }
+    el.textContent = msg;
+    el.style.display = 'block';
+    if(msg.indexOf('OK')!==-1 || msg.indexOf('同期')!==-1){
+      clearTimeout(window._syncT);
+      window._syncT = setTimeout(function(){if(el)el.style.opacity='.4';},1500);
+    }
+  }
+  window.fbStatus = showSyncBadge;
+
+  // 起動時：Firebase の最新データを localStorage に反映
+  var initLoadDone = false;
+  window._fbReady = db.ref('store').once('value').then(function(snap){
+    var data = snap.val() || {};
+    Object.keys(data).forEach(function(k){
+      origSet.call(localStorage, k, data[k]);
+    });
+    initLoadDone = true;
+    console.log('[FB] 初期同期完了:', Object.keys(data).length, '件');
+
+    // 他端末からの変更をリアルタイム受信
+    db.ref('store').on('child_changed', function(snap){
+      var k = snap.key, v = snap.val();
+      origSet.call(localStorage, k, v);
+      showSyncBadge('他端末から受信');
+      try{ if(typeof renderAll==='function') renderAll(); }catch(e){}
+      try{ if(typeof renderHistory==='function') renderHistory(); }catch(e){}
+      try{ if(typeof loadRptFields==='function') loadRptFields(); }catch(e){}
+    });
+    db.ref('store').on('child_added', function(snap){
+      if(!initLoadDone) return;
+      origSet.call(localStorage, snap.key, snap.val());
+      showSyncBadge('他端末から受信');
+      try{ if(typeof renderAll==='function') renderAll(); }catch(e){}
+    });
+    db.ref('store').on('child_removed', function(snap){
+      if(!initLoadDone) return;
+      origRemove.call(localStorage, snap.key);
+      try{ if(typeof renderAll==='function') renderAll(); }catch(e){}
+    });
+  }).catch(function(e){
+    console.error('[FB] 初期同期失敗', e);
+    initLoadDone = true;
+    showSyncBadge('オフライン');
+  });
+})();
+
 // ========================================
 // DEFAULT DATA (editable via admin)
 // ========================================
@@ -2167,12 +2265,19 @@ function showToast(msg){var t=document.getElementById('toast');t.textContent=msg
 
 // INIT
 (function init(){
-  renderAll();
-  document.querySelectorAll('.eval-btn[data-id]').forEach(function(el){if(load(el.dataset.id)===true){el.classList.add('done');el.querySelector('.es').textContent='済';}});
-  var memo=load('memo');if(memo){document.getElementById('memoArea').value=memo;document.getElementById('memoCount').textContent=memo.length+'文字';}
-  loadRptFields();renderHistory();
-  autoWeekReset();
-  scheduleSundayReset();
+  function _doInit(){
+    renderAll();
+    document.querySelectorAll('.eval-btn[data-id]').forEach(function(el){if(load(el.dataset.id)===true){el.classList.add('done');el.querySelector('.es').textContent='済';}});
+    var memo=load('memo');if(memo){document.getElementById('memoArea').value=memo;document.getElementById('memoCount').textContent=memo.length+'文字';}
+    loadRptFields();renderHistory();
+    autoWeekReset();
+    scheduleSundayReset();
+  }
+  if(window._fbReady && window._fbReady.then){
+    window._fbReady.then(_doInit).catch(_doInit);
+  } else {
+    _doInit();
+  }
 })();
 </script>
 </body>
