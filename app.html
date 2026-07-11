@@ -768,9 +768,11 @@ body {
     <div class="section-label">週次タスクチェックリスト</div>
     <div class="chk-hint">左のチェック: 自己チェック（誰でも可）&nbsp;&nbsp;右の「管」: 管理者チェック（初回のみPIN）</div>
     <div id="weeklyChkList"></div>
-    <div class="section-label" style="margin-top:4px;">人事・労務プロセス</div>
-    <div class="chk-hint">HR &amp; Labor Management Checklist</div>
-    <div id="hrChkList"></div>
+    <div id="hrChkSection">
+      <div class="section-label" style="margin-top:4px;">人事・労務プロセス</div>
+      <div class="chk-hint">HR &amp; Labor Management Checklist</div>
+      <div id="hrChkList"></div>
+    </div>
   </div>
 </div>
 
@@ -915,6 +917,7 @@ body {
   window.STAFF_MODE = NAMES[staff];
   window.addEventListener('DOMContentLoaded',function(){
     var ps=document.getElementById('pinScreen'); if(ps) ps.classList.add('hidden'); // ハブ側で認証済み
+    var hr=document.getElementById('hrChkSection'); if(hr) hr.style.display='none'; // 正社員は人事・労務なし
     var b=document.createElement('div');
     b.textContent='正社員 · '+NAMES[staff];
     b.style.cssText='position:fixed;top:7px;left:7px;background:#1a1a1a;color:#f5c842;padding:3px 10px;border-radius:12px;font-size:9px;font-weight:700;z-index:10000;font-family:inherit;letter-spacing:.02em;';
