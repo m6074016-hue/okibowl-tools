@@ -215,6 +215,16 @@
         <div class="card-arrow">→</div>
       </div>
     </button>
+    <button class="card" onclick="openStaff()">
+      <div class="card-row">
+        <div class="card-icon">🧑‍🍳</div>
+        <div class="card-body">
+          <div class="card-title">正社員 <span class="lock">PIN</span></div>
+          <div class="card-desc">KUREHA・HARUKA・MIKU の業務進捗（店長と同じ運用）</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </div>
+    </button>
     <button class="card" onclick="requestPin('daily.html','📅 <span>2号店 日別工程表</span>')">
       <div class="card-row">
         <div class="card-icon">📅</div>
@@ -252,6 +262,52 @@
   </div>
 </div>
 
+<div class="home" id="staffHome" style="display:none;">
+  <div class="container">
+    <header class="header">
+      <div class="eyebrow">OKI BOWL · Manager · 正社員</div>
+      <h1 class="brand">正<span>社員</span></h1>
+      <p class="tagline">担当を選んでください。各自のカリキュラム進捗を店長ツールと同じ運用で記録します。</p>
+    </header>
+
+    <div class="section-label">Members</div>
+    <button class="card" onclick="requestPin('app.html?staff=kureha','🧑‍🍳 <span>KUREHA</span>','1111','staff')">
+      <div class="card-row">
+        <div class="card-icon">🧑‍🍳</div>
+        <div class="card-body">
+          <div class="card-title">KUREHA <span class="lock">PIN</span></div>
+          <div class="card-desc">業務進捗・カリキュラム・目標達成</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </div>
+    </button>
+    <button class="card" onclick="requestPin('app.html?staff=haruka','🧑‍🍳 <span>HARUKA</span>','2222','staff')">
+      <div class="card-row">
+        <div class="card-icon">🧑‍🍳</div>
+        <div class="card-body">
+          <div class="card-title">HARUKA <span class="lock">PIN</span></div>
+          <div class="card-desc">業務進捗・カリキュラム・目標達成</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </div>
+    </button>
+    <button class="card" onclick="requestPin('app.html?staff=miku','🧑‍🍳 <span>MIKU</span>','3333','staff')">
+      <div class="card-row">
+        <div class="card-icon">🧑‍🍳</div>
+        <div class="card-body">
+          <div class="card-title">MIKU <span class="lock">PIN</span></div>
+          <div class="card-desc">業務進捗・カリキュラム・目標達成</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </div>
+    </button>
+
+    <button class="card" onclick="backToHome()" style="text-align:center;">
+      <div class="card-title" style="justify-content:center;">← メニューに戻る</div>
+    </button>
+  </div>
+</div>
+
 <div class="pin-overlay" id="pinOverlay">
   <div class="pin-eyebrow">OKI BOWL · Protected</div>
   <div class="pin-title">PINコードを入力</div>
@@ -279,24 +335,34 @@ const pinError = document.getElementById('pinError');
 const frameView = document.getElementById('frameView');
 const frameTitle = document.getElementById('frameTitle');
 const contentFrame = document.getElementById('contentFrame');
+const staffHome = document.getElementById('staffHome');
 
 let pendingTarget = null;
 
 function showHome() {
   home.style.display = 'block';
+  staffHome.style.display = 'none';
   pinOverlay.classList.remove('show');
   frameView.classList.remove('show');
 }
 function showPin() {
   home.style.display = 'none';
+  staffHome.style.display = 'none';
   pinOverlay.classList.add('show');
   frameView.classList.remove('show');
 }
 function showFrame() {
   home.style.display = 'none';
+  staffHome.style.display = 'none';
   pinOverlay.classList.remove('show');
   frameView.classList.add('show');
 }
+
+function openStaff() {
+  home.style.display = 'none';
+  staffHome.style.display = 'block';
+}
+function backToHome() { showHome(); }
 
 function openPublic(src, titleHtml) {
   frameTitle.innerHTML = titleHtml;
@@ -304,8 +370,8 @@ function openPublic(src, titleHtml) {
   showFrame();
 }
 
-function requestPin(src, titleHtml) {
-  pendingTarget = { src, title: titleHtml };
+function requestPin(src, titleHtml, pin, back) {
+  pendingTarget = { src, title: titleHtml, pin: pin || PIN_CORRECT, back: back || 'home' };
   pinInput.value = '';
   pinError.textContent = '';
   showPin();
@@ -313,10 +379,11 @@ function requestPin(src, titleHtml) {
 }
 
 function cancelPin() {
+  const back = pendingTarget ? pendingTarget.back : 'home';
   pendingTarget = null;
   pinInput.value = '';
   pinError.textContent = '';
-  showHome();
+  if (back === 'staff') openStaff(); else showHome();
 }
 
 function goHome() {
@@ -325,7 +392,7 @@ function goHome() {
 }
 
 pinInput.addEventListener('input', () => {
-  if (pinInput.value === PIN_CORRECT && pendingTarget) {
+  if (pendingTarget && pinInput.value === pendingTarget.pin) {
     frameTitle.innerHTML = pendingTarget.title;
     contentFrame.src = pendingTarget.src;
     pendingTarget = null;

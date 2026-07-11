@@ -898,6 +898,31 @@ body {
 })();
 
 // ========================================
+// 正社員モード（?staff=xxx でデータを個人ごとに分離）
+// ハブ側でPIN認証済みなので、この端末のデータは okibowl_<staff>_ 名前空間に保存される
+// ========================================
+(function staffNamespace(){
+  var sp = new URLSearchParams(location.search);
+  var staff = (sp.get('staff')||'').toLowerCase();
+  var NAMES = {kureha:'KUREHA', haruka:'HARUKA', miku:'MIKU'};
+  if(!NAMES[staff]) return;               // 未指定なら従来通り（店長モード）
+  var PFX='okibowl_', NS='okibowl_'+staff+'_';
+  function map(k){ return (typeof k==='string' && k.indexOf(PFX)===0) ? NS+k.slice(PFX.length) : k; }
+  var _set=Storage.prototype.setItem, _get=Storage.prototype.getItem, _rem=Storage.prototype.removeItem;
+  Storage.prototype.setItem=function(k,v){ return _set.call(this,map(k),v); };
+  Storage.prototype.getItem=function(k){ return _get.call(this,map(k)); };
+  Storage.prototype.removeItem=function(k){ return _rem.call(this,map(k)); };
+  window.STAFF_MODE = NAMES[staff];
+  window.addEventListener('DOMContentLoaded',function(){
+    var ps=document.getElementById('pinScreen'); if(ps) ps.classList.add('hidden'); // ハブ側で認証済み
+    var b=document.createElement('div');
+    b.textContent='正社員 · '+NAMES[staff];
+    b.style.cssText='position:fixed;top:7px;left:7px;background:#1a1a1a;color:#f5c842;padding:3px 10px;border-radius:12px;font-size:9px;font-weight:700;z-index:10000;font-family:inherit;letter-spacing:.02em;';
+    document.body.appendChild(b);
+  });
+})();
+
+// ========================================
 // DEFAULT DATA (editable via admin)
 // ========================================
 var DEFAULT_TODO = [
