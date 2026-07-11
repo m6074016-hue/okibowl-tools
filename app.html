@@ -918,6 +918,13 @@ body {
   window.addEventListener('DOMContentLoaded',function(){
     var ps=document.getElementById('pinScreen'); if(ps) ps.classList.add('hidden'); // ハブ側で認証済み
     var hr=document.getElementById('hrChkSection'); if(hr) hr.style.display='none'; // 正社員は人事・労務なし
+    // 正社員は経営数値項目を除外（WEEK10）
+    try{
+      var REMOVE=['損益計算書(PL)の理解','固定費と変動費の把握'];
+      WEEKLY_CHK.forEach(function(mo){(mo.weeks||[]).forEach(function(wk){
+        wk.items=wk.items.filter(function(it){return REMOVE.indexOf(it)===-1;});
+      });});
+    }catch(e){}
     var b=document.createElement('div');
     b.textContent='正社員 · '+NAMES[staff];
     b.style.cssText='position:fixed;top:7px;left:7px;background:#1a1a1a;color:#f5c842;padding:3px 10px;border-radius:12px;font-size:9px;font-weight:700;z-index:10000;font-family:inherit;letter-spacing:.02em;';
