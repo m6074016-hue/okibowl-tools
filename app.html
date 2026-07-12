@@ -915,6 +915,7 @@ body {
   Storage.prototype.getItem=function(k){ return _get.call(this,map(k)); };
   Storage.prototype.removeItem=function(k){ return _rem.call(this,map(k)); };
   window.STAFF_MODE = NAMES[staff];
+  window.ADM_CHK_PIN = '5821';   // 正社員の「管」チェックは店長が行う
   window.addEventListener('DOMContentLoaded',function(){
     var ps=document.getElementById('pinScreen'); if(ps) ps.classList.add('hidden'); // ハブ側で認証済み
     var hr=document.getElementById('hrChkSection'); if(hr) hr.style.display='none'; // 正社員は人事・労務なし
@@ -1409,7 +1410,7 @@ function admChkUnlock(callback){
   if(ADM_CHK_UNLOCKED){callback();return;}
   var pin=prompt('管理者PIN（一度入力すれば続けて使えます）:');
   if(pin===null)return;
-  if(pin!=='839274'){showToast('PINが違います');return;}
+  if(pin!==(window.ADM_CHK_PIN||'839274')){showToast('PINが違います');return;}
   ADM_CHK_UNLOCKED=true;
   // 5分で自動ロック
   if(ADM_CHK_TIMER)clearTimeout(ADM_CHK_TIMER);
