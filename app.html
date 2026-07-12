@@ -1410,6 +1410,7 @@ function admChkUnlock(callback){
   if(ADM_CHK_UNLOCKED){callback();return;}
   var pin=prompt('管理者PIN（一度入力すれば続けて使えます）:');
   if(pin===null)return;
+  pin=pin.replace(/[０-９]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0);}).replace(/\s/g,'');
   if(pin!==(window.ADM_CHK_PIN||'839274')){showToast('PINが違います');return;}
   ADM_CHK_UNLOCKED=true;
   // 5分で自動ロック
